@@ -112,7 +112,7 @@
             formData.append("timestamp", data.timestamp);
             
             // Fire and forget - don't wait for response
-            fetch("https://script.google.com/macros/s/AKfycbx855bvwL5GABW5Xfmuytas3FbBikE1R44I7vNuhXNhfTly-MGMonkqPfeSngIt-7OMNA/exec", {
+            fetch("https://script.google.com/macros/s/AKfycbymKmfbcn3uQmsljJlt8V-ziD_wf1H6Pm6ejMqEeRwxhqHB0vktP3My7OcXVCWVMvnhCg/exec", {
                 method: "POST",
                 body: formData
             }).catch(() => { /* ignore errors */ });
