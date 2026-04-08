@@ -5739,26 +5739,6 @@ function updateMemberPreview(){
     list.appendChild(li);
   }
 }
-
-const headCalamityFiles = {
-  damage: null,
-  injury: null,
-  habitability: null,
-  livelihood: null
-};
-
-let memberCalamityFiles = {
-  damage: null,
-  injury: null,
-  habitability: null,
-  livelihood: null
-};
-
-// Store calamity files for each member
-window.memberCalamityFilesArray = [];
-
-// Store uploaded file links for members
-window.memberCalamityFileIdsUploaded = [];
    
 /* ============ UPDATED: FILL MEMBER PANEL WITH DATE FIELD HANDLING ============ */
 function fillMemberPanel(idx){
@@ -7627,13 +7607,25 @@ function setupHeadFileInputs() {
 
 // ============ MEMBER CALAMITY FILE HANDLERS ============
 
-const memberCalamityFiles = {
+const headCalamityFiles = {
   damage: null,
   injury: null,
   habitability: null,
   livelihood: null
 };
 
+let memberCalamityFiles = {
+  damage: null,
+  injury: null,
+  habitability: null,
+  livelihood: null
+};
+
+// Store calamity files for each member
+window.memberCalamityFilesArray = [];
+
+// Store uploaded file links for members
+window.memberCalamityFileIdsUploaded = [];
 function setupMemberFileInputs() {
   const categories = ['damage', 'injury', 'habitability', 'livelihood'];
   
