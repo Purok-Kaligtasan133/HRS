@@ -1,3 +1,4 @@
+check my code when I click yes the chose file button is not appearing:
 <!doctype html>
 <html lang="en">
 <head>
@@ -4428,7 +4429,19 @@ input[type="file"] {
 <script>
 /* final merged client-side script (age, panel, submit). Keep API_URL updated if needed */
 const API_URL = "https://script.google.com/macros/s/AKfycbwGFL1xNeJ4E78CVpnaQKMdx_RFYDm0jVMbVJ-KnWTE2NbNrhin6bIgr5_R8sEgC4ZGeA/exec";
-   
+
+document.addEventListener('DOMContentLoaded', function() {
+  // SESSION IS HANDLED BY session-manager.js - NO NEED TO CHECK HERE
+  
+  // Check screen width and adjust sidebar
+  if (window.innerWidth <= 768) {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.remove('mobile-open');
+  }
+  
+  // FORM INITIALIZATION CONTINUES BELOW (your existing code after this block)
+});
+
 /* ============ MODAL MANAGEMENT FUNCTIONS ============ */
 function showModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -6763,14 +6776,9 @@ function formatMemberHostContactNumber() {
 }
 /* ---------------- DOM loaded bindings ---------------- */
 document.addEventListener('DOMContentLoaded', function() {
-  // SESSION IS HANDLED BY session-manager.js
-  
-  // ============ INITIALIZE FILE UPLOAD HANDLERS ============
-  setupHeadFileInputs();
+    setupHeadFileInputs();
   setupMemberFileInputs();
-  // ============ END INITIALIZATION ============
-  
-  // Original DOMContentLoaded code continues here...
+
   ensureLoginOrRedirect(); // Basic local check
   document.getElementById("userName").innerText = localStorage.getItem("staffName") || localStorage.getItem("username") || "User";
 
@@ -7687,24 +7695,35 @@ function setupMemberFileInputs() {
     }
   });
 }
+
 // Reset member calamity files when opening a new member panel
 function resetMemberCalamityOnPanelOpen() {
   const categories = ['damage', 'injury', 'habitability', 'livelihood'];
   categories.forEach(category => {
+    // Clear stored file objects
     memberCalamityFiles[category] = null;
-    const filenameSpan = document.getElementById(`member_${category}_filename`);
-    const removeBtn = document.querySelector(`.member-remove-file-btn[data-category="${category}"]`);
-    const fileInput = document.getElementById(`member_${category}_file`);
-    const radioNo = document.querySelector(`input[name="member_${category === 'damage' ? 'damage' : category === 'injury' ? 'injury' : category === 'habitability' ? 'habitability' : 'livelihood'}"][value="No"]`);
-    const uploadArea = document.getElementById(`member_${category}_upload_area`);
     
+    // Clear filename display
+    const filenameSpan = document.getElementById(`member_${category}_filename`);
     if (filenameSpan) {
       filenameSpan.innerHTML = 'No file chosen';
       filenameSpan.style.color = 'var(--muted)';
     }
+    
+    // Hide remove button
+    const removeBtn = document.querySelector(`.member-remove-file-btn[data-category="${category}"]`);
     if (removeBtn) removeBtn.style.display = 'none';
+    
+    // Clear file input value
+    const fileInput = document.getElementById(`member_${category}_file`);
     if (fileInput) fileInput.value = '';
+    
+    // Reset radio button to "No"
+    const radioNo = document.querySelector(`input[name="member_${category === 'damage' ? 'damage' : category === 'injury' ? 'injury' : category === 'habitability' ? 'habitability' : 'livelihood'}"][value="No"]`);
     if (radioNo) radioNo.checked = true;
+    
+    // Hide upload area
+    const uploadArea = document.getElementById(`member_${category}_upload_area`);
     if (uploadArea) uploadArea.classList.remove('show');
   });
 }
