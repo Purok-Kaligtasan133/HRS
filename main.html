@@ -656,7 +656,7 @@
         <img src="assets/MDRRMO Logo.png" alt="MDRRMO Logo"/>
       </div>
       
-      <h2>Welcome to PUROK KALIGTASAN</h2>
+      <h2>Welcome to PUROK KALIGTASAN 133</h2>
       <p style="margin-bottom: 0px;">DRRMO Alitagtag – Household Records System</p>
 <p>Select a module to continue.</p>
       
@@ -729,6 +729,16 @@
 
 <!-- JavaScript Libraries -->
 <script>
+(function() {
+    // Check if user is guest
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    
+    if (isGuest) {
+        console.log('Guest detected on main.html - redirecting to dashboard');
+        window.location.replace('dashboard.html');
+        return; // Stop further execution
+    }
+})();
 /* ============ SESSION MANAGEMENT ============ */
 async function sessionCheck(){
     try {
@@ -845,14 +855,10 @@ window.addEventListener('pageshow', function(event) {
     }
 });
 </script>
+<script src="js/guest-redirect.js"></script>
 <script src="js/common-utils.js"></script>
 <script src="js/session-manager.js"></script>
 <script src="js/common-session.js"></script>
 <script src="js/activity-tracking-final.js"></script>
 </body>
 </html>
-
-
-
-
-
