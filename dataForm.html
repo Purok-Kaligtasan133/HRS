@@ -7427,15 +7427,23 @@ const headCalamityData = {
 async function uploadFileToDriveDirect(file, category, tempDataID) {
   console.log("=== uploadFileToDriveDirect START ===");
   console.log("File:", file.name, "Size:", file.size, "Category:", category);
+  console.log("API_URL:", API_URL);
+  
+  if (!file) {
+    console.error("No file provided!");
+    return null;
+  }
   
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async function(e) {
       try {
+        console.log("FileReader loaded, converting to base64...");
         let base64Data = e.target.result;
         if (base64Data.includes('base64,')) {
           base64Data = base64Data.split('base64,')[1];
         }
+        console.log("Base64 length:", base64Data.length);
         
         const formData = new FormData();
         formData.append("action", "uploadCalamityFile");
@@ -7445,14 +7453,16 @@ async function uploadFileToDriveDirect(file, category, tempDataID) {
         formData.append("dataID", tempDataID.toString());
         
         console.log("Sending upload request for:", category);
+        console.log("Request URL:", API_URL);
         
         const response = await fetch(API_URL, {
           method: "POST",
           body: formData
         });
         
+        console.log("Response status:", response.status);
         const text = await response.text();
-        console.log("Upload response:", text);
+        console.log("Raw response:", text.substring(0, 500));
         
         let result;
         try {
@@ -7463,17 +7473,18 @@ async function uploadFileToDriveDirect(file, category, tempDataID) {
           return;
         }
         
+        console.log("Parsed result:", result);
+        
         if (result.success && result.fileId) {
-          // RETURN FULL GOOGLE DRIVE VIEW LINK
           const fileLink = `https://drive.google.com/file/d/${result.fileId}/view`;
           console.log("✅ Upload success! File Link:", fileLink);
           resolve(fileLink);
         } else {
-          console.error("❌ Upload failed:", result);
+          console.error("❌ Upload failed:", result.error || result.message || "Unknown error");
           resolve(null);
         }
       } catch (err) {
-        console.error("❌ Upload error:", err);
+        console.error("❌ Upload error in promise:", err);
         resolve(null);
       }
     };
@@ -7774,6 +7785,35 @@ document.addEventListener('click', function(event) {
     }
 });
 
+// TEST FUNCTION - Add this temporarily to debug
+async function testFileUpload() {
+  console.log("=== TESTING FILE UPLOAD ===");
+  
+  // Create a test file
+  const testBlob = new Blob(["Test content"], { type: "text/plain" });
+  const testFile = new File([testBlob], "test.txt", { type: "text/plain" });
+  
+  const formData = new FormData();
+  formData.append("action", "uploadCalamityFile");
+  formData.append("fileData", await fileToBase64(testFile));
+  formData.append("fileName", "test.txt");
+  formData.append("category", "damage");
+  formData.append("dataID", Date.now().toString());
+  
+  const response = await fetch(API_URL, {
+    method: "POST",
+    body: formData
+  });
+  
+  const result = await response.json();
+  console.log("Test upload result:", result);
+  
+  if (result.success && result.fileId) {
+    console.log("✅ Upload working! File link:", `https://drive.google.com/file/d/${result.fileId}/view`);
+  } else {
+    console.error("❌ Upload failed:", result);
+  }
+}
 /* ============ UI BINDINGS ============ */
 // Desktop sidebar toggle
 document.getElementById('sidebarToggle').onclick = toggleSidebar;
