@@ -7215,19 +7215,19 @@ async function submitHeadAndMembers() {
 const headCalamityData = {
   "Structural Damage": document.querySelector('input[name="head_damage"]:checked')?.value || "No",
   "Structural Damage Details": document.getElementById('head_damage_details')?.value || "",
-  "Structural Damage File Link": headCalamityFileIds.damage || "",  // ← Use "File Link" not "File"
+  "Structural Damage File Link": headCalamityFileIds.damage || "",     // ← MUST be "File Link"
   "Structural Damage File Name": headCalamityFiles.damage?.name || "",
   "Household Injury": document.querySelector('input[name="head_injury"]:checked')?.value || "No",
   "Injury Details": document.getElementById('head_injury_details')?.value || "",
-  "Household Injury File Link": headCalamityFileIds.injury || "",   // ← Use "File Link" not "File"
+  "Household Injury File Link": headCalamityFileIds.injury || "",      // ← MUST be "File Link"
   "Household Injury File Name": headCalamityFiles.injury?.name || "",
   "Habitability": document.querySelector('input[name="head_habitability"]:checked')?.value || "No",
   "Habitability Details": document.getElementById('head_habitability_details')?.value || "",
-  "Habitability File Link": headCalamityFileIds.habitability || "", // ← Use "File Link" not "File"
+  "Habitability File Link": headCalamityFileIds.habitability || "",    // ← MUST be "File Link"
   "Habitability File Name": headCalamityFiles.habitability?.name || "",
   "Loss of Livelihood": document.querySelector('input[name="head_livelihood"]:checked')?.value || "No",
   "Livelihood Details": document.getElementById('head_livelihood_details')?.value || "",
-  "Loss of Livelihood File Link": headCalamityFileIds.livelihood || "", // ← Use "File Link" not "File"
+  "Loss of Livelihood File Link": headCalamityFileIds.livelihood || "", // ← MUST be "File Link"
   "Loss of Livelihood File Name": headCalamityFiles.livelihood?.name || ""
 };
 
@@ -7423,11 +7423,9 @@ const headCalamityData = {
   }
 }
 
-// Upload file to Google Drive via Apps Script and return FULL VIEW LINK
 async function uploadFileToDriveDirect(file, category, tempDataID) {
   console.log("=== uploadFileToDriveDirect START ===");
   console.log("File name:", file?.name);
-  console.log("File size:", file?.size);
   console.log("Category:", category);
   
   if (!file) {
@@ -7452,24 +7450,21 @@ async function uploadFileToDriveDirect(file, category, tempDataID) {
         formData.append("category", category);
         formData.append("dataID", tempDataID.toString());
         
-        console.log("Sending upload request for:", category);
+        console.log("Sending request to:", API_URL);
         
-        // IMPORTANT: Do NOT add mode: 'no-cors' here
         const response = await fetch(API_URL, {
           method: "POST",
           body: formData
         });
         
-        console.log("Response status:", response.status);
-        
         const text = await response.text();
-        console.log("Response text:", text);
+        console.log("Raw response:", text);
         
         let result;
         try {
           result = JSON.parse(text);
         } catch (e) {
-          console.error("Failed to parse response:", text);
+          console.error("Failed to parse JSON:", text);
           resolve(null);
           return;
         }
