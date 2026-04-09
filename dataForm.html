@@ -7971,6 +7971,63 @@ function handleLogout() {
   sessionStorage.clear();
   window.location.href = 'index.html';
 }
+// Remove your existing fetchJSON function and replace with this:
+async function fetchJSON(url, data, signal) {
+    return new Promise((resolve, reject) => {
+        // Generate unique callback name
+        const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // Create script element
+        const script = document.createElement('script');
+        script.id = callbackName;
+        
+        // Set timeout
+        const timeoutId = setTimeout(() => {
+            if (window[callbackName]) {
+                delete window[callbackName];
+                if (document.getElementById(callbackName)) {
+                    document.getElementById(callbackName).remove();
+                }
+                reject(new Error('Request timeout'));
+            }
+        }, 30000);
+        
+        // Define callback function
+        window[callbackName] = function(response) {
+            clearTimeout(timeoutId);
+            delete window[callbackName];
+            if (document.getElementById(callbackName)) {
+                document.getElementById(callbackName).remove();
+            }
+            resolve(response);
+        };
+        
+        // Build URL with parameters
+        const params = new URLSearchParams();
+        params.append('action', data.action);
+        params.append('callback', callbackName);
+        
+        // Add all data parameters
+        for (const key in data) {
+            if (key !== 'action' && data[key] !== undefined && data[key] !== null) {
+                params.append(key, data[key]);
+            }
+        }
+        
+        // Set script source
+        script.src = url + '?' + params.toString();
+        script.onerror = function() {
+            clearTimeout(timeoutId);
+            if (window[callbackName]) {
+                delete window[callbackName];
+            }
+            reject(new Error('Failed to load script'));
+        };
+        
+        // Add to document
+        document.head.appendChild(script);
+    });
+}
 </script>
 <script src="js/guest-redirect.js"></script>
 <script src="js/data-broadcaster.js"></script>
