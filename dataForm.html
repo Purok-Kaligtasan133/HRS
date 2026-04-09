@@ -6003,24 +6003,24 @@ function collectMemberDataFromPanel(){
   const outsideAssembly = document.getElementById("member_outside_assembly").checked ? "Yes" : "No";
 
   // ============ GET MEMBER CALAMITY DATA ============
-  const memberCalamityData = {
-    "Structural Damage": document.querySelector('input[name="member_damage"]:checked')?.value || "No",
-    "Structural Damage Details": document.getElementById('member_damage_details')?.value || "",
-    "Structural Damage File": "",  // Will be filled during upload
-    "Structural Damage File Name": memberCalamityFiles.damage?.name || "",
-    "Household Injury": document.querySelector('input[name="member_injury"]:checked')?.value || "No",
-    "Injury Details": document.getElementById('member_injury_details')?.value || "",
-    "Household Injury File": "",   // Will be filled during upload
-    "Household Injury File Name": memberCalamityFiles.injury?.name || "",
-    "Habitability": document.querySelector('input[name="member_habitability"]:checked')?.value || "No",
-    "Habitability Details": document.getElementById('member_habitability_details')?.value || "",
-    "Habitability File": "",       // Will be filled during upload
-    "Habitability File Name": memberCalamityFiles.habitability?.name || "",
-    "Loss of Livelihood": document.querySelector('input[name="member_livelihood"]:checked')?.value || "No",
-    "Livelihood Details": document.getElementById('member_livelihood_details')?.value || "",
-    "Loss of Livelihood File": "", // Will be filled during upload
-    "Loss of Livelihood File Name": memberCalamityFiles.livelihood?.name || ""
-  };
+const memberCalamityData = {
+  "Structural Damage": document.querySelector('input[name="member_damage"]:checked')?.value || "No",
+  "Structural Damage Details": document.getElementById('member_damage_details')?.value || "",
+  "Structural Damage File": "",
+  "Structural Damage File Name": memberCalamityFiles.damage?.name || "",
+  "Household Injury": document.querySelector('input[name="member_injury"]:checked')?.value || "No",
+  "Injury Details": document.getElementById('member_injury_details')?.value || "",
+  "Household Injury File": "",
+  "Household Injury File Name": memberCalamityFiles.injury?.name || "",
+  "Habitability": document.querySelector('input[name="member_habitability"]:checked')?.value || "No",
+  "Habitability Details": document.getElementById('member_habitability_details')?.value || "",
+  "Habitability File": "",
+  "Habitability File Name": memberCalamityFiles.habitability?.name || "",
+  "Loss of Livelihood": document.querySelector('input[name="member_livelihood"]:checked')?.value || "No",
+  "Livelihood Details": document.getElementById('member_livelihood_details')?.value || "",
+  "Loss of Livelihood File": "",
+  "Loss of Livelihood File Name": memberCalamityFiles.livelihood?.name || ""
+};
   // ============ END MEMBER CALAMITY DATA ============
 
   // Store member files for later upload
