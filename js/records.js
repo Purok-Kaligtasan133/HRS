@@ -2,7 +2,7 @@
    CONFIG
 ============================================================ */
 const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbwGFL1xNeJ4E78CVpnaQKMdx_RFYDm0jVMbVJ-KnWTE2NbNrhin6bIgr5_R8sEgC4ZGeA/exec";
+  "https://script.google.com/macros/s/AKfycbxdAGmjmDECdLxCsXCvnnnLktsGXLpUKrrM7t_ZZ9aEwiJ_mB0k-CVF57khbAqU2hlX2w/exec";
 
 /* ============================================================
    STATE
