@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyrY80J9GAStInolSwPAG3buB80BbwJGjoK7Z9pGXjsnjdivtuQT_qsqekjbWKXHL2UJw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxdAGmjmDECdLxCsXCvnnnLktsGXLpUKrrM7t_ZZ9aEwiJ_mB0k-CVF57khbAqU2hlX2w/exec";
 
 
 // Session timeout (30 minutes = 1800000 ms)
