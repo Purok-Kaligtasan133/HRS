@@ -1070,7 +1070,7 @@ function debounce(func, wait) {
 // --------------------------
 async function fetchJSON(url, data, signal) {
     try {
-        // Build URL with query parameters for GET request (no CORS preflight)
+        // Convert to URL parameters for GET request (no CORS preflight)
         const params = new URLSearchParams();
         for (const key in data) {
             if (data[key] !== undefined && data[key] !== null) {
