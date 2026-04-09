@@ -1070,15 +1070,19 @@ function debounce(func, wait) {
 // --------------------------
 async function fetchJSON(url, data, signal) {
     try {
-        // Convert data to FormData for Google Apps Script
-        const formData = new FormData();
+        // Build URL with query parameters for GET request (no CORS preflight)
+        const params = new URLSearchParams();
         for (const key in data) {
-            formData.append(key, data[key]);
+            if (data[key] !== undefined && data[key] !== null) {
+                params.append(key, data[key]);
+            }
         }
         
-        const response = await fetch(url, {
-            method: "POST",
-            body: formData,
+        const fullUrl = url + '?' + params.toString();
+        console.log("Fetching URL:", fullUrl.substring(0, 200) + "...");
+        
+        const response = await fetch(fullUrl, {
+            method: "GET",
             signal: signal || null
         });
         
@@ -1087,7 +1091,7 @@ async function fetchJSON(url, data, signal) {
         }
         
         const text = await response.text();
-        console.log("Response text:", text);
+        console.log("Response text:", text.substring(0, 200) + "...");
         
         try {
             return JSON.parse(text);
@@ -1098,12 +1102,11 @@ async function fetchJSON(url, data, signal) {
     } catch (error) {
         console.error("fetchJSON error:", error);
         if (error.name === 'AbortError') {
-            throw error; // Re-throw abort errors
+            throw error;
         }
         return { success: false, message: "Connection failed: " + error.message };
     }
 }
-
 function showError(message) {
     console.error("Showing error:", message);
     const errorDiv = document.getElementById("loginError");
@@ -1128,7 +1131,10 @@ async function testAPIConnection() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
         
-        const response = await fetch(testUrl, { signal: controller.signal });
+        const response = await fetch(testUrl, { 
+            method: "GET",
+            signal: controller.signal 
+        });
         clearTimeout(timeoutId);
         
         const text = await response.text();
