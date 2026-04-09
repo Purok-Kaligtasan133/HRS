@@ -7536,29 +7536,88 @@ const headCalamityFiles = {
 };
 
 // Setup file input change listeners
+// Setup file input change listeners for HEAD
 function setupHeadFileInputs() {
   const categories = ['damage', 'injury', 'habitability', 'livelihood'];
   
   categories.forEach(category => {
     const fileInput = document.getElementById(`head_${category}_file`);
+    const filenameSpan = document.getElementById(`head_${category}_filename`);
+    const removeBtn = document.querySelector(`.remove-file-btn[data-category="${category}"]`);
+    const radios = document.querySelectorAll(`input[name="head_${category === 'damage' ? 'damage' : category === 'injury' ? 'injury' : category === 'habitability' ? 'habitability' : 'livelihood'}"]`);
+    const uploadArea = document.getElementById(`head_${category}_upload_area`);
     
     if (fileInput) {
       fileInput.addEventListener('change', function(e) {
-        console.log(`=== FILE SELECTED FOR ${category} ===`);
-        console.log("Files:", this.files);
         if (this.files && this.files.length > 0) {
-          console.log("File name:", this.files[0].name);
-          console.log("File size:", this.files[0].size);
-          console.log("File type:", this.files[0].type);
           const file = this.files[0];
           headCalamityFiles[category] = file;
-          console.log(`headCalamityFiles.${category} set to:`, headCalamityFiles[category]);
+          if (filenameSpan) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            let icon = 'fa-file-image';
+            if (ext === 'pdf') icon = 'fa-file-pdf';
+            filenameSpan.innerHTML = `<i class="fas ${icon}"></i> ${file.name}`;
+            filenameSpan.style.color = '#0f7a4a';
+          }
+          if (removeBtn) removeBtn.style.display = 'inline-flex';
         } else {
-          console.log(`No file selected for ${category}`);
           headCalamityFiles[category] = null;
+          if (filenameSpan) {
+            filenameSpan.innerHTML = 'No file chosen';
+            filenameSpan.style.color = 'var(--muted)';
+          }
+          if (removeBtn) removeBtn.style.display = 'none';
         }
       });
     }
+    
+    if (removeBtn) {
+      removeBtn.addEventListener('click', function() {
+        if (fileInput) {
+          fileInput.value = '';
+          headCalamityFiles[category] = null;
+          if (filenameSpan) {
+            filenameSpan.innerHTML = 'No file chosen';
+            filenameSpan.style.color = 'var(--muted)';
+          }
+          removeBtn.style.display = 'none';
+        }
+      });
+    }
+    
+    // ============ CRITICAL FIX: Add radio button change listeners ============
+    if (radios.length && uploadArea) {
+      radios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          console.log(`Radio changed for ${category}:`, this.value);
+          if (this.value === 'Yes') {
+            uploadArea.classList.add('show');
+            console.log(`Showing upload area for ${category}`);
+          } else {
+            uploadArea.classList.remove('show');
+            // Clear file input when "No" is selected
+            if (fileInput) {
+              fileInput.value = '';
+              headCalamityFiles[category] = null;
+              if (filenameSpan) {
+                filenameSpan.innerHTML = 'No file chosen';
+                filenameSpan.style.color = 'var(--muted)';
+              }
+              if (removeBtn) removeBtn.style.display = 'none';
+            }
+            console.log(`Hiding upload area for ${category}`);
+          }
+        });
+      });
+      
+      // Check initial state when page loads
+      const checkedRadio = Array.from(radios).find(r => r.checked);
+      if (checkedRadio && checkedRadio.value === 'Yes') {
+        uploadArea.classList.add('show');
+        console.log(`Initial: Showing upload area for ${category}`);
+      }
+    }
+    // ============ END CRITICAL FIX ============
   });
 }
 // Upload file to Google Drive via Apps Script and return FULL VIEW LINK
@@ -7715,11 +7774,14 @@ function setupMemberFileInputs() {
       });
     }
     
+    // ============ CRITICAL FIX: Add radio button change listeners ============
     if (radios.length && uploadArea) {
       radios.forEach(radio => {
         radio.addEventListener('change', function() {
+          console.log(`Member radio changed for ${category}:`, this.value);
           if (this.value === 'Yes') {
             uploadArea.classList.add('show');
+            console.log(`Showing member upload area for ${category}`);
           } else {
             uploadArea.classList.remove('show');
             if (fileInput) {
@@ -7731,6 +7793,7 @@ function setupMemberFileInputs() {
               }
               if (removeBtn) removeBtn.style.display = 'none';
             }
+            console.log(`Hiding member upload area for ${category}`);
           }
         });
       });
@@ -7738,8 +7801,10 @@ function setupMemberFileInputs() {
       const checkedRadio = Array.from(radios).find(r => r.checked);
       if (checkedRadio && checkedRadio.value === 'Yes') {
         uploadArea.classList.add('show');
+        console.log(`Initial: Showing member upload area for ${category}`);
       }
     }
+    // ============ END CRITICAL FIX ============
   });
 }
 
