@@ -106,7 +106,9 @@ class SessionManager {
     }
     
     try {
-        const API_URL = window.API_URL || "https://script.google.com/macros/s/AKfycbxdAGmjmDECdLxCsXCvnnnLktsGXLpUKrrM7t_ZZ9aEwiJ_mB0k-CVF57khbAqU2hlX2w/exec";
+        const ORIGINAL_URL = "https://script.google.com/macros/s/AKfycbxdAGmjmDECdLxCsXCvnnnLktsGXLpUKrrM7t_ZZ9aEwiJ_mB0k-CVF57khbAqU2hlX2w/exec";
+const PROXY_URL = "https://corsproxy.io/?" + encodeURIComponent(ORIGINAL_URL);
+const API_URL = window.API_URL || PROXY_URL;
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -152,7 +154,9 @@ class SessionManager {
     // Update user info from server
     async updateUserInfo(username) {
         try {
-            const API_URL = window.API_URL || "https://script.google.com/macros/s/AKfycbxdAGmjmDECdLxCsXCvnnnLktsGXLpUKrrM7t_ZZ9aEwiJ_mB0k-CVF57khbAqU2hlX2w/exec";
+            const ORIGINAL_URL = "https://script.google.com/macros/s/AKfycbxdAGmjmDECdLxCsXCvnnnLktsGXLpUKrrM7t_ZZ9aEwiJ_mB0k-CVF57khbAqU2hlX2w/exec";
+const PROXY_URL = "https://corsproxy.io/?" + encodeURIComponent(ORIGINAL_URL);
+const API_URL = window.API_URL || PROXY_URL;
             
             const response = await fetch(`${API_URL}?action=users&t=${Date.now()}`);
             const data = await response.json();
