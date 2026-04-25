@@ -1,0 +1,392 @@
+/* ============================================
+   USER MANAGEMENT PAGE - MOBILE STYLES
+   Aligned with dataForm & dashboard
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Content Area */
+    .content-area {
+        padding: 12px !important;
+        min-height: calc(100vh - 140px) !important;
+        border-radius: 10px !important;
+    }
+    
+    /* Content Header */
+    .content-header h2 {
+        font-size: 0.95rem !important;
+        margin: 0 0 8px 0 !important;
+    }
+    
+    /* Description */
+    #disc {
+        font-size: 0.65rem !important;
+        padding: 8px 10px !important;
+        margin-bottom: 12px !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Toolbar */
+    .toolbar-row-1 {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    
+    .toggle-buttons {
+        width: 100% !important;
+        justify-content: center !important;
+        gap: 3px !important;
+        padding: 2px !important;
+    }
+    
+    .toggle-btn {
+        padding: 4px 10px !important;
+        font-size: 0.65rem !important;
+        min-width: 50px !important;
+        height: 28px !important;
+    }
+    
+    .toolbar-row-2 {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+    }
+    
+    .toolbar-row-2 .btn {
+        flex: 1 !important;
+        justify-content: center !important;
+        padding: 5px 8px !important;
+        font-size: 0.7rem !important;
+        height: 32px !important;
+    }
+    
+    /* Search Bar */
+    .search-container {
+        width: 100% !important;
+    }
+    
+    .search-box {
+        padding: 8px 10px 8px 32px !important;
+        font-size: 0.75rem !important;
+        height: 36px !important;
+    }
+    
+    .search-container i {
+        font-size: 0.8rem !important;
+    }
+    
+    /* Stats Cards Row */
+    .cards-row {
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .card {
+        padding: 10px !important;
+        min-width: 100% !important;
+    }
+    
+    .card h3 {
+        font-size: 0.7rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .stat-value {
+        font-size: 1rem !important;
+    }
+    
+    /* Table Container */
+    .users-table-wrap {
+        border-radius: 8px !important;
+        margin-bottom: 12px !important;
+        min-height: 300px !important;
+    }
+    
+    .users-table {
+        min-width: 550px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    .users-table th {
+        padding: 8px 6px !important;
+        font-size: 0.65rem !important;
+    }
+    
+    .users-table td {
+        padding: 8px 6px !important;
+        font-size: 0.65rem !important;
+    }
+    
+    .users-table td:nth-child(3) {
+        display: table-cell !important;
+    }
+    
+    /* Actions Cell */
+    .actions-cell {
+        gap: 4px !important;
+    }
+    
+    .icon-btn {
+        padding: 4px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    /* Modals */
+    .modal-box {
+        max-width: 95% !important;
+        width: 95% !important;
+        padding: 12px !important;
+        margin: 8px !important;
+    }
+    
+    .modal-header {
+        padding: 12px 16px !important;
+    }
+    
+    .modal-header h3 {
+        font-size: 0.9rem !important;
+    }
+    
+    .modal-body {
+        padding: 16px !important;
+    }
+    
+    .form-group label {
+        font-size: 0.7rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .form-control {
+        padding: 6px 8px !important;
+        font-size: 0.75rem !important;
+        height: 34px !important;
+    }
+    
+    .form-actions {
+        padding: 12px 16px !important;
+        gap: 8px !important;
+    }
+    
+    .form-actions .btn {
+        flex: 1 !important;
+        justify-content: center !important;
+        padding: 6px 10px !important;
+        font-size: 0.7rem !important;
+        height: 34px !important;
+    }
+    
+    /* Modal Stats Container */
+    .stats-container {
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .stat-item {
+        min-width: 60px !important;
+        padding: 5px 6px !important;
+    }
+    
+    .stat-item span {
+        font-size: 0.6rem !important;
+    }
+    
+    .stat-item .value {
+        font-size: 0.8rem !important;
+    }
+    
+    /* Activity Table */
+    #activityTable {
+        min-width: 500px !important;
+    }
+    
+    #activityTable th,
+    #activityTable td {
+        padding: 6px 4px !important;
+        font-size: 0.6rem !important;
+    }
+    
+    .status-badge {
+        padding: 2px 6px !important;
+        font-size: 0.6rem !important;
+        min-width: 50px !important;
+    }
+    
+    /* Audit Logs Table */
+    #logsTable {
+        min-width: 600px !important;
+    }
+    
+    #logsTable th,
+    #logsTable td {
+        padding: 6px 4px !important;
+        font-size: 0.6rem !important;
+    }
+    
+    #logsTable td:last-child {
+        font-size: 0.55rem !important;
+        min-width: 120px !important;
+    }
+    
+    /* Sub Tabs */
+    .tab-btn-small {
+        padding: 4px 10px !important;
+        font-size: 0.65rem !important;
+    }
+    
+    /* Success/Confirm Modals */
+    #userSavedSuccessModal > div,
+    #resetSuccessModal > div,
+    #deleteSuccessModal > div,
+    #customAlertModal > div,
+    #customConfirmModal > div,
+    #resetModal > div,
+    #deleteModal > div {
+        max-width: 260px !important;
+    }
+    
+    #userSavedSuccessModal h3,
+    #resetSuccessModal h3,
+    #deleteSuccessModal h3,
+    #customAlertModal h3,
+    #customConfirmModal h3,
+    #resetModal h3,
+    #deleteModal h3 {
+        font-size: 0.9rem !important;
+    }
+    
+    #userSavedSuccessModal p,
+    #resetSuccessModal p,
+    #deleteSuccessModal p,
+    #customAlertModal p,
+    #customConfirmModal p,
+    #resetModal p,
+    #deleteModal p {
+        font-size: 0.7rem !important;
+    }
+}
+
+/* ============================================
+   VERY SMALL MOBILE (up to 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    .content-area {
+        padding: 10px !important;
+    }
+    
+    .content-header h2 {
+        font-size: 0.85rem !important;
+    }
+    
+    #disc {
+        font-size: 0.6rem !important;
+        padding: 6px 8px !important;
+    }
+    
+    .toggle-btn {
+        padding: 3px 8px !important;
+        font-size: 0.6rem !important;
+        min-width: 45px !important;
+        height: 26px !important;
+    }
+    
+    .toolbar-row-2 .btn {
+        padding: 4px 6px !important;
+        font-size: 0.65rem !important;
+        height: 30px !important;
+    }
+    
+    .card {
+        padding: 8px !important;
+    }
+    
+    .card h3 {
+        font-size: 0.65rem !important;
+    }
+    
+    .stat-value {
+        font-size: 0.9rem !important;
+    }
+    
+    .users-table {
+        min-width: 480px !important;
+        font-size: 0.65rem !important;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 6px 4px !important;
+        font-size: 0.6rem !important;
+    }
+    
+    .modal-box {
+        max-width: 98% !important;
+        width: 98% !important;
+        padding: 10px !important;
+    }
+    
+    .form-actions {
+        flex-direction: column !important;
+    }
+    
+    .form-actions .btn {
+        width: 100% !important;
+    }
+}
+
+/* ============================================
+   TABLET PORTRAIT (769px - 1024px)
+   ============================================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .cards-row {
+        gap: 10px !important;
+    }
+    
+    .users-table {
+        min-width: 650px !important;
+    }
+}
+
+/* ============================================
+   TOUCH IMPROVEMENTS
+   ============================================ */
+@media (max-width: 768px) {
+    .btn:active,
+    .toggle-btn:active,
+    .icon-btn:active {
+        transform: scale(0.97) !important;
+        transition: transform 0.1s ease !important;
+    }
+    
+    .btn:hover,
+    .toggle-btn:hover,
+    .icon-btn:hover {
+        transform: none !important;
+    }
+    
+    /* Better touch targets */
+    .btn,
+    .toggle-btn,
+    .icon-btn,
+    .tab-btn,
+    .tab-btn-small {
+        cursor: pointer !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+    
+    /* Prevent zoom on iOS for inputs */
+    input, select {
+        font-size: 16px !important;
+    }
+}
+
+/* ============================================
+   SAFE AREA FOR NOTCHED PHONES
+   ============================================ */
+@supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+        .content-area {
+            padding-left: max(12px, env(safe-area-inset-left)) !important;
+            padding-right: max(12px, env(safe-area-inset-right)) !important;
+        }
+    }
+}

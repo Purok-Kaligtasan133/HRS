@@ -1,0 +1,483 @@
+/* ============================================
+   CHARTS.HTML - MOBILE STYLES ONLY
+   Horizontal scroll with natural card sizes
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Body and Container */
+    body {
+        padding-bottom: 70px !important;
+        margin: 0 !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .page-container {
+        grid-template-columns: 1fr !important;
+        padding: 8px !important;
+        margin: 0 !important;
+        gap: 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Hide Sidebar on Mobile */
+    .sidebar {
+        display: none !important;
+    }
+    
+    /* Mobile Bottom Navigation - Fixed */
+    .mobile-bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: white !important;
+        border-top: 1px solid var(--border, #e1e8e5) !important;
+        z-index: 1000 !important;
+        height: 70px !important;
+        min-height: 70px !important;
+        box-sizing: border-box !important;
+    }
+    
+    .mobile-nav-items {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: stretch !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        gap: 0 !important;
+    }
+    
+    .mobile-nav-item {
+        flex: 1 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        padding: 8px 0 !important;
+        margin: 0 !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 0 !important;
+        height: 100% !important;
+    }
+    
+    .mobile-nav-icon {
+        font-size: 1.1rem !important;
+        margin-bottom: 2px !important;
+    }
+    
+    .mobile-nav-icon i {
+        font-size: 1.1rem !important;
+    }
+    
+    .mobile-nav-text {
+        font-size: 0.6rem !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Hide Users tab for non-admin */
+    .mobile-nav-item.admin-only:not(.admin-visible) {
+        display: none !important;
+    }
+    
+    /* Content Area */
+    .content-area {
+        height: auto !important;
+        min-height: calc(100vh - 140px) !important;
+        padding: 12px !important;
+        margin-bottom: 0 !important;
+        border-radius: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Content Header - Title and Auto-refresh on same line */
+    .content-header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .content-header h2 {
+        font-size: 0.85rem !important;
+        margin: 0 !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Auto-refresh indicator */
+    .auto-refresh {
+        padding: 3px 8px !important;
+        font-size: 0.55rem !important;
+        gap: 4px !important;
+        background: rgba(15, 122, 74, 0.1) !important;
+        border-radius: 20px !important;
+    }
+    
+    .auto-refresh .indicator {
+        width: 6px !important;
+        height: 6px !important;
+    }
+    
+    /* Description */
+    #disc {
+        font-size: 0.65rem !important;
+        padding: 8px 10px !important;
+        margin-bottom: 12px !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Global Stats Summary */
+    .global-stats-summary.visible {
+        flex-direction: row !important;
+        gap: 6px !important;
+        padding: 6px 8px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .global-stat {
+        min-width: 50px !important;
+        padding: 4px 6px !important;
+    }
+    
+    .global-stat-value {
+        font-size: 0.85rem !important;
+    }
+    
+    .global-stat-label {
+        font-size: 0.55rem !important;
+    }
+    
+    /* Stats View Toggle */
+    .stats-view-toggle.visible {
+        flex-direction: row !important;
+        padding: 4px !important;
+        margin-bottom: 12px !important;
+        gap: 4px !important;
+    }
+    
+    .stats-toggle-btn {
+        font-size: 0.6rem !important;
+        padding: 4px 6px !important;
+        max-width: 85px !important;
+        gap: 4px !important;
+    }
+    
+    .stats-toggle-btn i {
+        font-size: 0.55rem !important;
+    }
+    
+    /* Hide compact view button on mobile */
+    .stats-toggle-btn:last-child {
+        display: none !important;
+    }
+    
+    /* Toolbar - Buttons centered */
+    .toolbar-right {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        width: 100% !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .toolbar-right .btn {
+        flex: 1 !important;
+        min-width: 70px !important;
+        max-width: 85px !important;
+        justify-content: center !important;
+        padding: 4px 8px !important;
+        font-size: 0.65rem !important;
+        height: 28px !important;
+        border-radius: 16px !important;
+    }
+    
+    .toolbar-right .btn i {
+        font-size: 0.6rem !important;
+    }
+    
+    /* Export Dropdown */
+    .export-wrapper {
+        min-width: 70px !important;
+        max-width: 85px !important;
+    }
+    
+    .export-dropdown {
+        width: 120px !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+    }
+    
+    .export-dropdown div {
+        padding: 6px 10px !important;
+        font-size: 0.6rem !important;
+    }
+    
+    /* ============================================
+       HORIZONTAL SCROLL - NATURAL CARD SIZES
+       No fixed width, cards size naturally
+       ============================================ */
+    .charts-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        gap: 12px !important;
+        scroll-snap-type: x mandatory !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 0 !important;
+        width: 100% !important;
+    }
+    
+    .charts-grid::-webkit-scrollbar {
+        height: 4px !important;
+    }
+    
+    .charts-grid::-webkit-scrollbar-track {
+        background: var(--border, #e1e8e5) !important;
+        border-radius: 4px !important;
+    }
+    
+    .charts-grid::-webkit-scrollbar-thumb {
+        background: var(--accent2, #34b78f) !important;
+        border-radius: 4px !important;
+    }
+    
+    /* Cards size naturally - no fixed width */
+    .chart-card {
+        flex-shrink: 0 !important;
+        scroll-snap-align: start !important;
+        padding: 12px !important;
+        width: auto !important;
+        min-width: 280px !important;
+        max-width: 90vw !important;
+    }
+    
+    .chart-card.full-size {
+        grid-column: auto !important;
+        width: auto !important;
+        min-width: 280px !important;
+        max-width: 90vw !important;
+    }
+    
+    .comparison-chart {
+        width: auto !important;
+        min-width: 280px !important;
+        max-width: 90vw !important;
+    }
+    
+    .chart-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+        margin-bottom: 8px !important;
+        padding-bottom: 6px !important;
+    }
+    
+    .chart-title {
+        font-size: 0.7rem !important;
+        gap: 5px !important;
+    }
+    
+    .chart-title i {
+        font-size: 0.7rem !important;
+    }
+    
+    /* Chart Stats Badges */
+    .chart-stats {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 3px !important;
+        width: 100% !important;
+    }
+    
+    .stat-badge {
+        font-size: 0.55rem !important;
+        padding: 2px 5px !important;
+        gap: 3px !important;
+        border-radius: 10px !important;
+    }
+    
+    .stat-badge .percentage {
+        font-size: 0.5rem !important;
+    }
+    
+    /* Natural chart heights - proportional to content */
+    .chart-container {
+        height: auto !important;
+        min-height: 200px !important;
+        margin: 6px 0 !important;
+        width: 100% !important;
+    }
+    
+    canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 250px !important;
+    }
+    
+    /* PWD Gauge Container */
+    .pwd-gauge-container {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+    
+    .pwd-canvas-wrapper {
+        height: auto !important;
+        min-height: 150px !important;
+    }
+    
+    .pwd-stats {
+        flex-direction: row !important;
+        justify-content: space-around !important;
+        width: 100% !important;
+    }
+    
+    .pwd-stat-item {
+        padding: 5px !important;
+    }
+    
+    .pwd-stat-value {
+        font-size: 0.9rem !important;
+    }
+    
+    .pwd-stat-label {
+        font-size: 0.55rem !important;
+    }
+}
+
+/* ============================================
+   VERY SMALL MOBILE (up to 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    .content-area {
+        padding: 10px !important;
+    }
+    
+    .content-header h2 {
+        font-size: 0.75rem !important;
+    }
+    
+    .auto-refresh {
+        font-size: 0.5rem !important;
+        padding: 2px 6px !important;
+    }
+    
+    #disc {
+        font-size: 0.6rem !important;
+        padding: 6px 8px !important;
+    }
+    
+    .global-stat {
+        min-width: 45px !important;
+        padding: 3px 4px !important;
+    }
+    
+    .global-stat-value {
+        font-size: 0.75rem !important;
+    }
+    
+    .global-stat-label {
+        font-size: 0.5rem !important;
+    }
+    
+    .stats-toggle-btn {
+        font-size: 0.55rem !important;
+        padding: 3px 4px !important;
+        max-width: 75px !important;
+    }
+    
+    .toolbar-right .btn {
+        min-width: 60px !important;
+        font-size: 0.6rem !important;
+        padding: 4px 6px !important;
+        height: 26px !important;
+    }
+    
+    .chart-card {
+        min-width: 260px !important;
+        max-width: 85vw !important;
+        padding: 10px !important;
+    }
+    
+    .chart-title {
+        font-size: 0.65rem !important;
+    }
+    
+    .stat-badge {
+        font-size: 0.5rem !important;
+        padding: 2px 4px !important;
+    }
+    
+    .chart-container {
+        min-height: 170px !important;
+    }
+    
+    canvas {
+        max-height: 200px !important;
+    }
+}
+
+/* ============================================
+   TOUCH IMPROVEMENTS
+   ============================================ */
+@media (max-width: 768px) {
+    .chart-card:active {
+        transform: scale(0.99) !important;
+        transition: transform 0.1s ease !important;
+    }
+    
+    .btn:active,
+    .stats-toggle-btn:active {
+        transform: scale(0.97) !important;
+    }
+    
+    .chart-card,
+    .btn,
+    .stats-toggle-btn,
+    .mobile-nav-item {
+        cursor: pointer !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+}
+
+/* ============================================
+   SAFE AREA FOR NOTCHED PHONES
+   ============================================ */
+@supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+        .content-area {
+            padding-left: max(12px, env(safe-area-inset-left)) !important;
+            padding-right: max(12px, env(safe-area-inset-right)) !important;
+        }
+        
+        .mobile-bottom-nav {
+            padding-bottom: max(0px, env(safe-area-inset-bottom)) !important;
+        }
+        
+        body {
+            padding-bottom: max(70px, calc(70px + env(safe-area-inset-bottom))) !important;
+        }
+    }
+}

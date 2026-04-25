@@ -1,0 +1,353 @@
+/* ============================================
+   MAIN.HTML - MOBILE STYLES ONLY
+   Aligned with dashboard.html mobile view
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Body and Container */
+    body {
+        padding-bottom: 70px !important;
+        margin: 0 !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .page-container {
+        grid-template-columns: 1fr !important;
+        padding: 8px !important;
+        margin: 0 !important;
+        gap: 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Hide Sidebar on Mobile */
+    .sidebar {
+        display: none !important;
+    }
+    
+    /* Mobile Bottom Navigation - Fixed */
+    .mobile-bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: white !important;
+        border-top: 1px solid var(--border, #e1e8e5) !important;
+        z-index: 1000 !important;
+        height: 70px !important;
+        min-height: 70px !important;
+        box-sizing: border-box !important;
+    }
+    
+    .mobile-nav-items {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: stretch !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        gap: 0 !important;
+    }
+    
+    .mobile-nav-item {
+        flex: 1 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        padding: 8px 0 !important;
+        margin: 0 !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 0 !important;
+        height: 100% !important;
+    }
+    
+    .mobile-nav-icon {
+        font-size: 1.1rem !important;
+        margin-bottom: 2px !important;
+    }
+    
+    .mobile-nav-icon i {
+        font-size: 1.1rem !important;
+    }
+    
+    .mobile-nav-text {
+        font-size: 0.6rem !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Hide Users tab for non-admin */
+    .mobile-nav-item.admin-only:not(.admin-visible) {
+        display: none !important;
+    }
+    
+    /* Content Area */
+    .content-area {
+        height: auto !important;
+        min-height: calc(100vh - 140px) !important;
+        padding: 12px !important;
+        margin-bottom: 0 !important;
+        border-radius: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Welcome Content */
+    .welcome-content h2 {
+        font-size: 0.95rem !important;
+        margin: 0 0 8px 0 !important;
+    }
+    
+    .welcome-content > p {
+        font-size: 0.65rem !important;
+        padding: 8px 10px !important;
+        margin-bottom: 12px !important;
+        line-height: 1.4 !important;
+        background: var(--light-green, #e9f7f2);
+        border-radius: 8px;
+        border-left: 3px solid var(--accent1, #0f7a4a);
+    }
+    
+    /* Module Grid - Horizontal Scroll */
+    .module-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        gap: 10px !important;
+        scroll-snap-type: x mandatory !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 15px !important;
+        width: 100% !important;
+    }
+    
+    .module-grid::-webkit-scrollbar {
+        height: 4px !important;
+    }
+    
+    .module-grid::-webkit-scrollbar-track {
+        background: var(--border, #e1e8e5) !important;
+        border-radius: 4px !important;
+    }
+    
+    .module-grid::-webkit-scrollbar-thumb {
+        background: var(--accent2, #34b78f) !important;
+        border-radius: 4px !important;
+    }
+    
+    .module-card {
+        min-width: 130px !important;
+        width: 130px !important;
+        flex-shrink: 0 !important;
+        scroll-snap-align: start !important;
+        padding: 10px 8px !important;
+    }
+    
+    .module-card i {
+        font-size: 1.3rem !important;
+    }
+    
+    .module-card h3 {
+        font-size: 0.7rem !important;
+        margin: 4px 0 !important;
+    }
+    
+    .module-card p {
+        font-size: 0.6rem !important;
+    }
+    
+    /* Info Sections - Stack Vertically */
+    .info-sections {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+    
+    .info-card {
+        padding: 12px !important;
+        border-radius: 8px !important;
+    }
+    
+    .info-card h3 {
+        font-size: 0.8rem !important;
+        margin-bottom: 8px !important;
+        padding-left: 8px !important;
+    }
+    
+    .info-card h3 i {
+        font-size: 0.75rem !important;
+    }
+    
+    .info-card p {
+        font-size: 0.7rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    .info-card ul li {
+        font-size: 0.7rem !important;
+        margin-bottom: 6px !important;
+    }
+    
+    .info-card ul li i {
+        font-size: 0.7rem !important;
+        width: 14px !important;
+    }
+    
+    .full-width-card {
+        padding: 12px !important;
+    }
+    
+    .full-width-card p {
+        font-size: 0.7rem !important;
+    }
+    
+    .motto-text {
+        padding: 8px !important;
+    }
+    
+    .motto-text p {
+        font-size: 0.7rem !important;
+    }
+    
+    .motto-text small {
+        font-size: 0.6rem !important;
+    }
+    
+    hr {
+        margin: 12px 0 !important;
+    }
+    
+    /* Topbar Header */
+    .topbar {
+        padding: 8px 12px !important;
+    }
+    
+    .brand .logo {
+        width: 45px !important;
+        height: 45px !important;
+    }
+    
+    .brand-text h1 {
+        font-size: 0.85rem !important;
+    }
+    
+    .brand-text p {
+        font-size: 0.6rem !important;
+    }
+    
+    .user-info {
+        gap: 6px !important;
+    }
+    
+    #logoutBtn {
+        padding: 5px 10px !important;
+        font-size: 0.7rem !important;
+    }
+}
+
+/* ============================================
+   VERY SMALL MOBILE (up to 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    .content-area {
+        padding: 10px !important;
+    }
+    
+    .welcome-content h2 {
+        font-size: 0.85rem !important;
+    }
+    
+    .welcome-content > p {
+        font-size: 0.6rem !important;
+        padding: 6px 8px !important;
+    }
+    
+    .module-card {
+        min-width: 110px !important;
+        width: 110px !important;
+        padding: 8px 6px !important;
+    }
+    
+    .module-card i {
+        font-size: 1.1rem !important;
+    }
+    
+    .module-card h3 {
+        font-size: 0.65rem !important;
+    }
+    
+    .module-card p {
+        font-size: 0.55rem !important;
+    }
+    
+    .info-card {
+        padding: 10px !important;
+    }
+    
+    .info-card h3 {
+        font-size: 0.75rem !important;
+    }
+    
+    .info-card p,
+    .info-card ul li {
+        font-size: 0.65rem !important;
+    }
+}
+
+/* ============================================
+   TOUCH IMPROVEMENTS
+   ============================================ */
+@media (max-width: 768px) {
+    .module-card:active,
+    .info-card:active {
+        transform: scale(0.98) !important;
+        transition: transform 0.1s ease !important;
+    }
+    
+    .module-card:hover,
+    .info-card:hover {
+        transform: none !important;
+    }
+    
+    .module-card,
+    .info-card,
+    .mobile-nav-item,
+    #logoutBtn {
+        cursor: pointer !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+}
+
+/* ============================================
+   SAFE AREA FOR NOTCHED PHONES
+   ============================================ */
+@supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+        .content-area {
+            padding-left: max(12px, env(safe-area-inset-left)) !important;
+            padding-right: max(12px, env(safe-area-inset-right)) !important;
+        }
+        
+        .mobile-bottom-nav {
+            padding-bottom: max(0px, env(safe-area-inset-bottom)) !important;
+        }
+        
+        body {
+            padding-bottom: max(70px, calc(70px + env(safe-area-inset-bottom))) !important;
+        }
+    }
+}

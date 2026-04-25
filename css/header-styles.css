@@ -1,0 +1,423 @@
+/* ============================================
+   GLOBAL HEADER STYLES - Desktop & Mobile
+   Fixed: Sidebar Icons, Scrolling Background
+   ============================================ */
+
+/* Header / Topbar */
+.topbar {
+    background: linear-gradient(90deg, #0f7a4a, #34b78f);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    grid-column: 1/-1;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+/* Brand Section */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Logo - NO background */
+.brand .logo {
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+    background: transparent !important;
+}
+
+/* BIGGER TEXT ON DESKTOP */
+.brand-text h1 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+.brand-text p {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.85);
+    margin: 2px 0 0 0;
+}
+
+/* User Info Section */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* NO Hamburger Menu */
+.mobile-menu-toggle {
+    display: none !important;
+}
+
+/* User Dropdown */
+.user-dropdown {
+    position: relative;
+}
+
+/* User Button */
+.user-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 40px;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.user-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.user-btn i:first-child {
+    font-size: 1.1rem;
+}
+
+.user-info-dropdown {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.3;
+}
+
+.user-fullname {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+}
+
+.user-role-dropdown {
+    font-size: 0.65rem;
+    opacity: 0.75;
+    color: white;
+}
+
+.user-btn i:last-child {
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+}
+
+.user-dropdown.active .user-btn i:last-child {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: transparent;
+    min-width: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.user-dropdown.active .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Logout Button - Desktop */
+.dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 40px;
+    color: #ff6b6b !important;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.dropdown-menu a i {
+    color: #ff6b6b !important;
+    font-size: 0.95rem;
+}
+
+.dropdown-menu a:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-1px);
+}
+
+/* ============ SIDEBAR ICON FIXES ============ */
+.sidebar li a .menu-icon {
+    font-size: 1.2rem;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar li a .menu-icon i {
+    font-size: 1.2rem;
+    width: auto;
+    color: inherit;
+}
+
+/* Active sidebar icon color */
+.sidebar li a.active .menu-icon i {
+    color: white;
+}
+
+/* Sidebar icon hover */
+.sidebar li a:hover .menu-icon i {
+    color: var(--accent1);
+}
+
+.sidebar li a.active:hover .menu-icon i {
+    color: white;
+}
+
+/* ============ FIXED SCROLLING BACKGROUND ============ */
+body {
+    background-color: var(--bg, #f6f8f7);
+    margin: 0;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Fixed background pattern - DOES NOT SCROLL */
+.bg-pattern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(15, 122, 74, 0.05);
+}
+
+.circle-1 {
+    width: 300px;
+    height: 300px;
+    top: -150px;
+    right: -150px;
+}
+
+.circle-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -100px;
+    left: -100px;
+    background: rgba(255, 122, 0, 0.05);
+}
+
+.circle-3 {
+    width: 150px;
+    height: 150px;
+    top: 50%;
+    left: 10%;
+    background: rgba(52, 183, 143, 0.05);
+}
+
+/* Content area background - semi-transparent so fixed bg shows through */
+.content-area {
+    background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
+    backdrop-filter: blur(2px);
+}
+
+/* ============ MOBILE STYLES - BIGGER LOGO & TEXT ============ */
+@media (max-width: 768px) {
+    /* Topbar keeps normal padding */
+    .topbar {
+        padding: 10px 14px;
+        margin: 6px;
+        border-radius: 14px;
+    }
+    
+    .brand {
+        gap: 12px;
+    }
+    
+    /* LOGO - MUCH BIGGER ON MOBILE */
+    .brand .logo {
+        width: 55px !important;
+        height: 55px !important;
+    }
+    
+    /* Title - bigger */
+    .brand-text h1 {
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* Subtitle - bigger */
+    .brand-text p {
+        font-size: 0.65rem !important;
+        opacity: 0.9 !important;
+        margin-top: 2px !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* User button */
+    .user-btn {
+        padding: 6px 14px;
+        gap: 8px;
+    }
+    
+    .user-btn i:first-child {
+        font-size: 1rem;
+    }
+    
+    .user-fullname {
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .user-role-dropdown {
+        font-size: 0.55rem;
+        opacity: 0.8;
+    }
+    
+    .user-btn i:last-child {
+        font-size: 0.65rem;
+    }
+    
+    /* Logout button */
+    .dropdown-menu {
+        margin-top: 5px;
+    }
+    
+    .dropdown-menu a {
+        padding: 5px 12px;
+        font-size: 0.7rem;
+        gap: 6px;
+    }
+    
+    .dropdown-menu a i {
+        font-size: 0.7rem;
+    }
+    
+    /* Sidebar icons on mobile (if visible) */
+    .sidebar li a .menu-icon {
+        width: 32px;
+    }
+    
+    .sidebar li a .menu-icon i {
+        font-size: 1.1rem;
+    }
+}
+
+/* ============ VERY SMALL MOBILE (480px and below) ============ */
+@media (max-width: 480px) {
+    .topbar {
+        padding: 8px 12px;
+        margin: 4px;
+    }
+    
+    .brand {
+        gap: 10px;
+    }
+    
+    /* LOGO - STILL BIG on small screens */
+    .brand .logo {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    /* Title - good size */
+    .brand-text h1 {
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Subtitle - readable */
+    .brand-text p {
+        font-size: 0.6rem !important;
+        line-height: 1.3 !important;
+        margin-top: 2px !important;
+    }
+    
+    .user-btn {
+        padding: 5px 10px;
+        gap: 6px;
+    }
+    
+    .user-btn i:first-child {
+        font-size: 0.9rem;
+    }
+    
+    .user-fullname {
+        font-size: 0.7rem;
+    }
+    
+    .user-role-dropdown {
+        font-size: 0.5rem;
+    }
+    
+    .dropdown-menu a {
+        padding: 4px 10px;
+        font-size: 0.65rem;
+    }
+    
+    .dropdown-menu a i {
+        font-size: 0.65rem;
+    }
+}
+
+/* ============ EXTRA SMALL (380px and below) ============ */
+@media (max-width: 380px) {
+    .brand {
+        gap: 8px;
+    }
+    
+    /* LOGO - Keep visible even on smallest screens */
+    .brand .logo {
+        width: 45px !important;
+        height: 45px !important;
+    }
+    
+    .brand-text h1 {
+        font-size: 0.75rem !important;
+    }
+    
+    .brand-text p {
+        font-size: 0.55rem !important;
+        line-height: 1.25 !important;
+    }
+    
+    .user-fullname {
+        font-size: 0.65rem;
+    }
+    
+    .user-role-dropdown {
+        font-size: 0.45rem;
+    }
+}
+
+/* Desktop */
+@media (min-width: 769px) {
+    .mobile-menu-toggle {
+        display: none !important;
+    }
+}

@@ -1,0 +1,327 @@
+/* =================================================================
+   UNIFIED MOBILE STYLES - For ALL Pages (Dashboard, Home, Data Form, etc.)
+   This file should be loaded AFTER header-styles.css
+================================================================= */
+
+/* Note: header-styles.css should be loaded separately before this file */
+/* Do NOT use @import here as it causes conflicts */
+
+/* ============ MOBILE STYLES (max-width: 768px) ============ */
+@media (max-width: 768px) {
+    /* Body padding for mobile nav */
+    body {
+        padding-bottom: 70px !important;
+    }
+    
+    /* Page container - Mobile layout */
+    .page-container {
+        grid-template-columns: 1fr !important;
+        padding: 8px !important;
+        gap: 12px !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .page-container.collapsed {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* TOPBAR - Mobile adjustments (overriding header-styles.css) */
+    .topbar {
+        margin: 6px !important;
+        padding: 10px 12px !important;
+        border-radius: 14px !important;
+    }
+    
+    .brand {
+        gap: 10px !important;
+    }
+    
+    .brand .logo {
+        width: 42px !important;
+        height: 42px !important;
+    }
+    
+    .brand-text h1 {
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .brand-text p {
+        font-size: 0.45rem !important;
+        opacity: 0.8 !important;
+    }
+    
+    /* User info mobile */
+    .user-info {
+        gap: 8px !important;
+    }
+    
+    .user-btn {
+        padding: 6px 14px !important;
+        gap: 8px !important;
+    }
+    
+    .user-btn i:first-child {
+        font-size: 0.9rem !important;
+    }
+    
+    .user-fullname {
+        font-size: 0.7rem !important;
+    }
+    
+    .user-role-dropdown {
+        font-size: 0.5rem !important;
+    }
+    
+    .user-btn i:last-child {
+        font-size: 0.6rem !important;
+    }
+    
+    /* Logout button mobile */
+    .dropdown-menu {
+        margin-top: 5px !important;
+    }
+    
+    .dropdown-menu a {
+        padding: 4px 10px !important;
+        font-size: 0.65rem !important;
+        gap: 5px !important;
+    }
+    
+    .dropdown-menu a i {
+        font-size: 0.65rem !important;
+    }
+    
+    /* SIDEBAR - Hide on mobile */
+    .sidebar {
+        display: none !important;
+    }
+    
+    /* CONTENT AREA - Mobile */
+    .content-area {
+        height: auto !important;
+        min-height: calc(100vh - 140px) !important;
+        padding: 16px !important;
+        margin-bottom: 0 !important;
+        border-radius: 12px !important;
+    }
+    
+    /* CONTENT HEADER - Mobile */
+    .content-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .content-header h2 {
+        font-size: 1rem !important;
+    }
+    
+    /* MOBILE BOTTOM NAVIGATION - Show */
+    .mobile-bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: white !important;
+        border-top: 1px solid var(--border, #e1e8e5) !important;
+        z-index: 1000 !important;
+        padding: 8px 0 !important;
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.08) !important;
+        height: 70px !important;
+        box-sizing: border-box !important;
+    }
+    
+    .mobile-nav-items {
+        display: flex !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        height: 100% !important;
+    }
+    
+    .mobile-nav-item {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-decoration: none !important;
+        color: var(--muted, #6b6f6b) !important;
+        padding: 8px 12px !important;
+        border-radius: 8px !important;
+        transition: all 0.3s ease !important;
+        min-width: 60px !important;
+        flex: 1 !important;
+        height: 100% !important;
+        justify-content: center !important;
+    }
+    
+    .mobile-nav-item.active {
+        color: var(--accent1, #0f7a4a) !important;
+        background: var(--light-green, #e9f7f2) !important;
+    }
+    
+    .mobile-nav-icon {
+        font-size: 1.2rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .mobile-nav-text {
+        font-size: 0.7rem !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Hide mobile menu toggle on mobile (if exists) */
+    .mobile-menu-toggle {
+        display: flex !important;
+    }
+}
+
+/* ============ SMALL MOBILE (max-width: 480px) ============ */
+@media (max-width: 480px) {
+    .topbar {
+        padding: 8px 10px !important;
+        margin: 4px !important;
+    }
+    
+    .brand {
+        gap: 8px !important;
+    }
+    
+    .brand .logo {
+        width: 38px !important;
+        height: 38px !important;
+    }
+    
+    .brand-text h1 {
+        font-size: 0.7rem !important;
+    }
+    
+    .brand-text p {
+        font-size: 0.4rem !important;
+    }
+    
+    .user-btn {
+        padding: 5px 12px !important;
+    }
+    
+    .user-btn i:first-child {
+        font-size: 0.85rem !important;
+    }
+    
+    .user-fullname {
+        font-size: 0.65rem !important;
+    }
+    
+    .user-role-dropdown {
+        font-size: 0.45rem !important;
+    }
+    
+    .dropdown-menu a {
+        padding: 3px 8px !important;
+        font-size: 0.6rem !important;
+    }
+    
+    .dropdown-menu a i {
+        font-size: 0.6rem !important;
+    }
+    
+    .content-area {
+        padding: 12px !important;
+    }
+    
+    .content-header h2 {
+        font-size: 0.9rem !important;
+    }
+}
+
+/* ============ TABLET STYLES (769px - 1024px) ============ */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .page-container {
+        max-width: 95% !important;
+        padding: 10px !important;
+        gap: 16px !important;
+    }
+    
+    .topbar {
+        max-width: 100% !important;
+    }
+    
+    .content-area {
+        padding: 20px !important;
+    }
+}
+
+/* ============ DESKTOP STYLES (min-width: 1025px) ============ */
+@media (min-width: 1025px) {
+    .mobile-bottom-nav {
+        display: none !important;
+    }
+    
+    .mobile-menu-toggle {
+        display: none !important;
+    }
+}
+
+/* ============ ADMIN VISIBILITY CLASSES ============ */
+.admin-only {
+    display: none !important;
+}
+
+.admin-only.admin-visible {
+    display: flex !important;
+}
+
+li.admin-only {
+    display: none !important;
+}
+
+li.admin-only.admin-visible {
+    display: list-item !important;
+}
+
+.mobile-nav-item.admin-only {
+    display: none !important;
+}
+
+.mobile-nav-item.admin-only.admin-visible {
+    display: flex !important;
+}
+
+/* ============ SIDEBAR ICON FIXES (Mobile when visible) ============ */
+@media (max-width: 768px) {
+    .sidebar li a .menu-icon {
+        width: 32px !important;
+    }
+    
+    .sidebar li a .menu-icon i {
+        font-size: 1.1rem !important;
+    }
+}
+/* ============================================
+   OPTIMIZED CONTENT HEADERS ON MOBILE
+   Bigger than before, but not too big
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Content Header - OPTIMIZED size */
+    .content-header h2 {
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .content-header h2 i {
+        font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-header h2 {
+        font-size: 1rem !important;
+    }
+    
+    .content-header h2 i {
+        font-size: 0.95rem !important;
+    }
+}

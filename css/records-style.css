@@ -1,0 +1,1726 @@
+/* ============================================
+   RECORDS PAGE - MOBILE STYLES
+   Matching dataForm.html exactly
+   ============================================ */
+
+/* ============================================
+   1. BASE MOBILE STYLES (up to 768px)
+   ============================================ */
+@media (max-width: 768px) {
+    /* Content Area - Match dataForm */
+    .content-area {
+        padding: 12px !important;
+        min-height: calc(100vh - 140px) !important;
+        border-radius: 10px !important;
+    }
+    
+    /* Content Header */
+    .content-header {
+        margin-bottom: 12px !important;
+    }
+    
+    .content-header h2 {
+        font-size: 0.95rem !important;
+        margin: 0 !important;
+    }
+    
+    /* Description */
+    #disc {
+        font-size: 0.65rem !important;
+        padding: 8px 10px !important;
+        margin-bottom: 12px !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* ========================================
+       STATS CONTAINER - Match dataForm cards
+    ======================================== */
+    .stats-container {
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .stat-item {
+        flex: 1 !important;
+        text-align: center !important;
+        padding: 6px 8px !important;
+        background: var(--card-bg, #fff) !important;
+        border-radius: 8px !important;
+        border: 1px solid var(--border, #e1e8e5) !important;
+        box-shadow: var(--shadow, 0 6px 18px rgba(6,30,20,0.06)) !important;
+    }
+    
+    .stat-item span {
+        font-size: 0.6rem !important;
+        color: var(--muted, #6b6f6b) !important;
+        display: block !important;
+        margin-bottom: 2px !important;
+    }
+    
+    .stat-item .value {
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        display: block !important;
+    }
+    
+    /* ========================================
+       TOOLBAR - Match dataForm
+    ======================================== */
+    .toolbar {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .toolbar-row-1 {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+    
+    .search-container {
+        width: 100% !important;
+        position: relative !important;
+    }
+    
+    .search-container i {
+        position: absolute !important;
+        left: 10px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        color: var(--muted, #6b6f6b) !important;
+        font-size: 0.7rem !important;
+        z-index: 1 !important;
+    }
+    
+    .search-box {
+        width: 100% !important;
+        padding: 8px 10px 8px 32px !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 8px !important;
+        font-size: 0.75rem !important;
+        background: #fff !important;
+        box-sizing: border-box !important;
+        height: 36px !important;
+    }
+    
+    .search-box:focus {
+        outline: none !important;
+        border-color: var(--accent1, #0f7a4a) !important;
+        box-shadow: 0 0 0 3px rgba(15, 122, 74, 0.1) !important;
+    }
+    
+    .toolbar-row-2 {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+    }
+    
+    .brgy-dropdown {
+        flex: 1 !important;
+        padding: 6px 10px !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 8px !important;
+        font-size: 0.7rem !important;
+        background: #fff !important;
+        height: 36px !important;
+        cursor: pointer !important;
+    }
+    
+    .brgy-dropdown:focus {
+        outline: none !important;
+        border-color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    /* Buttons - Match dataForm button sizes */
+    .btn {
+        padding: 5px 10px !important;
+        font-size: 0.7rem !important;
+        height: 32px !important;
+        gap: 5px !important;
+        border-radius: 6px !important;
+    }
+    
+    .btn i {
+        font-size: 0.65rem !important;
+    }
+    
+    .btn-export {
+        background: linear-gradient(90deg, var(--accent3, #ff7a00), var(--accent4, #ffa500)) !important;
+    }
+    
+    /* Export Dropdown */
+    .export-dropdown {
+        width: 130px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    .export-dropdown div {
+        padding: 6px 10px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    /* ========================================
+       LEGEND CONTAINER - Match dataForm
+    ======================================== */
+    .legend-container {
+        padding: 8px 12px !important;
+        margin-top: 10px !important;
+        background: #fff !important;
+        border: 1px solid var(--border, #e1e8e5) !important;
+        border-radius: 8px !important;
+    }
+    
+    .legend-box h4 {
+        font-size: 0.7rem !important;
+        margin: 0 0 6px 0 !important;
+        color: var(--muted, #6b6f6b) !important;
+    }
+    
+    .legend-items {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+    
+    .legend-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        font-size: 0.6rem !important;
+    }
+    
+    .legend-swatch {
+        width: 12px !important;
+        height: 12px !important;
+        border-radius: 3px !important;
+    }
+    
+    /* ========================================
+       VIRTUAL TABLE - Match dataForm tables
+    ======================================== */
+    .records-wrapper {
+        border-radius: 8px !important;
+        margin-bottom: 12px !important;
+        overflow-x: auto !important;
+    }
+    
+    #virtualHeader .header-cell {
+        font-size: 0.6rem !important;
+        padding: 8px 4px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        color: #334155 !important;
+    }
+    
+    .virtual-row .virtual-cell {
+        font-size: 0.6rem !important;
+        padding: 6px 3px !important;
+        color: #2d3748 !important;
+    }
+    
+    .virtual-row.member-row .virtual-cell {
+        font-size: 0.55rem !important;
+        padding: 5px 3px !important;
+        color: #4a5568 !important;
+    }
+    
+    .virtual-row:hover {
+        background-color: rgba(15, 122, 74, 0.08) !important;
+    }
+    
+    /* Action buttons in table */
+    .virtual-cell-actions button {
+        padding: 3px 5px !important;
+        font-size: 0.6rem !important;
+    }
+    
+    .virtual-cell-actions button i {
+        font-size: 0.6rem !important;
+    }
+    
+    /* ========================================
+       EDIT PANEL - Match dataForm member panel
+    ======================================== */
+    .member-panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 16px !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7)) !important;
+        border-radius: 12px !important;
+        overflow-x: hidden !important;
+    }
+    
+    .member-panel .panel-header {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        margin-bottom: 16px !important;
+        padding-bottom: 12px !important;
+        border-bottom: 2px solid rgba(15, 122, 74, 0.15) !important;
+    }
+    
+    .member-panel .panel-header h3 {
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        margin: 0 !important;
+    }
+    
+    .member-panel .edit-card {
+        background: var(--card-bg, #fff) !important;
+        border-radius: 12px !important;
+        padding: 16px !important;
+        margin-bottom: 16px !important;
+        box-shadow: var(--shadow, 0 6px 18px rgba(6,30,20,0.06)) !important;
+        border: 1px solid var(--border, #e1e8e5) !important;
+    }
+    
+    .member-panel .form-section {
+        background: var(--light-green, #e9f7f2) !important;
+        padding: 10px 14px !important;
+        border-radius: 8px !important;
+        margin: 0 0 16px 0 !important;
+        border-left: 4px solid var(--accent1, #0f7a4a) !important;
+    }
+    
+    .member-panel .form-section h5 {
+        margin: 0 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+    }
+    
+    .member-panel .form-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+    
+    .member-panel label {
+        display: block !important;
+        font-weight: 700 !important;
+        margin-bottom: 6px !important;
+        color: var(--accent1, #0f7a4a) !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .member-panel input,
+    .member-panel select,
+    .member-panel textarea {
+        width: 100% !important;
+        padding: 8px 10px !important;
+        border-radius: 8px !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        font-size: 0.75rem !important;
+        background: #fff !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Radio buttons in edit panel */
+    .member-panel .radio-line {
+        display: flex !important;
+        gap: 16px !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        padding: 8px 0 !important;
+    }
+    
+    .member-panel .radio-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-weight: 600 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        font-size: 0.7rem !important;
+    }
+    
+    .member-panel .radio-item input[type="radio"] {
+        width: 16px !important;
+        height: 16px !important;
+        accent-color: var(--accent1, #0f7a4a) !important;
+        margin: 0 !important;
+    }
+    
+    /* Checkbox items */
+    .member-panel .checkbox-item1 {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin: 6px 0 !important;
+    }
+    
+    .member-panel .checkbox-item1 input[type="checkbox"] {
+        width: 16px !important;
+        height: 16px !important;
+        accent-color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    /* Government Assistance in Edit Panel */
+    .member-panel .gov-support-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    
+    .member-panel .gov-checkbox-with-date {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+        padding: 6px 0 !important;
+    }
+    
+    .member-panel .gov-checkbox-with-date > label {
+        flex: 0 0 120px !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+    }
+    
+    .member-panel .gov-date-field {
+        display: none !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+    
+    .member-panel .gov-date-field.show {
+        display: flex !important;
+    }
+    
+    .member-panel .gov-date-field label {
+        font-size: 0.6rem !important;
+    }
+    
+    .member-panel .gov-date-field input[type="date"] {
+        width: 110px !important;
+        padding: 5px 6px !important;
+        font-size: 0.6rem !important;
+        border-radius: 6px !important;
+    }
+    
+    /* Domestic Livestock in Edit Panel */
+    .member-panel .domestic-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+    
+    .member-panel .animal-card {
+        padding: 10px !important;
+    }
+    
+    .member-panel .animal-header label {
+        font-size: 0.7rem !important;
+    }
+    
+    .member-panel .qty {
+        width: 60px !important;
+        padding: 5px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    /* Calamity Section in Edit Panel */
+    .member-panel .calamity-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+    
+    .member-panel .calamity-item {
+        padding: 10px !important;
+    }
+    
+    .member-panel .calamity-question {
+        font-size: 0.7rem !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .member-panel .radio-group-inline {
+        display: flex !important;
+        gap: 15px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* File Upload in Edit Panel */
+    .member-panel .file-wrapper {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+    
+    .member-panel .choose-file-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 5px 10px !important;
+        font-size: 0.65rem !important;
+        height: 32px !important;
+        background: white !important;
+        color: var(--accent1, #0f7a4a) !important;
+        border: 1.5px solid var(--accent1, #0f7a4a) !important;
+        border-radius: 6px !important;
+    }
+    
+    .member-panel .filename-display {
+        width: 100% !important;
+        text-align: center !important;
+        font-size: 0.6rem !important;
+    }
+    
+    /* File preview */
+    .member-panel .file-preview-item {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .member-panel .file-thumbnail {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .member-panel .file-thumbnail i {
+        font-size: 22px !important;
+    }
+    
+    .member-panel .choose-file-btn-small {
+        padding: 3px 6px !important;
+        font-size: 0.6rem !important;
+    }
+    
+    /* Member Preview List */
+    #edit_membersPreview {
+        max-height: 120px !important;
+        overflow-y: auto !important;
+    }
+    
+    #edit_membersPreview li {
+        font-size: 0.65rem !important;
+        padding: 8px 10px !important;
+        border-bottom: 1px solid rgba(15, 122, 74, 0.08) !important;
+    }
+    
+    .member-actions button {
+        padding: 3px 5px !important;
+        font-size: 0.6rem !important;
+    }
+    
+    /* Panel Actions */
+    .member-panel .panel-actions {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 10px !important;
+        margin-top: 20px !important;
+        padding-top: 16px !important;
+        border-top: 1px solid var(--border, #e1e8e5) !important;
+    }
+    
+    .member-panel .panel-actions .btn {
+        flex: 1 !important;
+        justify-content: center !important;
+        padding: 6px 12px !important;
+        font-size: 0.7rem !important;
+        height: 34px !important;
+    }
+    
+    /* ========================================
+       MODALS - Match dataForm
+    ======================================== */
+    .modal-overlay {
+        padding: 8px !important;
+    }
+    
+    .modal-content {
+        max-width: 95% !important;
+        width: 95% !important;
+        padding: 14px !important;
+        margin: 8px !important;
+        border-radius: 12px !important;
+    }
+    
+    .modal-header h3 {
+        font-size: 0.9rem !important;
+    }
+    
+    .modal-icon {
+        font-size: 1.8rem !important;
+    }
+    
+    .modal-body p {
+        font-size: 0.75rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    .modal-actions {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    
+    .modal-actions .btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    /* Remove Member Modal */
+    #removeMemberModal .modal-content {
+        max-width: 95% !important;
+    }
+    
+    #memberToRemove {
+        font-size: 0.8rem !important;
+        padding: 8px !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 8px !important;
+    }
+    
+    #currentMembersList {
+        max-height: 100px !important;
+        font-size: 0.7rem !important;
+        background: var(--light-green, #e9f7f2) !important;
+        border-radius: 8px !important;
+        padding: 8px !important;
+    }
+    
+    /* ========================================
+       COORDINATE MODAL
+    ======================================== */
+    .coordinate-modal-content {
+        max-width: 95% !important;
+        padding: 16px !important;
+        border-radius: 12px !important;
+    }
+    
+    .coordinate-modal-content h4 {
+        font-size: 0.9rem !important;
+        color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    .modal-coordinate-input {
+        padding: 8px !important;
+        font-size: 0.8rem !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .modal-coordinate-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-top: 16px !important;
+    }
+    
+    .modal-coordinate-actions .btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    /* ========================================
+       VALIDATION SUMMARY
+    ======================================== */
+    .validation-summary {
+        padding: 10px !important;
+        margin-bottom: 12px !important;
+        border-radius: 8px !important;
+    }
+    
+    .validation-summary h4 {
+        font-size: 0.7rem !important;
+    }
+    
+    .validation-summary li {
+        font-size: 0.65rem !important;
+    }
+}
+
+/* ============================================
+   2. VERY SMALL MOBILE (up to 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    .content-header h2 {
+        font-size: 0.85rem !important;
+    }
+    
+    #disc {
+        font-size: 0.6rem !important;
+        padding: 6px 8px !important;
+    }
+    
+    .stat-item span {
+        font-size: 0.55rem !important;
+    }
+    
+    .stat-item .value {
+        font-size: 0.8rem !important;
+    }
+    
+    .toolbar-row-2 .btn {
+        padding: 4px 6px !important;
+        font-size: 0.65rem !important;
+        height: 30px !important;
+    }
+    
+    .brgy-dropdown {
+        font-size: 0.65rem !important;
+        padding: 5px 6px !important;
+        height: 30px !important;
+    }
+    
+    .search-box {
+        padding: 6px 8px 6px 28px !important;
+        font-size: 0.65rem !important;
+        height: 32px !important;
+    }
+    
+    .member-panel .panel-actions {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    
+    .member-panel .panel-actions .btn {
+        width: 100% !important;
+    }
+    
+    .member-panel .gov-checkbox-with-date > label {
+        flex: 1 !important;
+        white-space: normal !important;
+    }
+    
+    .member-panel .gov-date-field {
+        width: 100% !important;
+        padding-left: 20px !important;
+    }
+    
+    .member-panel .gov-date-field input[type="date"] {
+        width: 100% !important;
+    }
+}
+
+/* ============================================
+   3. TABLET PORTRAIT (769px - 1024px)
+   ============================================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .content-area {
+        padding: 20px !important;
+    }
+    
+    .member-panel {
+        width: 500px !important;
+    }
+}
+
+/* ============================================
+   4. TOUCH IMPROVEMENTS - Match dataForm
+   ============================================ */
+@media (max-width: 768px) {
+    .btn:active,
+    .icon-btn:active,
+    .toggle-btn:active {
+        transform: scale(0.97) !important;
+        transition: transform 0.1s ease !important;
+    }
+    
+    .btn:hover,
+    .icon-btn:hover {
+        transform: none !important;
+    }
+    
+    /* Prevent zoom on iOS for inputs */
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* ============================================
+   5. LOADING OVERLAY - Match dataForm
+   ============================================ */
+@media (max-width: 768px) {
+    .loading-content {
+        padding: 12px 16px !important;
+        font-size: 0.7rem !important;
+        border-radius: 10px !important;
+    }
+    
+    .loading-spinner {
+        width: 24px !important;
+        height: 24px !important;
+        border-width: 2px !important;
+    }
+}
+
+/* ============================================
+   6. SAFE AREA FOR NOTCHED PHONES
+   ============================================ */
+@supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+        .content-area {
+            padding-left: max(12px, env(safe-area-inset-left)) !important;
+            padding-right: max(12px, env(safe-area-inset-right)) !important;
+        }
+        
+        .member-panel {
+            padding-left: max(12px, env(safe-area-inset-left)) !important;
+            padding-right: max(12px, env(safe-area-inset-right)) !important;
+        }
+    }
+}
+
+/* ============================================
+   7. REDUCED MOTION PREFERENCE
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    .btn,
+    .icon-btn,
+    .member-panel {
+        transition: none !important;
+    }
+    
+    .btn:active,
+    .icon-btn:active {
+        transform: none !important;
+    }
+}
+/* ============================================
+   EDIT PANEL FIXES - Government Assistance, Transportation, Additional Info
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* ========================================
+       FIX 1: Government Assistance - Date inline with checkbox
+    ======================================== */
+    .member-panel .gov-checkbox-with-date {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 10px !important;
+        flex-wrap: wrap !important;
+        padding: 8px 0 !important;
+        width: 100% !important;
+        border-bottom: 1px solid var(--border, #e1e8e5) !important;
+    }
+    
+    .member-panel .gov-checkbox-with-date input[type="checkbox"] {
+        width: 18px !important;
+        height: 18px !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+        accent-color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    .member-panel .gov-checkbox-with-date label {
+        display: inline-block !important;
+        margin: 0 !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        min-width: 100px !important;
+    }
+    
+    .member-panel .gov-date-field {
+        display: none !important;
+        align-items: center !important;
+        gap: 6px !important;
+        margin-left: 28px !important;
+    }
+    
+    .member-panel .gov-date-field.show {
+        display: flex !important;
+    }
+    
+    .member-panel .gov-date-field label {
+        font-size: 0.65rem !important;
+        color: var(--accent1, #0f7a4a) !important;
+        margin: 0 !important;
+    }
+    
+    .member-panel .gov-date-field input[type="date"] {
+        width: 110px !important;
+        padding: 5px 8px !important;
+        font-size: 0.65rem !important;
+        border-radius: 6px !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        background: #fff !important;
+    }
+    
+    /* ========================================
+       FIX 2: Transportation & Evacuation - Proper checkbox alignment
+    ======================================== */
+    .member-panel .displacement-checkbox-container,
+    .member-panel .member-displacement-checkbox-container {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px 12px !important;
+        margin: 8px 0 0 0 !important;
+    }
+    
+    .member-panel .displacement-checkbox-item,
+    .member-panel .member-displacement-checkbox-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 6px 0 !important;
+    }
+    
+    .member-panel .displacement-checkbox-item input[type="checkbox"],
+    .member-panel .member-displacement-checkbox-item input[type="checkbox"] {
+        width: 16px !important;
+        height: 16px !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+        accent-color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    .member-panel .displacement-checkbox-item label,
+    .member-panel .member-displacement-checkbox-item label {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+    }
+    
+    /* Other Reason field */
+    .member-panel #edit_displacementOtherField,
+    .member-panel #memberDisplacementOtherField {
+        margin-top: 8px !important;
+        margin-bottom: 8px !important;
+        padding-left: 24px !important;
+    }
+    
+    .member-panel #edit_displacement_other,
+    .member-panel #member_displacement_other {
+        width: 100% !important;
+        padding: 8px 10px !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 8px !important;
+        font-size: 0.7rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Assembly Area Options */
+    .member-panel #edit_assemblyAreaOptions,
+    .member-panel #memberAssemblyAreaOptions {
+        margin-top: 12px !important;
+        padding: 8px 0 !important;
+    }
+    
+    .member-panel #edit_assemblyAreaOptions label,
+    .member-panel #memberAssemblyAreaOptions label {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        display: block !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .member-panel #edit_assemblyAreaOptions div,
+    .member-panel #memberAssemblyAreaOptions div {
+        display: flex !important;
+        gap: 20px !important;
+        flex-wrap: wrap !important;
+    }
+    
+    /* Inside/Outside Assembly Fields */
+    .member-panel #edit_insideAssemblyFields,
+    .member-panel #edit_outsideAssemblyFields,
+    .member-panel #memberInsideAssemblyFields,
+    .member-panel #memberOutsideAssemblyFields {
+        margin-top: 12px !important;
+        padding: 8px 0 !important;
+    }
+    
+    .member-panel #edit_insideAssemblyFields .form-grid,
+    .member-panel #edit_outsideAssemblyFields .form-grid,
+    .member-panel #memberInsideAssemblyFields .form-grid,
+    .member-panel #memberOutsideAssemblyFields .form-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    
+    .member-panel #edit_insideAssemblyFields input,
+    .member-panel #edit_outsideAssemblyFields input,
+    .member-panel #memberInsideAssemblyFields input,
+    .member-panel #memberOutsideAssemblyFields input,
+    .member-panel #edit_insideAssemblyFields select,
+    .member-panel #edit_outsideAssemblyFields select,
+    .member-panel #memberInsideAssemblyFields select,
+    .member-panel #memberOutsideAssemblyFields select {
+        width: 100% !important;
+        padding: 7px 8px !important;
+        font-size: 0.7rem !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 8px !important;
+    }
+    
+    /* ========================================
+       FIX 3: Additional Information & PWD Section
+    ======================================== */
+    .member-panel .additional-info-checkbox-container,
+    .member-panel .member-additional-info-checkbox-container {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px 12px !important;
+        margin-top: 8px !important;
+    }
+    
+    .member-panel .additional-info-checkbox-item,
+    .member-panel .member-additional-info-checkbox-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 4px 0 !important;
+    }
+    
+    .member-panel .additional-info-checkbox-item input[type="checkbox"],
+    .member-panel .member-additional-info-checkbox-item input[type="checkbox"] {
+        width: 16px !important;
+        height: 16px !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+        accent-color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    .member-panel .additional-info-checkbox-item label,
+    .member-panel .member-additional-info-checkbox-item label {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        margin: 0 !important;
+    }
+    
+    /* PWD Radio Section */
+    .member-panel .radio-line {
+        display: flex !important;
+        gap: 16px !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        padding: 8px 0 !important;
+    }
+    
+    .member-panel .radio-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    .member-panel .radio-item input[type="radio"] {
+        width: 16px !important;
+        height: 16px !important;
+        accent-color: var(--accent1, #0f7a4a) !important;
+        margin: 0 !important;
+    }
+    
+    /* Disability Type Dropdown */
+    .member-panel #edit_disabilityTypeField,
+    .member-panel #memberDisabilityTypeField {
+        margin-top: 8px !important;
+    }
+    
+    .member-panel #edit_disabilityType,
+    .member-panel #memberDisabilityType {
+        width: 100% !important;
+        padding: 8px 10px !important;
+        font-size: 0.7rem !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 8px !important;
+        background: #fff !important;
+    }
+}
+
+/* ============================================
+   EXTRA SMALL SCREENS (up to 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    .member-panel .displacement-checkbox-container,
+    .member-panel .member-displacement-checkbox-container {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .member-panel .additional-info-checkbox-container,
+    .member-panel .member-additional-info-checkbox-container {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .member-panel .gov-checkbox-with-date {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+    }
+    
+    .member-panel .gov-checkbox-with-date label {
+        min-width: auto !important;
+    }
+    
+    .member-panel .gov-date-field {
+        margin-left: 20px !important;
+    }
+    
+    .member-panel .gov-date-field input[type="date"] {
+        width: 100% !important;
+    }
+}
+/* ============================================
+   EDIT PANEL FIXES - FORCE REMOVE BORDERS
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* ========================================
+       FORCE REMOVE ALL BORDERS FROM GOVERNMENT ASSISTANCE
+    ======================================== */
+    .member-panel .gov-checkbox-with-date,
+    .member-panel .gov-support-grid .gov-checkbox-with-date,
+    #memberPanel .gov-checkbox-with-date,
+    #editPanel .gov-checkbox-with-date {
+        border-bottom: none !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* ========================================
+       FIX 1: Government Assistance - Date inline, smaller
+    ======================================== */
+    .member-panel .gov-support-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+        width: 100% !important;
+    }
+    
+    .member-panel .gov-checkbox-with-date {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+        padding: 6px 0 !important;
+        width: 100% !important;
+        border-bottom: none !important;
+        border: none !important;
+    }
+    
+    /* Checkbox */
+    .member-panel .gov-checkbox-with-date input[type="checkbox"] {
+        width: 16px !important;
+        height: 16px !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+        accent-color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    /* Program label */
+    .member-panel .gov-checkbox-with-date > label {
+        display: inline-block !important;
+        margin: 0 !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        min-width: 90px !important;
+    }
+    
+    /* Date field - SMALLER */
+    .member-panel .gov-date-field {
+        display: none !important;
+        align-items: center !important;
+        gap: 3px !important;
+        margin-left: 4px !important;
+    }
+    
+    .member-panel .gov-date-field.show {
+        display: flex !important;
+    }
+    
+    .member-panel .gov-date-field label {
+        font-size: 0.55rem !important;
+        color: var(--accent1, #0f7a4a) !important;
+        margin: 0 !important;
+        display: none !important;
+    }
+    
+    .member-panel .gov-date-field input[type="date"] {
+        width: 85px !important;
+        padding: 3px 5px !important;
+        font-size: 0.55rem !important;
+        border-radius: 4px !important;
+        border: 1px solid var(--border, #e1e8e5) !important;
+        background: #fff !important;
+        min-height: 26px !important;
+    }
+    
+    /* ========================================
+       FIX 2: Transportation - "Other Reason" checkbox alignment
+    ======================================== */
+    .member-panel .displacement-checkbox-container,
+    .member-panel .member-displacement-checkbox-container {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px 12px !important;
+        margin: 8px 0 0 0 !important;
+    }
+    
+    .member-panel .displacement-checkbox-item,
+    .member-panel .member-displacement-checkbox-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 4px 0 !important;
+    }
+    
+    .member-panel .displacement-checkbox-item input[type="checkbox"],
+    .member-panel .member-displacement-checkbox-item input[type="checkbox"] {
+        width: 16px !important;
+        height: 16px !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+        accent-color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    .member-panel .displacement-checkbox-item label,
+    .member-panel .member-displacement-checkbox-item label {
+        font-size: 0.7rem !important;
+        font-weight: 500 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        margin: 0 !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* "Other Reason" checkbox */
+    .member-panel .displacement-checkbox-item:has(#edit_displacement_other_check),
+    .member-panel .member-displacement-checkbox-item:has(#member_displacement_other_check) {
+        grid-column: 1 / -1 !important;
+        margin-top: 4px !important;
+    }
+    
+    #edit_displacement_other_check,
+    #member_displacement_other_check {
+        width: 16px !important;
+        height: 16px !important;
+        margin: 0 !important;
+    }
+    
+    .member-panel #edit_displacementOtherField,
+    .member-panel #memberDisplacementOtherField {
+        margin-top: 4px !important;
+        margin-bottom: 8px !important;
+        padding-left: 24px !important;
+        width: 100% !important;
+    }
+    
+    .member-panel #edit_displacement_other,
+    .member-panel #member_displacement_other {
+        width: 100% !important;
+        padding: 6px 8px !important;
+        font-size: 0.7rem !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 6px !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* ========================================
+       FIX 3: Assembly Area section
+    ======================================== */
+    .member-panel #edit_assemblyAreaOptions,
+    .member-panel #memberAssemblyAreaOptions {
+        margin-top: 12px !important;
+        padding: 4px 0 !important;
+    }
+    
+    .member-panel #edit_assemblyAreaOptions > label,
+    .member-panel #memberAssemblyAreaOptions > label {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        display: block !important;
+        margin-bottom: 6px !important;
+        color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    .member-panel #edit_assemblyAreaOptions > div,
+    .member-panel #memberAssemblyAreaOptions > div {
+        display: flex !important;
+        gap: 20px !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .member-panel #edit_insideAssemblyFields,
+    .member-panel #edit_outsideAssemblyFields,
+    .member-panel #memberInsideAssemblyFields,
+    .member-panel #memberOutsideAssemblyFields {
+        margin-top: 12px !important;
+        padding: 8px 0 !important;
+    }
+    
+    .member-panel #edit_insideAssemblyFields .form-grid,
+    .member-panel #edit_outsideAssemblyFields .form-grid,
+    .member-panel #memberInsideAssemblyFields .form-grid,
+    .member-panel #memberOutsideAssemblyFields .form-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    
+    .member-panel #edit_insideAssemblyFields input,
+    .member-panel #edit_outsideAssemblyFields input,
+    .member-panel #memberInsideAssemblyFields input,
+    .member-panel #memberOutsideAssemblyFields input,
+    .member-panel #edit_insideAssemblyFields select,
+    .member-panel #edit_outsideAssemblyFields select,
+    .member-panel #memberInsideAssemblyFields select,
+    .member-panel #memberOutsideAssemblyFields select {
+        width: 100% !important;
+        padding: 6px 8px !important;
+        font-size: 0.7rem !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 6px !important;
+    }
+    
+    /* ========================================
+       FIX 4: Actions Column Title - Dark grey
+    ======================================== */
+    #virtualHeader .header-cell:last-child {
+        color: #334155 !important;
+    }
+}
+
+/* ============================================
+   DESKTOP - Actions Column Title
+   ============================================ */
+
+/* ============================================
+   EXTRA SMALL SCREENS (up to 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    .member-panel .displacement-checkbox-container,
+    .member-panel .member-displacement-checkbox-container {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .member-panel .gov-checkbox-with-date {
+        flex-wrap: wrap !important;
+    }
+    
+    .member-panel .gov-date-field {
+        margin-left: 24px !important;
+        width: 100% !important;
+    }
+    
+    .member-panel .gov-date-field input[type="date"] {
+        width: 100% !important;
+    }
+}
+/* ============================================
+   FIX: Transportation - Force Other Reason Alignment
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Displacement grid - 2 columns */
+    .member-panel .displacement-checkbox-container,
+    .member-panel .member-displacement-checkbox-container {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px 16px !important;
+        margin: 8px 0 0 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* All checkbox items */
+    .member-panel .displacement-checkbox-item,
+    .member-panel .member-displacement-checkbox-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 6px 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* All checkboxes */
+    .member-panel .displacement-checkbox-item input[type="checkbox"],
+    .member-panel .member-displacement-checkbox-item input[type="checkbox"] {
+        width: 16px !important;
+        height: 16px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+        accent-color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    /* All labels */
+    .member-panel .displacement-checkbox-item label,
+    .member-panel .member-displacement-checkbox-item label {
+        font-size: 0.7rem !important;
+        font-weight: 500 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        cursor: pointer !important;
+    }
+    
+    /* ========================================
+       FORCE FIX: Other Reason Container
+    ======================================== */
+    /* Target the parent container of Other Reason */
+    .member-panel .displacement-checkbox-item:has(#edit_displacement_other_check),
+    .member-panel .member-displacement-checkbox-item:has(#member_displacement_other_check),
+    .member-panel .displacement-checkbox-item:has(input[id$="displacement_other_check"]),
+    .member-panel .member-displacement-checkbox-item:has(input[id$="displacement_other_check"]) {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+        margin: 8px 0 0 0 !important;
+        padding: 6px 0 !important;
+    }
+    
+    /* Force Other Reason checkbox to stay inline with label */
+    #edit_displacement_other_check,
+    #member_displacement_other_check {
+        width: 16px !important;
+        height: 16px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        position: relative !important;
+    }
+    
+    /* Other Reason label */
+    label[for="edit_displacement_other_check"],
+    label[for="member_displacement_other_check"] {
+        display: inline !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 0.7rem !important;
+        font-weight: 500 !important;
+        color: var(--accent1, #0f7a4a) !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Other Reason text field container */
+    .member-panel #edit_displacementOtherField,
+    .member-panel #memberDisplacementOtherField {
+        display: block !important;
+        width: 100% !important;
+        margin-top: 4px !important;
+        margin-bottom: 12px !important;
+        padding-left: 26px !important;
+    }
+    
+    /* Other Reason text input */
+    .member-panel #edit_displacement_other,
+    .member-panel #member_displacement_other {
+        width: 100% !important;
+        padding: 8px 10px !important;
+        font-size: 0.7rem !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 6px !important;
+        box-sizing: border-box !important;
+        margin-top: 0 !important;
+    }
+}
+
+/* ============================================
+   DESKTOP/ALL SCREENS - Force inline for Other Reason
+   ============================================ */
+/* Make sure Other Reason checkbox and label are on same line on all devices */
+#edit_displacement_other_check,
+#member_displacement_other_check {
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+label[for="edit_displacement_other_check"],
+label[for="member_displacement_other_check"] {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    margin-left: 5px !important;
+}
+
+/* ============================================
+   SMALL SCREENS (up to 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    .member-panel .displacement-checkbox-container,
+    .member-panel .member-displacement-checkbox-container {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .member-panel #edit_displacementOtherField,
+    .member-panel #memberDisplacementOtherField {
+        padding-left: 20px !important;
+    }
+}
+/* ============================================
+   FIX: Other Reason Textbox & Assembly Area Spacing
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* ========================================
+       FIX 1: Other Reason - Align textbox with Pickup Location
+    ======================================== */
+    
+    /* Other Reason text field container */
+    .member-panel #edit_displacementOtherField,
+    .member-panel #memberDisplacementOtherField {
+        display: block !important;
+        width: 100% !important;
+        margin-top: 4px !important;
+        margin-bottom: 12px !important;
+        padding-left: 0 !important; /* Remove left padding to align with other fields */
+    }
+    
+    /* Other Reason text input - same as Pickup Location */
+    .member-panel #edit_displacement_other,
+    .member-panel #member_displacement_other {
+        width: 100% !important;
+        padding: 8px 10px !important;
+        font-size: 0.75rem !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 8px !important;
+        box-sizing: border-box !important;
+        background: #fff !important;
+        margin-top: 4px !important;
+    }
+    
+    .member-panel #edit_displacement_other:focus,
+    .member-panel #member_displacement_other:focus {
+        outline: none !important;
+        border-color: var(--accent1, #0f7a4a) !important;
+        box-shadow: 0 0 0 3px rgba(15, 122, 74, 0.1) !important;
+    }
+    
+    /* ========================================
+       FIX 2: Assembly Area - Reduce spacing
+    ======================================== */
+    
+    /* Assembly Area Options container */
+    .member-panel #edit_assemblyAreaOptions,
+    .member-panel #memberAssemblyAreaOptions {
+        margin-top: 8px !important;
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Assembly Area label */
+    .member-panel #edit_assemblyAreaOptions > label,
+    .member-panel #memberAssemblyAreaOptions > label {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        display: block !important;
+        margin-bottom: 6px !important;
+        color: var(--accent1, #0f7a4a) !important;
+    }
+    
+    /* Assembly Area radio/checkbox container */
+    .member-panel #edit_assemblyAreaOptions > div,
+    .member-panel #memberAssemblyAreaOptions > div {
+        display: flex !important;
+        gap: 20px !important;
+        flex-wrap: wrap !important;
+        margin-bottom: 8px !important;
+    }
+    
+    /* Inside/Outside Assembly checkboxes */
+    .member-panel #edit_assemblyAreaOptions .displacement-checkbox-item,
+    .member-panel #memberAssemblyAreaOptions .member-displacement-checkbox-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* ========================================
+       FIX 3: Inside/Outside Assembly Fields - Reduce spacing
+    ======================================== */
+    
+    /* Inside Assembly Fields container */
+    .member-panel #edit_insideAssemblyFields,
+    .member-panel #memberInsideAssemblyFields,
+    .member-panel #edit_outsideAssemblyFields,
+    .member-panel #memberOutsideAssemblyFields {
+        margin-top: 8px !important;
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Form grid inside assembly fields */
+    .member-panel #edit_insideAssemblyFields .form-grid,
+    .member-panel #memberInsideAssemblyFields .form-grid,
+    .member-panel #edit_outsideAssemblyFields .form-grid,
+    .member-panel #memberOutsideAssemblyFields .form-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        margin-top: 0 !important;
+    }
+    
+    /* Labels inside assembly fields */
+    .member-panel #edit_insideAssemblyFields label,
+    .member-panel #memberInsideAssemblyFields label,
+    .member-panel #edit_outsideAssemblyFields label,
+    .member-panel #memberOutsideAssemblyFields label {
+        font-size: 0.65rem !important;
+        font-weight: 600 !important;
+        margin-bottom: 4px !important;
+        color: var(--accent1, #0f7a4a) !important;
+        display: block !important;
+    }
+    
+    /* Inputs inside assembly fields - same as Other Reason */
+    .member-panel #edit_insideAssemblyFields input,
+    .member-panel #memberInsideAssemblyFields input,
+    .member-panel #edit_outsideAssemblyFields input,
+    .member-panel #memberOutsideAssemblyFields input,
+    .member-panel #edit_insideAssemblyFields select,
+    .member-panel #memberInsideAssemblyFields select,
+    .member-panel #edit_outsideAssemblyFields select,
+    .member-panel #memberOutsideAssemblyFields select {
+        width: 100% !important;
+        padding: 8px 10px !important;
+        font-size: 0.75rem !important;
+        border: 2px solid var(--border, #e1e8e5) !important;
+        border-radius: 8px !important;
+        background: #fff !important;
+        margin-bottom: 4px !important;
+    }
+    
+    /* ========================================
+       FIX 4: Remove extra spacing from displacement grid
+    ======================================== */
+    .member-panel .displacement-checkbox-container,
+    .member-panel .member-displacement-checkbox-container {
+        margin-bottom: 4px !important;
+    }
+}
+
+/* ============================================
+   EXTRA SMALL SCREENS (up to 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    .member-panel .displacement-checkbox-container,
+    .member-panel .member-displacement-checkbox-container {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .member-panel #edit_assemblyAreaOptions > div,
+    .member-panel #memberAssemblyAreaOptions > div {
+        gap: 15px !important;
+    }
+}
+/* ============================================
+   FIX: Reduce Space Between Fields
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* ========================================
+       FIX 1: Reduce space after Other Reason textbox
+    ======================================== */
+    .member-panel #edit_displacementOtherField,
+    .member-panel #memberDisplacementOtherField {
+        margin-bottom: 4px !important; /* Reduced from 12px to 4px */
+        padding-left: 0 !important;
+    }
+    
+    .member-panel #edit_displacement_other,
+    .member-panel #member_displacement_other {
+        margin-bottom: 0 !important;
+    }
+    
+    /* ========================================
+       FIX 2: Reduce space before Assembly Area
+    ======================================== */
+    .member-panel #edit_assemblyAreaOptions,
+    .member-panel #memberAssemblyAreaOptions {
+        margin-top: 4px !important; /* Reduced from 8px to 4px */
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* ========================================
+       FIX 3: Reduce space after Assembly Area checkboxes
+    ======================================== */
+    .member-panel #edit_assemblyAreaOptions > div,
+    .member-panel #memberAssemblyAreaOptions > div {
+        margin-bottom: 4px !important; /* Reduced from 8px to 4px */
+        gap: 16px !important;
+    }
+    
+    /* ========================================
+       FIX 4: Reduce space before Inside/Outside Assembly Fields
+    ======================================== */
+    .member-panel #edit_insideAssemblyFields,
+    .member-panel #memberInsideAssemblyFields,
+    .member-panel #edit_outsideAssemblyFields,
+    .member-panel #memberOutsideAssemblyFields {
+        margin-top: 4px !important; /* Reduced from 8px to 4px */
+        padding: 0 !important;
+    }
+    
+    /* ========================================
+       FIX 5: Reduce gap inside form-grid
+    ======================================== */
+    .member-panel #edit_insideAssemblyFields .form-grid,
+    .member-panel #memberInsideAssemblyFields .form-grid,
+    .member-panel #edit_outsideAssemblyFields .form-grid,
+    .member-panel #memberOutsideAssemblyFields .form-grid {
+        gap: 6px !important; /* Reduced from 10px to 6px */
+        margin-top: 0 !important;
+    }
+    
+    /* ========================================
+       FIX 6: Reduce label bottom margin
+    ======================================== */
+    .member-panel #edit_insideAssemblyFields label,
+    .member-panel #memberInsideAssemblyFields label,
+    .member-panel #edit_outsideAssemblyFields label,
+    .member-panel #memberOutsideAssemblyFields label {
+        margin-bottom: 2px !important; /* Reduced from 4px to 2px */
+    }
+    
+    /* ========================================
+       FIX 7: Reduce input margin bottom
+    ======================================== */
+    .member-panel #edit_insideAssemblyFields input,
+    .member-panel #memberInsideAssemblyFields input,
+    .member-panel #edit_outsideAssemblyFields input,
+    .member-panel #memberOutsideAssemblyFields input,
+    .member-panel #edit_insideAssemblyFields select,
+    .member-panel #memberInsideAssemblyFields select,
+    .member-panel #edit_outsideAssemblyFields select,
+    .member-panel #memberOutsideAssemblyFields select {
+        margin-bottom: 2px !important; /* Reduced from 4px to 2px */
+        padding: 6px 8px !important;
+    }
+    
+    /* ========================================
+       FIX 8: Reduce small muted text margin
+    ======================================== */
+    .member-panel .small-muted {
+        margin-top: 2px !important;
+        margin-bottom: 2px !important;
+        font-size: 0.6rem !important;
+    }
+}
+
+/* ============================================
+   EXTRA SMALL SCREENS
+   ============================================ */
+@media (max-width: 480px) {
+    .member-panel #edit_assemblyAreaOptions > div,
+    .member-panel #memberAssemblyAreaOptions > div {
+        gap: 12px !important;
+    }
+}

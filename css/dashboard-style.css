@@ -1,0 +1,453 @@
+/* ============================================
+   DASHBOARD PAGE - MOBILE STYLES
+   Aligned with user-style.css scale & patterns
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Content Area */
+    .content-area {
+        padding: 12px !important;
+        min-height: calc(100vh - 140px) !important;
+        border-radius: 10px !important;
+    }
+
+    /* Content Header */
+    .content-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .content-header h2 {
+        font-size: 0.95rem !important;
+        margin: 0 !important;
+    }
+
+    /* Refresh Button */
+    #manual-refresh-btn {
+        padding: 6px 14px !important;
+        font-size: 0.7rem !important;
+        gap: 6px !important;
+        align-self: flex-start !important;
+    }
+
+    #manual-refresh-btn i {
+        font-size: 0.75rem !important;
+    }
+
+    /* Description */
+    #disc {
+        font-size: 0.65rem !important;
+        padding: 8px 10px !important;
+        margin-bottom: 12px !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Dashboard Cards Row */
+    .dashboard-cards {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+        margin: 8px 0 12px 0 !important;
+    }
+
+    .card {
+        padding: 10px !important;
+    }
+
+    .card h3 {
+        font-size: 0.7rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    .card-value {
+        font-size: 1rem !important;
+        margin: 4px 0 !important;
+    }
+
+    .mini {
+        font-size: 0.6rem !important;
+    }
+
+    /* Section Titles */
+    .section-title,
+    .breakdown-section1 h3,
+    .breakdown-section h3 {
+        font-size: 0.8rem !important;
+        margin: 15px 0 10px 0 !important;
+        padding-bottom: 6px !important;
+        gap: 6px !important;
+    }
+
+    .section-title i,
+    .breakdown-section1 h3 i,
+    .breakdown-section h3 i {
+        font-size: 0.8rem !important;
+    }
+
+    /* Category Grid (2 columns for mobile) */
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .category-card {
+        padding: 8px !important;
+        min-height: 55px !important;
+    }
+
+    .category-label {
+        font-size: 0.65rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    .category-value {
+        font-size: 1rem !important;
+    }
+
+    /* Status Grid (Post-Calamity) */
+    .status-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+
+    .status-card {
+        padding: 8px !important;
+    }
+
+    .status-label {
+        font-size: 0.65rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    .status-yes,
+    .status-no {
+        font-size: 1rem !important;
+    }
+
+    /* Job Category Groups */
+    .job-category-group {
+        margin-bottom: 10px !important;
+    }
+
+    .job-category-title {
+        font-size: 0.7rem !important;
+        margin: 8px 0 6px 0 !important;
+        padding-left: 6px !important;
+    }
+
+    /* Population Overview Card */
+    .population-overview-card {
+        padding: 12px !important;
+        margin: 12px 0 !important;
+    }
+
+    /* Chart Container */
+    .chart-container {
+        padding: 12px !important;
+        margin: 10px 0 !important;
+    }
+
+    .chart-container h3 {
+        font-size: 0.75rem !important;
+        margin-bottom: 10px !important;
+        gap: 6px !important;
+    }
+
+    .chart-container h3 i {
+        font-size: 0.75rem !important;
+    }
+
+    /* Breakdown Tables */
+    .breakdown-table-container {
+        padding: 10px !important;
+        margin-bottom: 16px !important;
+        border-radius: 8px !important;
+    }
+
+    .breakdown-table-container h4 {
+        font-size: 0.7rem !important;
+        margin-bottom: 8px !important;
+        padding-bottom: 6px !important;
+        gap: 6px !important;
+    }
+
+    .breakdown-table-container h4 i {
+        font-size: 0.7rem !important;
+    }
+
+    .breakdown-table {
+        min-width: 650px !important;
+        font-size: 0.65rem !important;
+    }
+
+    .breakdown-table th {
+        padding: 8px 6px !important;
+        font-size: 0.6rem !important;
+    }
+
+    .breakdown-table td {
+        padding: 6px 4px !important;
+        font-size: 0.6rem !important;
+    }
+
+    /* Table Sticky First Column */
+    .breakdown-table th:first-child,
+    .breakdown-table td:first-child {
+        font-size: 0.6rem !important;
+        font-weight: 600 !important;
+    }
+
+    /* Loading Overlay */
+    .loading-content {
+        padding: 12px 16px !important;
+        gap: 8px !important;
+    }
+
+    .loading-spinner {
+        width: 24px !important;
+        height: 24px !important;
+    }
+
+    .loading-content div:last-child {
+        font-size: 0.7rem !important;
+    }
+}
+
+/* ============================================
+   VERY SMALL MOBILE (up to 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    .content-area {
+        padding: 10px !important;
+    }
+
+    .content-header h2 {
+        font-size: 0.85rem !important;
+    }
+
+    #disc {
+        font-size: 0.6rem !important;
+        padding: 6px 8px !important;
+    }
+
+    /* Single column for category grid on very small */
+    .category-grid {
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
+    }
+
+    .category-card {
+        padding: 6px !important;
+        min-height: 45px !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    .category-label {
+        font-size: 0.6rem !important;
+        margin-bottom: 0 !important;
+    }
+
+    .category-value {
+        font-size: 0.9rem !important;
+    }
+
+    /* Status grid single column */
+    .status-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .status-card {
+        padding: 6px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    .status-label {
+        font-size: 0.6rem !important;
+        margin-bottom: 0 !important;
+    }
+
+    .status-yes,
+    .status-no {
+        font-size: 0.9rem !important;
+    }
+
+    /* Dashboard cards */
+    .dashboard-cards {
+        gap: 6px !important;
+    }
+
+    .card {
+        padding: 8px !important;
+    }
+
+    /* Breakdown tables */
+    .breakdown-table {
+        min-width: 550px !important;
+        font-size: 0.6rem !important;
+    }
+
+    .breakdown-table th,
+    .breakdown-table td {
+        padding: 5px 3px !important;
+        font-size: 0.55rem !important;
+    }
+
+    .breakdown-table th:first-child,
+    .breakdown-table td:first-child {
+        font-size: 0.55rem !important;
+    }
+
+    /* Section titles */
+    .section-title,
+    .breakdown-section1 h3,
+    .breakdown-section h3 {
+        font-size: 0.75rem !important;
+        margin: 12px 0 8px 0 !important;
+    }
+
+    /* Chart */
+    .chart-container {
+        padding: 8px !important;
+    }
+
+    canvas#barangayChart {
+        max-height: 200px !important;
+    }
+}
+
+/* ============================================
+   TABLET PORTRAIT (769px - 1024px)
+   ============================================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .dashboard-cards {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .category-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .status-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .breakdown-table {
+        min-width: 700px !important;
+    }
+
+    .breakdown-table th,
+    .breakdown-table td {
+        padding: 8px 6px !important;
+        font-size: 0.7rem !important;
+    }
+}
+
+/* ============================================
+   TOUCH IMPROVEMENTS
+   ============================================ */
+@media (max-width: 768px) {
+    /* Better touch targets */
+    .card:active,
+    .category-card:active,
+    .status-card:active,
+    #manual-refresh-btn:active {
+        transform: scale(0.98) !important;
+        transition: transform 0.1s ease !important;
+    }
+
+    .card:hover,
+    .category-card:hover,
+    .status-card:hover,
+    #manual-refresh-btn:hover {
+        transform: none !important;
+    }
+
+    /* Tap highlight removal */
+    .card,
+    .category-card,
+    .status-card,
+    .btn,
+    .toggle-btn,
+    .icon-btn,
+    .tab-btn,
+    .tab-btn-small,
+    #manual-refresh-btn {
+        cursor: pointer !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    /* Prevent zoom on iOS for inputs (if any) */
+    input,
+    select {
+        font-size: 16px !important;
+    }
+
+    /* Better scroll for tables */
+    .breakdown-table-container {
+        -webkit-overflow-scrolling: touch !important;
+    }
+}
+
+/* ============================================
+   SAFE AREA FOR NOTCHED PHONES
+   ============================================ */
+@supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+        .content-area {
+            padding-left: max(12px, env(safe-area-inset-left)) !important;
+            padding-right: max(12px, env(safe-area-inset-right)) !important;
+            padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        }
+    }
+}
+
+/* ============================================
+   DARK MODE ADAPTATION (optional)
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+    @media (max-width: 768px) {
+        .category-card,
+        .status-card,
+        .card {
+            background: rgba(30, 30, 35, 0.9) !important;
+        }
+
+        .category-label,
+        .status-label,
+        .card h3 {
+            color: #9ca3af !important;
+        }
+
+        .category-value,
+        .status-yes,
+        .status-no,
+        .card-value {
+            color: #34b78f !important;
+        }
+
+        .breakdown-table-container {
+            background: rgba(30, 30, 35, 0.8) !important;
+        }
+
+        .breakdown-table th {
+            background: rgba(52, 183, 143, 0.15) !important;
+            color: #34b78f !important;
+        }
+
+        .breakdown-table td {
+            color: #d1d5db !important;
+        }
+
+        .breakdown-table tbody tr:hover {
+            background: rgba(52, 183, 143, 0.08) !important;
+        }
+    }
+}

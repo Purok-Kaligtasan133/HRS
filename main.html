@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Home — Purok Kaligtasan 133</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/header-styles.css">
+<link rel="stylesheet" href="css/uniform-styles.css">
+<link rel="stylesheet" href="css/main-style.css">
+<style>
+   :root{
+    --bg:#f6f8f7;
+    --card-bg:#fff;
+    --muted:#6b6f6b;
+    --accent1:#0f7a4a;
+    --accent2:#34b78f;
+    --accent3: #ff7a00;
+    --accent4: #ffa500;
+    --light-green: #e9f7f2;
+    --border: #e1e8e5;
+    --shadow: 0 6px 18px rgba(6,30,20,0.06);
+    --shadow-dark: 0 6px 20px rgba(5,40,25,0.12);
+    --radius:12px;
+    --radius-sm:8px;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+   }
+   
+   /* Fixed Background - Doesn't scroll */
+   body {
+    background-color: var(--bg);
+    margin: 0;
+    min-height: 100vh;
+    position: relative;
+   }
+   
+   /* Fixed background pattern that stays in place */
+   .bg-pattern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+   }
+   
+   .bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(15, 122, 74, 0.05);
+   }
+   
+   .circle-1 {
+    width: 300px;
+    height: 300px;
+    top: -150px;
+    right: -150px;
+   }
+   
+   .circle-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -100px;
+    left: -100px;
+    background: rgba(255, 122, 0, 0.05);
+   }
+   
+   .circle-3 {
+    width: 150px;
+    height: 150px;
+    top: 50%;
+    left: 10%;
+    background: rgba(52, 183, 143, 0.05);
+   }
+   
+   .page-container{
+    max-width:1200px;
+    margin:20px auto;
+    padding:12px;
+    display:grid;
+    grid-template-columns:260px 1fr;
+    gap:18px;
+    align-items:start;
+    transition: grid-template-columns 0.3s ease;
+    position: relative;
+   }
+
+   .page-container.collapsed {
+    grid-template-columns: 60px 1fr;
+   }
+
+   /* Topbar - MATCH DASHBOARD */
+   .topbar{
+    grid-column:1/-1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 14px;
+    border-radius:var(--radius);
+    background:linear-gradient(90deg, var(--accent1), var(--accent2));
+    color:#fff;
+    box-shadow:var(--shadow-dark);
+   }
+
+   .brand{
+    display:flex;
+    gap:12px;
+    align-items:center;
+   }
+
+   .brand .logo{
+    width:60px;
+    height:60px;
+    border-radius:var(--radius-sm);
+    object-fit:contain;
+   }
+
+   .brand-text h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+   }
+
+   .brand-text p {
+    font-size:12px;
+    opacity:0.95;
+    margin: 4px 0 0 0;
+   }
+
+   .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+   }
+
+   #userName {
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+   }
+
+   #logoutBtn {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+   }
+
+   #logoutBtn:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-1px);
+   }
+
+   /* Sidebar - MATCH DASHBOARD */
+   .sidebar{
+    background: linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0.25));
+    border-radius:var(--radius);
+    padding:12px;
+    height:calc(100vh - 120px);
+    position:sticky;
+    top:72px;
+    overflow:auto;
+   }
+
+   .sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+   }
+
+   .sidebar-toggle {
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 12px;
+   }
+
+   .sidebar ul{
+    list-style:none;
+    padding:0;
+    margin:0;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    flex: 1;
+   }
+
+   .sidebar li a{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    text-decoration: none;
+    color: var(--muted);
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+   }
+
+   .sidebar li a:hover{
+    background: var(--light-green);
+    color: var(--accent1);
+   }
+
+   .sidebar li a.active{
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    color: #fff;
+    box-shadow: 0 4px 8px rgba(15,122,74,0.2);
+   }
+
+   .sidebar li a .menu-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+   }
+   
+   .sidebar li a .menu-icon i {
+    width: 20px;
+    text-align: center;
+   }
+
+   .sidebar li a .menu-text {
+    transition: opacity 0.3s ease;
+   }
+
+   .page-container.collapsed .sidebar li a .menu-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+   }
+
+   /* Content Area - MATCH DASHBOARD */
+   .content-area{
+    background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7));
+    border-radius:var(--radius);
+    padding:30px;
+    box-shadow:0 8px 22px rgba(10,20,16,0.06);
+    min-height:72vh;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+   }
+
+   .welcome-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+   }
+   
+   .welcome-content h2 {
+    margin: 0 0 5px 0;
+    font-size: 1.3rem;
+    color: var(--accent1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+   }
+   
+   .welcome-content > p {
+    margin-bottom: 20px;
+    color: var(--muted);
+   }
+
+   /* Module Cards - Single Row (6 cards in 1 row) */
+   .module-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 35px;
+   }
+
+   .module-card {
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: 16px 12px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--muted);
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+   }
+
+   .module-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(6,30,20,0.12);
+    color: var(--accent1);
+   }
+
+   .module-card i {
+    font-size: 1.6rem;
+    margin-bottom: 0;
+   }
+
+   .module-card h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent1);
+   }
+
+   .module-card p {
+    font-size: 0.75rem;
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.3;
+   }
+
+   /* Info Sections */
+   .info-sections {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 10px;
+   }
+
+   .info-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+   }
+
+   .info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-dark);
+   }
+
+   .info-card h3 {
+    color: var(--accent1);
+    font-size: 1.1rem;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-left: 3px solid var(--accent3);
+    padding-left: 12px;
+   }
+
+   .info-card h3 i {
+    color: var(--accent3);
+    font-size: 1rem;
+   }
+
+   .info-card p {
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+   }
+
+   .info-card ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style: none;
+   }
+
+   .info-card ul li {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+   }
+
+   .info-card ul li i {
+    color: var(--accent2);
+    font-size: 0.8rem;
+    width: 16px;
+   }
+
+   .motto-text {
+    text-align: center;
+    background: var(--light-green);
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    margin-top: 8px;
+   }
+
+   .motto-text p {
+    margin: 0;
+    font-weight: 500;
+    color: var(--accent1);
+   }
+
+   .motto-text small {
+    color: var(--muted);
+    font-size: 0.75rem;
+   }
+
+   hr {
+    margin: 20px 0 15px 0;
+    border: none;
+    border-top: 1px solid var(--border);
+   }
+
+   .full-width-card {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--light-green), #fff);
+   }
+
+   /* Mobile Bottom Navigation - MATCH DASHBOARD */
+   .mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--border);
+    z-index: 1000;
+    padding: 8px 0;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+    height: 70px;
+    box-sizing: border-box;
+   }
+
+   .mobile-nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+   }
+
+   .mobile-nav-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    color: var(--muted) !important;
+    padding: 8px 12px !important;
+    border-radius: var(--radius-sm) !important;
+    transition: all 0.3s ease !important;
+    min-width: 60px !important;
+    flex: 1 !important;
+    height: 100% !important;
+    justify-content: center !important;
+   }
+
+   .mobile-nav-item.admin-only {
+    display: none !important;
+   }
+
+   .mobile-nav-item.admin-only.admin-visible {
+    display: flex !important;
+   }
+
+   .mobile-nav-item.active {
+    color: var(--accent1) !important;
+    background: var(--light-green) !important;
+   }
+
+   .mobile-nav-icon {
+    font-size: 1.2rem !important;
+    margin-bottom: 4px !important;
+   }
+   
+   .mobile-nav-icon i {
+    font-size: 1.2rem;
+   }
+
+   .mobile-nav-text {
+    font-size: 0.7rem !important;
+    font-weight: 500 !important;
+   }
+
+   /* Mobile Styles - MATCH DASHBOARD EXACTLY */
+   @media (max-width: 768px) {
+    body { padding-bottom: 70px; }
+    .page-container { grid-template-columns: 1fr !important; padding: 8px; gap: 12px; margin-bottom: 0; }
+    .sidebar { display: none !important; }
+    .mobile-bottom-nav { display: flex !important; }
+    .content-area { height: auto; min-height: calc(100vh - 140px); padding: 16px; margin-bottom: 0; }
+    
+    /* Module cards - horizontal scroll on mobile */
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    .module-card {
+        min-width: 110px;
+        padding: 12px 10px;
+    }
+    .module-card i {
+        font-size: 1.3rem;
+    }
+    .module-card h3 {
+        font-size: 0.8rem;
+    }
+    .module-card p {
+        font-size: 0.7rem;
+    }
+    
+    .info-sections {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    .info-card {
+        padding: 15px;
+    }
+    
+    #userName { font-size: 0.85rem; }
+    #logoutBtn { padding: 6px 12px; font-size: 0.8rem; }
+   }
+
+   /* Tablet Styles - MATCH DASHBOARD */
+   @media (min-width: 769px) and (max-width: 1024px) {
+    .page-container { max-width: 95%; grid-template-columns: 220px 1fr; gap: 15px; }
+    .content-area { padding: 25px; }
+    .mobile-bottom-nav { display: none; }
+    
+    .module-grid {
+        gap: 12px;
+    }
+    .module-card {
+        padding: 12px 8px;
+    }
+    .module-card h3 {
+        font-size: 0.8rem;
+    }
+    .module-card p {
+        font-size: 0.7rem;
+    }
+    .info-sections {
+        gap: 15px;
+    }
+   }
+
+   /* Desktop Styles - MATCH DASHBOARD */
+   @media (min-width: 1025px) {
+    .mobile-bottom-nav { display: none; }
+   }
+
+   /* Print styles */
+   @media print {
+    .bg-pattern {
+        display: none;
+    }
+    body * {
+        visibility: hidden;
+    }
+    .content-area,
+    .content-area * {
+        visibility: visible;
+    }
+    .content-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white;
+        box-shadow: none;
+        padding: 0;
+    }
+    .topbar,
+    .sidebar,
+    .module-grid {
+        display: none !important;
+    }
+   }
+   @media (max-width: 768px) {
+    .page-container {
+        padding: 8px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+}
+@media (max-width: 768px) {
+    .page-container {
+        margin: 0 !important;
+    }
+}
+</style>
+</head>
+<body>
+<!-- Fixed Background Pattern -->
+<div class="bg-pattern">
+    <div class="bg-circle circle-1"></div>
+    <div class="bg-circle circle-2"></div>
+    <div class="bg-circle circle-3"></div>
+</div>
+
+<div class="page-container">
+<header class="topbar">
+    <div class="brand">
+        <img src="assets/MDRRMO Logo.png" class="logo" alt="Logo"/>
+        <div class="brand-text">
+            <h1>PUROK KALIGTASAN 133</h1>
+            <p>MDRRMO Alitagtag – Household Records System</p>
+        </div>
+    </div>
+    <div class="user-info">
+        <div class="user-dropdown" id="userDropdown">
+            <div class="user-btn" id="userBtn">
+                <i class="fas fa-user-circle"></i>
+                <div class="user-info-dropdown">
+                    <span class="user-fullname" id="userFullname">Loading...</span>
+                    <span class="user-role-dropdown" id="userRole">Loading...</span>
+                </div>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+            <span id="userName" style="display: none;"></span>
+    </div>
+</header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-container">
+      <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+<ul>
+    <li><a href="dashboard.html">
+        <span class="menu-icon"><i class="fas fa-tachometer-alt"></i></span> 
+        <span class="menu-text">Dashboard</span>
+    </a></li>
+    <li><a href="dataForm.html">
+        <span class="menu-icon"><i class="fas fa-edit"></i></span> 
+        <span class="menu-text">Data Entry</span>
+    </a></li>
+    <li><a href="records.html">
+        <span class="menu-icon"><i class="fas fa-database"></i></span> 
+        <span class="menu-text">Records & Management</span>
+    </a></li>
+    <li><a href="charts.html">
+        <span class="menu-icon"><i class="fas fa-chart-bar"></i></span> 
+        <span class="menu-text">Charts & Analytics</span>
+    </a></li>
+    <li class="admin-only"><a href="users.html">
+        <span class="menu-icon"><i class="fas fa-users-cog"></i></span> 
+        <span class="menu-text">User Management</span>
+    </a></li>
+</ul>
+    </div>
+  </aside>
+
+  <main class="content-area">
+    <div class="welcome-content">
+      
+      <h2><i class="fas fa-home" style="color: var(--accent1);"></i> Welcome to PUROK KALIGTASAN 133</h2>
+      <p>DRRMO Alitagtag – Household Records System</p>
+      
+      <!-- 6 Cards in Single Row -->
+      <div class="module-grid">
+        <a href="dashboard.html" class="module-card">
+          <i class="fas fa-tachometer-alt"></i>
+          <h3>Dashboard</h3>
+          <p>Overview and key metrics</p>
+        </a>
+        
+        <a href="dataForm.html" class="module-card">
+          <i class="fas fa-edit"></i>
+          <h3>Data Entry</h3>
+          <p>Add new household records</p>
+        </a>
+        
+        <a href="records.html" class="module-card">
+          <i class="fas fa-database"></i>
+          <h3>Records & Management</h3>
+          <p>View and manage all data</p>
+        </a>
+        
+        <a href="charts.html" class="module-card">
+          <i class="fas fa-chart-bar"></i>
+          <h3>Charts & Analytics</h3>
+          <p>Visual data analysis</p>
+        </a>
+        
+        <a href="users.html" class="module-card admin-only">
+          <i class="fas fa-users-cog"></i>
+          <h3>User Management</h3>
+          <p>Admin user controls</p>
+        </a>
+        
+        <div class="module-card" style="cursor: default; background: var(--light-green);">
+          <i class="fas fa-info-circle"></i>
+          <h3>System Info</h3>
+          <p>Version 1.0 • 2026</p>
+        </div>
+      </div>
+
+      <!-- Mission Vision & Information Sections -->
+      <div class="info-sections">
+        <div class="info-card">
+          <h3><i class="fas fa-bullseye"></i> Mission</h3>
+          <p>To provide accurate, timely, and accessible household data that supports disaster risk reduction initiatives and enhances community resilience in Alitagtag, Batangas.</p>
+        </div>
+
+        <div class="info-card">
+          <h3><i class="fas fa-eye"></i> Vision</h3>
+          <p>A disaster-resilient Alitagtag where every household is accounted for, prepared, and protected through efficient data management and responsive governance.</p>
+        </div>
+
+        <div class="info-card">
+          <h3><i class="fas fa-gem"></i> Core Values</h3>
+          <ul>
+            <li><i class="fas fa-check-circle"></i> Integrity - Accurate and truthful data</li>
+            <li><i class="fas fa-hand-holding-heart"></i> Service Excellence - Committed to residents</li>
+            <li><i class="fas fa-lock"></i> Accountability - Responsible data handling</li>
+            <li><i class="fas fa-lightbulb"></i> Innovation - Continuous improvement</li>
+            <li><i class="fas fa-users"></i> Community-Centered - People first</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h3><i class="fas fa-handshake"></i> Our Commitment</h3>
+          <p>The Purok Kaligtasan 133 system is committed to protecting every household's data while ensuring that no family is left behind during disasters. We pledge to use this information responsibly and solely for the safety and welfare of the Alitagtag community.</p>
+        </div>
+
+        <div class="info-card full-width-card">
+          <h3><i class="fas fa-leaf"></i> Guiding Philosophy</h3>
+          <p style="font-style: italic; text-align: center; font-size: 1rem;">"Accurate data today saves lives tomorrow."</p>
+          <hr>
+          <p style="margin-bottom: 0;">Every household record entered into this system represents a family that depends on us for timely disaster response and effective risk reduction planning.</p>
+        </div>
+
+        <div class="info-card">
+          <h3><i class="fas fa-file-signature"></i> Service Pledge</h3>
+          <ul>
+            <li><i class="fas fa-check"></i> Respond to data requests within 24 hours</li>
+            <li><i class="fas fa-check"></i> Maintain 99.9% system uptime</li>
+            <li><i class="fas fa-check"></i> Update household records in real-time</li>
+            <li><i class="fas fa-check"></i> Ensure data privacy and confidentiality</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h3><i class="fas fa-tag"></i> Our Motto</h3>
+          <div class="motto-text">
+            <p><strong>"Kaligtasan ng bawat tahanan, responsibilidad nating lahat."</strong></p>
+            <small><em>(Safety of every home is everyone's responsibility.)</em></small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Mobile Bottom Navigation - MATCH DASHBOARD -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+  <div class="mobile-nav-items">
+    <a href="dashboard.html" class="mobile-nav-item" title="Dashboard">
+      <span class="mobile-nav-icon"><i class="fas fa-tachometer-alt"></i></span>
+      <span class="mobile-nav-text">Dashboard</span>
+    </a>
+    <a href="dataForm.html" class="mobile-nav-item" title="Data Entry">
+      <span class="mobile-nav-icon"><i class="fas fa-edit"></i></span>
+      <span class="mobile-nav-text">Data Entry</span>
+    </a>
+    <a href="records.html" class="mobile-nav-item" title="Records">
+      <span class="mobile-nav-icon"><i class="fas fa-database"></i></span>
+      <span class="mobile-nav-text">Records</span>
+    </a>
+    <a href="charts.html" class="mobile-nav-item" title="Charts">
+      <span class="mobile-nav-icon"><i class="fas fa-chart-bar"></i></span>
+      <span class="mobile-nav-text">Charts</span>
+    </a>
+    <a href="users.html" class="mobile-nav-item admin-only" title="Users" id="mobileUsersNav">
+      <span class="mobile-nav-icon"><i class="fas fa-users-cog"></i></span>
+      <span class="mobile-nav-text">Users</span>
+    </a>
+  </div>
+</nav>
+
+<script>
+function handleLogout() {
+    localStorage.clear();
+    sessionStorage.clear();
+    const logoutUrl = 'index.html?logout=true&t=' + Date.now();
+    window.location.replace(logoutUrl);
+}
+
+function toggleSidebar() {
+    const pageContainer = document.querySelector('.page-container');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    
+    // Add null checks
+    if (!pageContainer || !sidebarToggle) return;
+    
+    const icon = sidebarToggle.querySelector('i');
+    
+    pageContainer.classList.toggle('collapsed');
+    
+    if (pageContainer.classList.contains('collapsed')) {
+        if (icon) icon.className = 'fas fa-chevron-right';
+        sidebarToggle.title = "Expand sidebar";
+    } else {
+        if (icon) icon.className = 'fas fa-bars';
+        sidebarToggle.title = "Collapse sidebar";
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    const loggedIn = localStorage.getItem('loggedIn') === 'true';
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    
+    if (isGuest) {
+        window.location.replace('dashboard.html');
+        return;
+    }
+    
+if (loggedIn) {
+    const userName = localStorage.getItem("staffName") || localStorage.getItem("username") || "User";
+    const userFullnameElem = document.getElementById("userFullname");
+    if (userFullnameElem) {
+        userFullnameElem.innerText = userName;
+    }
+        
+        const userRole = localStorage.getItem("userRole");
+        const isAdmin = userRole && userRole.toLowerCase() === 'admin';
+        
+        const adminItems = document.querySelectorAll(".admin-only");
+        adminItems.forEach(item => {
+            if (isAdmin) {
+                item.classList.add("admin-visible");
+            } else {
+                item.classList.remove("admin-visible");
+            }
+        });
+        
+        const mobileUsersNav = document.getElementById('mobileUsersNav');
+        if (mobileUsersNav) {
+            if (isAdmin) {
+                mobileUsersNav.classList.add('admin-visible');
+            } else {
+                mobileUsersNav.classList.remove('admin-visible');
+            }
+        }
+        
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', handleLogout);
+        }
+        
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', toggleSidebar);
+        }
+    }
+});
+</script>
+<script src="js/common-utils.js"></script>
+<script src="js/session-manager.js"></script>
+<script src="js/common-session.js"></script>
+<script src="js/guest-redirect.js"></script>
+<script src="js/activity-tracking-final.js"></script>
+<script src="js/unified-header.js"></script>
+</body>
+</html>
