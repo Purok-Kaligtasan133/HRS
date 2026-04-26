@@ -5109,6 +5109,26 @@ li.admin-only.admin-visible {
     </div>
 </div>
 
+<!-- Edit Lock Warning Modal -->
+<div id="editLockModal" class="modal-overlay" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
+  <div style="background: white; border-radius: 12px; max-width: 320px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+    <div style="padding: 20px 20px 12px 20px; text-align: center;">
+      <div style="margin-bottom: 8px;">
+        <i class="fas fa-lock" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+      </div>
+      <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Household Currently Being Edited</h3>
+      <p id="editLockMessage" style="margin: 8px 0 0 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+        This household is currently being edited by another user. Please wait a moment and try again.
+      </p>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+      <button id="closeEditLockModal" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+        <i class="fas fa-check"></i> OK
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Reset Confirmation Modal -->
 <div id="resetConfirmationModal" class="modal-overlay" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
   <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
@@ -9304,6 +9324,22 @@ function setupModalHandlers() {
     });
   }
 
+// Edit Lock Modal
+const editLockModal = document.getElementById('editLockModal');
+const closeEditLockModal = document.getElementById('closeEditLockModal');
+
+if (editLockModal && closeEditLockModal) {
+  closeEditLockModal.addEventListener('click', () => {
+    hideModal('editLockModal');
+  });
+  
+  editLockModal.addEventListener('click', (e) => {
+    if (e.target === editLockModal) {
+      hideModal('editLockModal');
+    }
+  });
+}
+
 // Member Cancel Confirmation Modal
 const memberCancelModal = document.getElementById('memberCancelConfirmationModal');
 const memberCancelYes = document.getElementById('memberCancelYes');
@@ -9849,6 +9885,8 @@ let editHead = {};
 let editMembers = [];
 let memberEditIndex = 0;
 let sequenceMode = false;
+let lockCheckInterval = null;
+let currentLockedDataID = null;
 
 /* ============ UTIL ============ */
 const $ = id => document.getElementById(id);
@@ -9873,8 +9911,15 @@ function openEditPanel(){
 }
 
 function closeEditPanel(){ 
-    $('editPanel')?.classList.remove('open'); 
-    $('panelOverlay')?.classList.remove('show'); 
+  // Release the lock when closing
+  if (editDataID) {
+    releaseEditLock(editDataID);
+  }
+  
+  stopLockChecking();
+  
+  $('editPanel')?.classList.remove('open'); 
+  $('panelOverlay')?.classList.remove('show'); 
 }
 
 function resetEditState() {
@@ -9883,6 +9928,72 @@ function resetEditState() {
   editMembers = [];
   memberEditIndex = 0;
   sequenceMode = false;
+}
+
+// ============ LOCK HELPER FUNCTIONS ============
+function stopLockChecking() {
+  if (lockCheckInterval) {
+    clearInterval(lockCheckInterval);
+    lockCheckInterval = null;
+  }
+  currentLockedDataID = null;
+}
+
+async function releaseEditLock(dataID) {
+  try {
+    const currentUserFullName = getUserFullName();
+    const sessionId = localStorage.getItem('sessionId');
+    const username = localStorage.getItem('username');
+    
+    const formData = new FormData();
+    formData.append('action', 'unlockHousehold');
+    formData.append('dataID', dataID);
+    formData.append('username', username);
+    formData.append('sessionId', sessionId);
+    formData.append('fullName', currentUserFullName);
+    
+    await fetch(SCRIPT_URL, { method: 'POST', body: formData });
+    console.log(`🔓 Released lock for household ${dataID}`);
+  } catch(err) {
+    console.error('Error releasing lock:', err);
+  }
+}
+
+function startLockChecking(dataID, currentUsername) {
+  stopLockChecking();
+  currentLockedDataID = dataID;
+  
+  lockCheckInterval = setInterval(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('action', 'checkEditLockStatus');
+      formData.append('dataID', dataID);
+      formData.append('username', currentUsername);
+      
+      const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
+      const result = await response.json();
+      
+      if (result.success && result.isLocked && !result.isCurrentUser) {
+        stopLockChecking();
+        
+        const messageEl = document.getElementById('editLockMessage');
+        if (messageEl) {
+          messageEl.innerHTML = `This household is currently being edited by <strong>${escapeHtml(result.lockedBy)}</strong>.<br><br>Please wait a moment and try again.`;
+        }
+        showModal('editLockModal');
+        
+        closeEditPanel();
+        
+        setTimeout(() => {
+          if (typeof refreshRecordsData === 'function') {
+            refreshRecordsData();
+          }
+        }, 1000);
+      }
+    } catch(err) {
+      console.error('Lock check error:', err);
+    }
+  }, 3000);
 }
 
 /* ============ COORDINATE FUNCTIONS ============ */
@@ -11245,16 +11356,46 @@ function toggleMobileSidebar() {
 }
 
 // ============ REPLACE YOUR onEdit FUNCTION WITH THIS ============
-function onEdit(id) {
-    console.log('onEdit called for ID:', id);
+async function onEdit(id) {
+  console.log('onEdit called for ID:', id);
+  
+  const currentUserFullName = getUserFullName();
+  const username = localStorage.getItem('username');
+  const sessionId = localStorage.getItem('sessionId');
+  
+  showLoading(true);
+  
+  try {
+    const lockFormData = new FormData();
+    lockFormData.append('action', 'lockHousehold');
+    lockFormData.append('dataID', id);
+    lockFormData.append('username', username);
+    lockFormData.append('sessionId', sessionId);
+    lockFormData.append('fullName', currentUserFullName);
     
-    // Find the household in virtualState
+    const lockResponse = await fetch(SCRIPT_URL, { method: 'POST', body: lockFormData });
+    const lockResult = await lockResponse.json();
+    
+    if (!lockResult.success && lockResult.isLocked) {
+      showLoading(false);
+      
+      const messageEl = document.getElementById('editLockMessage');
+      if (messageEl) {
+        messageEl.innerHTML = `This household is currently being edited by <strong>${escapeHtml(lockResult.lockedBy)}</strong>.<br><br>Please wait a moment and try again.`;
+      }
+      showModal('editLockModal');
+      return;
+    }
+    
+    startLockChecking(id, username);
+    
     const household = virtualState.allHouseholds.find(h => h.id === id);
     
     if (!household) {
-        console.error('Record not found:', id);
-        alert('Record not found');
-        return;
+      console.error('Record not found:', id);
+      showError('Record not found');
+      showLoading(false);
+      return;
     }
     
     resetEditState();
@@ -11262,130 +11403,111 @@ function onEdit(id) {
     
     editDataID = id;
     
-    // Use the household data directly from virtualState
     editHead = JSON.parse(JSON.stringify(household.head || {}));
     
     editMembers = [];
     if (household.members && household.members.length > 0) {
-        editMembers = JSON.parse(JSON.stringify(household.members));
-        console.log(`Loaded ${editMembers.length} members for editing`);
+      editMembers = JSON.parse(JSON.stringify(household.members));
+      console.log(`Loaded ${editMembers.length} members for editing`);
     } else {
-        console.log("No members found for this household");
+      console.log("No members found for this household");
     }
     
-    // Show Data ID at the top of edit panel
     if ($('editDataIdDisplay')) {
-        $('editDataIdDisplay').textContent = editDataID;
+      $('editDataIdDisplay').textContent = editDataID;
     }
     
-    // Store original submittedBy value from head
     const originalSubmittedBy = editHead['Submitted By'] || editHead['submittedBy'] || '';
     
-    // If no submittedBy in head, add current user's name
     if (!originalSubmittedBy) {
-        editHead['Submitted By'] = getUserFullName();
+      editHead['Submitted By'] = getUserFullName();
     }
     
-    // Prefill head inputs
     $('edit_coordinate').value = editHead['Coordinate'] || editHead['Coordinates'] || '';
     $('edit_barangay').value = editHead['Barangay'] || '';
     restrictEditPanelBarangay();
     $('edit_sitio').value = editHead['Sitio / Purok'] || '';
     $('edit_householdHead').value = editHead['Name of Household Head'] || '';
     
-    // FishR/RSBSA Registered
     let headRegistrationValue = '';
     if (editHead['FishR & RSBSA'] && editHead['FishR & RSBSA'] !== '') {
-        headRegistrationValue = editHead['FishR & RSBSA'];
+      headRegistrationValue = editHead['FishR & RSBSA'];
     } else if (editHead['FishR Registered/RSBSA Registered'] && editHead['FishR Registered/RSBSA Registered'] !== '') {
-        headRegistrationValue = editHead['FishR Registered/RSBSA Registered'];
+      headRegistrationValue = editHead['FishR Registered/RSBSA Registered'];
     }
     
     $('edit_headRegisteredCheckbox').checked = headRegistrationValue !== '';
     if (headRegistrationValue !== '') {
-        $('edit_headRegistrationField').classList.add('show');
-        $('edit_headRegistration').value = headRegistrationValue;
+      $('edit_headRegistrationField').classList.add('show');
+      $('edit_headRegistration').value = headRegistrationValue;
     } else {
-        $('edit_headRegistrationField').classList.remove('show');
-        $('edit_headRegistration').value = '';
+      $('edit_headRegistrationField').classList.remove('show');
+      $('edit_headRegistration').value = '';
     }
     
     $('edit_contactNo').value = formatContactForDisplay(editHead['Contact no.'] || '');
     
-    // Set radio buttons
     qAll("input[name='edit_head_gender']").forEach(r => r.checked = (r.value === (editHead['Gender'] || '')));
     $('edit_householdBirthdate').value = toInputDate(editHead['Birthdate'] || '');
     updateEditHeadAgeStage();
     
-    // Use actual member count
     const actualMemberCount = editMembers.length;
     $('edit_memberCount').value = actualMemberCount;
     
-    // Educational & Economic Status
     $('edit_educationalAttainment').value = editHead['Educational Attainment'] || '';
     if (editHead['Educational Attainment'] === 'College Graduate') {
-        $('edit_collegeCourseField').classList.add('show');
-        $('edit_collegeCourse').value = editHead['College Graduate Course'] || '';
+      $('edit_collegeCourseField').classList.add('show');
+      $('edit_collegeCourse').value = editHead['College Graduate Course'] || '';
     } else {
-        $('edit_collegeCourseField').classList.remove('show');
-        $('edit_collegeCourse').value = '';
+      $('edit_collegeCourseField').classList.remove('show');
+      $('edit_collegeCourse').value = '';
     }
     
     $('edit_employment').value = editHead['Employment'] || '';
     if (editHead['Employment'] === 'Employed') {
-        $('edit_jobTitleField').classList.add('show');
-        $('edit_jobTitle').value = editHead['Job Title'] || '';
+      $('edit_jobTitleField').classList.add('show');
+      $('edit_jobTitle').value = editHead['Job Title'] || '';
     } else {
-        $('edit_jobTitleField').classList.remove('show');
-        $('edit_jobTitle').value = '';
+      $('edit_jobTitleField').classList.remove('show');
+      $('edit_jobTitle').value = '';
     }
     
-    // Set OFW status
     qAll("input[name='edit_ofw_status']").forEach(r => r.checked = (r.value === (editHead['Overseas Filipino Worker(OFW)'] || 'No')));
     if (editHead['Overseas Filipino Worker(OFW)'] === 'Yes') {
-        $('edit_countryField').classList.add('show');
-        $('edit_country').value = editHead['Country'] || '';
+      $('edit_countryField').classList.add('show');
+      $('edit_country').value = editHead['Country'] || '';
     } else {
-        $('edit_countryField').classList.remove('show');
-        $('edit_country').value = '';
+      $('edit_countryField').classList.remove('show');
+      $('edit_country').value = '';
     }
     
-// Additional Information checkboxes
-$('edit_soloParenting').checked = editHead['Solo Parenting'] === 'Yes';
-$('edit_lactating').checked = editHead['Lactating'] === 'Yes';
-$('edit_pregnant').checked = editHead['Pregnant'] === 'Yes';
+    $('edit_soloParenting').checked = editHead['Solo Parenting'] === 'Yes';
+    $('edit_lactating').checked = editHead['Lactating'] === 'Yes';
+    $('edit_pregnant').checked = editHead['Pregnant'] === 'Yes';
     
-// PWD and Disability Type
-const pwdValue = editHead['Persons with Disability (PWD)'] || editHead['PWD'] || 'No';
-qAll("input[name='edit_head_pwd']").forEach(r => {
-    r.checked = (r.value === pwdValue);
-});
-
-$('edit_disabilityType').value = editHead['Type of Disability'] || '';
-
-// CRITICAL: Trigger the conditional field visibility based on the loaded PWD value
-const disabilityTypeField = document.getElementById('edit_disabilityTypeField');
-if (pwdValue === 'Yes') {
-    if (disabilityTypeField) disabilityTypeField.classList.add('show');
-    const disabilitySelect = document.getElementById('edit_disabilityType');
-    if (disabilitySelect) disabilitySelect.required = true;
-} else {
-    if (disabilityTypeField) disabilityTypeField.classList.remove('show');
-    const disabilitySelect = document.getElementById('edit_disabilityType');
-    if (disabilitySelect) disabilitySelect.required = false;
-}
+    const pwdValue = editHead['Persons with Disability (PWD)'] || editHead['PWD'] || 'No';
+    qAll("input[name='edit_head_pwd']").forEach(r => {
+      r.checked = (r.value === pwdValue);
+    });
     
-    // Status field with Others option
+    $('edit_disabilityType').value = editHead['Type of Disability'] || '';
+    
+    const disabilityTypeField = document.getElementById('edit_disabilityTypeField');
+    if (pwdValue === 'Yes') {
+      if (disabilityTypeField) disabilityTypeField.classList.add('show');
+    } else {
+      if (disabilityTypeField) disabilityTypeField.classList.remove('show');
+    }
+    
     const statusValue = editHead['Status'] || '';
     if (statusValue === 'Others') {
-        $('edit_head_status').value = 'Others';
-        $('edit_statusOthersField').classList.add('show');
-        $('edit_statusOthers').value = editHead['Status Others'] || editHead['Status'] || '';
+      $('edit_head_status').value = 'Others';
+      $('edit_statusOthersField').classList.add('show');
+      $('edit_statusOthers').value = editHead['Status Others'] || editHead['Status'] || '';
     } else {
-        $('edit_head_status').value = statusValue;
+      $('edit_head_status').value = statusValue;
     }
     
-    // Displacement reasons
     $('edit_displacement_taal').checked = editHead['Taal Volcano (Within 14-15 KM Danger Zone)'] === 'Yes';
     $('edit_displacement_typhoon').checked = editHead['Typhoon'] === 'Yes';
     $('edit_displacement_flood').checked = editHead['Flood'] === 'Yes';
@@ -11393,70 +11515,67 @@ if (pwdValue === 'Yes') {
     $('edit_displacement_earthquake').checked = editHead['Earthquake'] === 'Yes';
     $('edit_displacement_fire').checked = editHead['Fire'] === 'Yes';
     
-    // Other Reasons
     const otherReasons = editHead['Other Reasons'] || '';
     if (otherReasons && otherReasons.trim() !== '') {
-        $('edit_displacement_other_check').checked = true;
-        $('edit_displacementOtherField').classList.add('show');
-        $('edit_displacement_other').value = otherReasons;
+      $('edit_displacement_other_check').checked = true;
+      $('edit_displacementOtherField').classList.add('show');
+      $('edit_displacement_other').value = otherReasons;
     } else {
-        $('edit_displacement_other_check').checked = false;
-        $('edit_displacementOtherField').classList.remove('show');
-        $('edit_displacement_other').value = '';
+      $('edit_displacement_other_check').checked = false;
+      $('edit_displacementOtherField').classList.remove('show');
+      $('edit_displacement_other').value = '';
     }
     
-    // Assembly area
     const anyDisplacementChecked = 
-        $('edit_displacement_taal').checked ||
-        $('edit_displacement_typhoon').checked ||
-        $('edit_displacement_flood').checked ||
-        $('edit_displacement_landslide').checked ||
-        $('edit_displacement_earthquake').checked ||
-        $('edit_displacement_fire').checked ||
-        $('edit_displacement_other_check').checked;
+      $('edit_displacement_taal').checked ||
+      $('edit_displacement_typhoon').checked ||
+      $('edit_displacement_flood').checked ||
+      $('edit_displacement_landslide').checked ||
+      $('edit_displacement_earthquake').checked ||
+      $('edit_displacement_fire').checked ||
+      $('edit_displacement_other_check').checked;
     
     if (anyDisplacementChecked) {
-        $('edit_assemblyAreaOptions').style.display = 'block';
+      $('edit_assemblyAreaOptions').style.display = 'block';
     } else {
-        $('edit_assemblyAreaOptions').style.display = 'none';
+      $('edit_assemblyAreaOptions').style.display = 'none';
     }
     
     const insideAssembly = editHead['Inside Assembly Area'] === 'Yes';
     const outsideAssembly = editHead['Outside Assembly Area'] === 'Yes';
     
     if (insideAssembly) {
-        $('edit_inside_assembly').checked = true;
-        $('edit_outside_assembly').checked = false;
-        if (anyDisplacementChecked) {
-            $('edit_assemblyAreaOptions').style.display = 'block';
-        }
-        $('edit_insideAssemblyFields').style.display = 'block';
-        $('edit_outsideAssemblyFields').style.display = 'none';
-        $('edit_pickup').value = editHead['Pick-Up Location'] || '';
-        $('edit_assembly_area').value = editHead['Assembly Area'] || '';
-        $('edit_head_transport').value = editHead['Transportation'] || '';
+      $('edit_inside_assembly').checked = true;
+      $('edit_outside_assembly').checked = false;
+      if (anyDisplacementChecked) {
+        $('edit_assemblyAreaOptions').style.display = 'block';
+      }
+      $('edit_insideAssemblyFields').style.display = 'block';
+      $('edit_outsideAssemblyFields').style.display = 'none';
+      $('edit_pickup').value = editHead['Pick-Up Location'] || '';
+      $('edit_assembly_area').value = editHead['Assembly Area'] || '';
+      $('edit_head_transport').value = editHead['Transportation'] || '';
     } else if (outsideAssembly) {
-        $('edit_inside_assembly').checked = false;
-        $('edit_outside_assembly').checked = true;
-        if (anyDisplacementChecked) {
-            $('edit_assemblyAreaOptions').style.display = 'block';
-        }
-        $('edit_insideAssemblyFields').style.display = 'none';
-        $('edit_outsideAssemblyFields').style.display = 'block';
-        $('edit_family_host').value = editHead['Family/Relative Host'] || '';
-        $('edit_host_contact').value = editHead['Host_Contact'] || '';
-        $('edit_outside_transport').value = editHead['Transportation'] || '';
+      $('edit_inside_assembly').checked = false;
+      $('edit_outside_assembly').checked = true;
+      if (anyDisplacementChecked) {
+        $('edit_assemblyAreaOptions').style.display = 'block';
+      }
+      $('edit_insideAssemblyFields').style.display = 'none';
+      $('edit_outsideAssemblyFields').style.display = 'block';
+      $('edit_family_host').value = editHead['Family/Relative Host'] || '';
+      $('edit_host_contact').value = editHead['Host_Contact'] || '';
+      $('edit_outside_transport').value = editHead['Transportation'] || '';
     } else {
-        $('edit_inside_assembly').checked = false;
-        $('edit_outside_assembly').checked = false;
-        if (!anyDisplacementChecked) {
-            $('edit_assemblyAreaOptions').style.display = 'none';
-        }
-        $('edit_insideAssemblyFields').style.display = 'none';
-        $('edit_outsideAssemblyFields').style.display = 'none';
+      $('edit_inside_assembly').checked = false;
+      $('edit_outside_assembly').checked = false;
+      if (!anyDisplacementChecked) {
+        $('edit_assemblyAreaOptions').style.display = 'none';
+      }
+      $('edit_insideAssemblyFields').style.display = 'none';
+      $('edit_outsideAssemblyFields').style.display = 'none';
     }
     
-    // Domestic Animals
     $('edit_dog_chk').checked = (editHead['Dog'] === 'Yes');
     $('edit_dog_qty').value = editHead['Dog Qty.'] || '';
     $('edit_cat_chk').checked = (editHead['Cat'] === 'Yes');
@@ -11473,7 +11592,6 @@ if (pwdValue === 'Yes') {
     
     syncAnimalCheckboxes();
     
-    // Government Assistance with Date Fields
     const hasTUPAD = editHead['TUPAD'] === 'Yes';
     $('edit_ass_tupad').checked = hasTUPAD;
     $('edit_ass_tupad_date_input').value = toInputDate(editHead['TUPAD_Date'] || '');
@@ -11522,60 +11640,62 @@ if (pwdValue === 'Yes') {
     updateEditMembersPreview();
     openEditPanel();
     
-    // ============ LOAD CALAMITY FILES ============
-    // Load head calamity files after populating editHead
     setTimeout(() => {
-        loadHeadCalamityFiles(editHead);
+      loadHeadCalamityFiles(editHead);
     }, 100);
     
-    // Load member calamity files if there are members
     if (editMembers.length > 0) {
-        setTimeout(() => {
-            loadMemberCalamityFiles(editMembers, 0);
-        }, 150);
+      setTimeout(() => {
+        loadMemberCalamityFiles(editMembers, 0);
+      }, 150);
     }
-    // ============ END LOAD CALAMITY FILES ============
     
-    // ============ FORCE REFRESH THUMBNAILS WITH DYNAMIC CACHE BUSTER ============
     setTimeout(() => {
-        forceRefreshThumbnails();
+      forceRefreshThumbnails();
     }, 250);
-    // ============ END REFRESH THUMBNAILS ============
     
     setTimeout(() => {
-        captureOriginalFormState();
+      captureOriginalFormState();
     }, 200);
     
     setTimeout(() => $('edit_householdHead')?.focus(), 120);
     setTimeout(() => {
-        setupRealTimeValidationForEdit();
-        setupContactValidation();
-        setupEditGovernmentAssistanceDateHandlers();
+      setupRealTimeValidationForEdit();
+      setupContactValidation();
+      setupEditGovernmentAssistanceDateHandlers();
+      
+      setTimeout(() => {
+        if (hasTUPAD) $('edit_ass_tupad').dispatchEvent(new Event('change'));
+        if (hasLocal4Ps) $('edit_ass_local4ps').dispatchEvent(new Event('change'));
+        if (hasNational4Ps) $('edit_ass_intl4ps').dispatchEvent(new Event('change'));
+        if (hasLocalSP) $('edit_ass_locsp').dispatchEvent(new Event('change'));
+        if (hasNationalSP) $('edit_ass_intlsp').dispatchEvent(new Event('change'));
+        if (hasSoloParent) $('edit_ass_solo').dispatchEvent(new Event('change'));
+        if (hasReliefGoods) $('edit_ass_relief').dispatchEvent(new Event('change'));
+        if (hasCashSubsidy) $('edit_ass_cash').dispatchEvent(new Event('change'));
+        if (hasAICS) $('edit_ass_aics').dispatchEvent(new Event('change'));
         
-        setTimeout(() => {
-            if (hasTUPAD) $('edit_ass_tupad').dispatchEvent(new Event('change'));
-            if (hasLocal4Ps) $('edit_ass_local4ps').dispatchEvent(new Event('change'));
-            if (hasNational4Ps) $('edit_ass_intl4ps').dispatchEvent(new Event('change'));
-            if (hasLocalSP) $('edit_ass_locsp').dispatchEvent(new Event('change'));
-            if (hasNationalSP) $('edit_ass_intlsp').dispatchEvent(new Event('change'));
-            if (hasSoloParent) $('edit_ass_solo').dispatchEvent(new Event('change'));
-            if (hasReliefGoods) $('edit_ass_relief').dispatchEvent(new Event('change'));
-            if (hasCashSubsidy) $('edit_ass_cash').dispatchEvent(new Event('change'));
-            if (hasAICS) $('edit_ass_aics').dispatchEvent(new Event('change'));
-            
-            if (anyDisplacementChecked) {
-                $('edit_assemblyAreaOptions').style.display = 'block';
-            }
-            if (insideAssembly) {
-                $('edit_inside_assembly').dispatchEvent(new Event('change'));
-            } else if (outsideAssembly) {
-                $('edit_outside_assembly').dispatchEvent(new Event('change'));
-            }
-            if ($('edit_displacement_other_check').checked) {
-                $('edit_displacement_other_check').dispatchEvent(new Event('change'));
-            }
-        }, 300);
+        if (anyDisplacementChecked) {
+          $('edit_assemblyAreaOptions').style.display = 'block';
+        }
+        if (insideAssembly) {
+          $('edit_inside_assembly').dispatchEvent(new Event('change'));
+        } else if (outsideAssembly) {
+          $('edit_outside_assembly').dispatchEvent(new Event('change'));
+        }
+        if ($('edit_displacement_other_check').checked) {
+          $('edit_displacement_other_check').dispatchEvent(new Event('change'));
+        }
+      }, 300);
     }, 100);
+    
+    showLoading(false);
+    
+  } catch (err) {
+    console.error('Edit error:', err);
+    showError('Failed to start editing: ' + err.message);
+    showLoading(false);
+  }
 }
 
 function getUserFullName() {
@@ -13363,11 +13483,15 @@ async function saveEditedHousehold(silentReload = false) {
             throw new Error(`Server returned invalid JSON: ${e.message}`);
         }
 
-        if (json.success) {
-            const totalTime = Math.round(performance.now() - startTime);
-            console.log(`✅ Update successful! ${totalTime}ms`);
-            
-            showSuccess(`Household updated (ID: ${editDataID})`);
+if (json.success) {
+    const totalTime = Math.round(performance.now() - startTime);
+    console.log(`✅ Update successful! ${totalTime}ms`);
+    
+    // Release the lock after successful save
+    await releaseEditLock(editDataID);
+    stopLockChecking();
+    
+    showSuccess(`Household updated (ID: ${editDataID})`);
             
             // ========== OPTION 2: UPDATE IN-MEMORY DATA ==========
             // Find the household in virtualState and replace with updated data
