@@ -1,0 +1,2086 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Dashboard — Purok Kaligtasan</title>
+<!-- Supabase SDK - Must be loaded first -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/uniform-styles.css">
+<link rel="stylesheet" href="css/header-styles.css">
+<style>
+   :root{
+    --bg:#f6f8f7;
+    --card-bg:#fff;
+    --muted:#6b6f6b;
+    --accent1:#0f7a4a;
+    --accent2:#34b78f;
+    --accent3: #ff7a00;
+    --accent4: #ffa500;
+    --hazard-red: #dc2626;
+    --light-green: #e9f7f2;
+    --border: #e1e8e5;
+    --shadow: 0 6px 18px rgba(6,30,20,0.06);
+    --shadow-dark: 0 6px 20px rgba(5,40,25,0.12);
+    --radius:12px;
+    --radius-sm:8px;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+   }
+   .mobile-nav-item.admin-only {
+    display: none !important;
+}
+.mobile-nav-item.admin-only.admin-visible {
+    display: flex !important;
+}
+   /* Refresh Button Design */
+#manual-refresh-btn {
+    background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 100%);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(15, 122, 74, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+#manual-refresh-btn i {
+    font-size: 0.9rem;
+    transition: transform 0.4s ease;
+}
+
+#manual-refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 122, 74, 0.3);
+    background: linear-gradient(135deg, var(--accent2) 0%, var(--accent1) 100%);
+}
+
+#manual-refresh-btn:hover i {
+    transform: rotate(180deg);
+}
+
+#manual-refresh-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(15, 122, 74, 0.2);
+}
+
+/* Rotating animation when refreshing */
+#manual-refresh-btn.refreshing {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+#manual-refresh-btn.refreshing i {
+    animation: spin 0.8s linear infinite;
+    transform: none;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Ripple effect on click */
+#manual-refresh-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+}
+
+#manual-refresh-btn:active::after {
+    width: 120px;
+    height: 120px;
+    opacity: 0;
+    transition: 0s;
+}
+
+/* Alternative Outline Style (uncomment to use instead) */
+#manual-refresh-btn.outline {
+    background: transparent;
+    border: 2px solid var(--accent1);
+    color: var(--accent1);
+    box-shadow: none;
+}
+
+#manual-refresh-btn.outline:hover {
+    background: var(--light-green);
+    border-color: var(--accent2);
+    color: var(--accent2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 122, 74, 0.15);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    #manual-refresh-btn {
+        padding: 8px 16px;
+        font-size: 0.75rem;
+        gap: 8px;
+    }
+    
+    #manual-refresh-btn i {
+        font-size: 0.8rem;
+    }
+}
+
+/* Optional: Add a subtle glow effect on focus */
+#manual-refresh-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(15, 122, 74, 0.3);
+}
+   
+   /* Professional UI Improvements */
+   .content-area {
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.88));
+    backdrop-filter: blur(2px);
+   }
+   
+   .card {
+    transition: all 0.25s ease;
+    border: 1px solid rgba(15,122,74,0.08);
+   }
+   
+   .card:hover {
+    box-shadow: 0 8px 25px rgba(6,30,20,0.12);
+    border-color: rgba(15,122,74,0.15);
+   }
+   
+   .category-card {
+    transition: all 0.2s ease;
+    cursor: default;
+   }
+   
+   .category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(6,30,20,0.1);
+    background: #f0faf5;
+   }
+   
+   /* Status Card for Post-Calamity */
+   .status-card {
+    background: var(--light-green);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+   }
+   
+   .status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(6,30,20,0.08);
+   }
+   
+   .status-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+   }
+   
+   .status-yes {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #dc2626;
+   }
+   
+   .status-no {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #10b981;
+   }
+   
+   .status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+   }
+   
+   /* Professional Table Styling */
+   .breakdown-table-container {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    width: 100%;
+   }
+   
+   .breakdown-table-container h4 {
+    font-size: 0.9rem;
+    color: var(--accent1);
+    font-weight: 700;
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(15,122,74,0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+   }
+   
+   .breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    min-width: 600px;
+   }
+   
+   .breakdown-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--card-bg);
+   }
+   
+   .breakdown-table th {
+    background: rgba(15,122,74,0.08);
+    padding: 12px 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--accent1);
+    border-bottom: 2px solid rgba(15,122,74,0.15);
+    white-space: nowrap;
+   }
+   
+   .breakdown-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(15,122,74,0.08);
+    font-size: 0.85rem;
+    color: var(--muted);
+   }
+   
+   .breakdown-table tbody tr:hover {
+    background: rgba(52,183,143,0.04);
+   }
+   
+   .breakdown-table th:first-child,
+   .breakdown-table td:first-child {
+    position: sticky;
+    left: 0;
+    background: var(--card-bg);
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent1);
+   }
+   
+   .breakdown-table th:first-child {
+    background: rgba(15,122,74,0.12);
+    z-index: 25;
+   }
+   
+   .breakdown-table td:first-child {
+    z-index: 10;
+   }
+   
+   /* Scrollbar */
+   .breakdown-table-container::-webkit-scrollbar {
+    height: 8px;
+   }
+   
+   .breakdown-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+   }
+   
+   .breakdown-table-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+   }
+   
+   .breakdown-table-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+   }
+   
+   /* Chart Container */
+   .chart-container {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: var(--shadow);
+   }
+   
+   .chart-container h3 {
+    margin: 0 0 16px 0;
+    font-size: 1rem;
+    color: var(--accent1);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+   }
+   
+   /* Section Title */
+   .section-title {
+    font-size: 0.9rem;
+    color: var(--accent1);
+    font-weight: 700;
+    margin: 25px 0 15px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(15,122,74,0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+   }
+   
+   .section-title:first-child {
+    margin-top: 0;
+   }
+   
+   .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+   }
+   
+   .category-card {
+    padding: 14px;
+    background: var(--light-green);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+   }
+   
+   .category-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+   }
+   
+   .category-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent1);
+   }
+   
+   /* Dashboard Cards */
+   .dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 12px 0 18px 0;
+   }
+   
+   .card {
+    padding: 16px;
+    border-radius: var(--radius);
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
+   }
+   
+   .card h3 { 
+    margin: 0 0 8px 0; 
+    font-size: 14px; 
+    color: var(--accent1);
+    font-weight: 600;
+   }
+   
+   .card-value { 
+    font-size: 22px; 
+    font-weight: 800; 
+    color: #153b26;
+    margin: 8px 0;
+   }
+   
+   .mini { 
+    font-size: 12px; 
+    color: var(--muted);
+   }
+   
+   /* Population Overview Card */
+   .population-overview-card {
+    padding: 20px;
+    margin: 20px 0;
+   }
+   
+   /* Job Categories */
+   .job-category-group {
+    margin-bottom: 15px;
+   }
+   
+   .job-category-title {
+    font-size: 0.85rem;
+    color: var(--accent2);
+    font-weight: 600;
+    margin: 10px 0 8px 0;
+    padding-left: 8px;
+    border-left: 3px solid var(--accent2);
+   }
+   
+   /* Mobile Bottom Navigation */
+   .mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--border);
+    z-index: 1000;
+    padding: 8px 0;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+    height: 70px;
+    box-sizing: border-box;
+   }
+   
+   .mobile-nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+   }
+   
+   .mobile-nav-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    color: var(--muted) !important;
+    padding: 8px 12px !important;
+    border-radius: var(--radius-sm) !important;
+    transition: all 0.3s ease !important;
+    min-width: 60px !important;
+    flex: 1 !important;
+    height: 100% !important;
+    justify-content: center !important;
+   }
+   
+   .mobile-nav-item.admin-only {
+    display: none !important;
+   }
+   
+   .mobile-nav-item.admin-only.admin-visible {
+    display: flex !important;
+   }
+   
+   .mobile-nav-item.active {
+    color: var(--accent1) !important;
+    background: var(--light-green) !important;
+   }
+   
+   .mobile-nav-icon {
+    font-size: 1.2rem !important;
+    margin-bottom: 4px !important;
+   }
+   
+   .mobile-nav-text {
+    font-size: 0.7rem !important;
+    font-weight: 500 !important;
+   }
+   
+   /* Background */
+   .bg-pattern {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+   }
+   
+   .bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(15, 122, 74, 0.03);
+   }
+   
+   .circle-1 { width: 300px; height: 300px; top: -150px; right: -150px; }
+   .circle-2 { width: 200px; height: 200px; bottom: -100px; left: -100px; background: rgba(255, 122, 0, 0.03); }
+   .circle-3 { width: 150px; height: 150px; top: 50%; left: 10%; background: rgba(52, 183, 143, 0.03); }
+   
+   /* Admin Only */
+   .admin-only { display: none !important; }
+   .admin-only.admin-visible { display: block !important; }
+   li.admin-only { display: none !important; }
+   li.admin-only.admin-visible { display: list-item !important; }
+   
+   /* Topbar */
+   .topbar{
+    grid-column:1/-1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 14px;
+    border-radius:var(--radius);
+    background:linear-gradient(90deg, var(--accent1), var(--accent2));
+    color:#fff;
+    box-shadow:var(--shadow-dark);
+   }
+   
+   .brand{
+    display:flex;
+    gap:12px;
+    align-items:center;
+   }
+   
+   .brand .logo{
+    width:60px;
+    height:60px;
+    border-radius:var(--radius-sm);
+    object-fit:contain;
+   }
+   
+   .brand-text h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+   }
+   
+   .brand-text p {
+    font-size:12px;
+    opacity:0.95;
+    margin: 4px 0 0 0;
+   }
+   
+   .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+   }
+   
+   #userName {
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+   }
+   
+   #logoutBtn {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+   }
+   
+   #logoutBtn:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-1px);
+   }
+   
+   /* Sidebar */
+   .sidebar{
+    background: linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0.25));
+    border-radius:var(--radius);
+    padding:12px;
+    height:calc(100vh - 120px);
+    position:sticky;
+    top:72px;
+    overflow:auto;
+   }
+   
+   .sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+   }
+   
+   .sidebar-toggle {
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 12px;
+   }
+   
+   .sidebar ul{
+    list-style:none;
+    padding:0;
+    margin:0;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    flex: 1;
+   }
+   
+   .sidebar li a{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    text-decoration: none;
+    color: var(--muted);
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+   }
+   
+   .sidebar li a:hover{
+    background: var(--light-green);
+    color: var(--accent1);
+   }
+   
+   .sidebar li a.active{
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    color: #fff;
+    box-shadow: 0 4px 8px rgba(15,122,74,0.2);
+   }
+   
+   .sidebar li a .menu-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+   }
+   
+   .page-container.collapsed .sidebar li a .menu-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+   }
+   
+   /* Content Area */
+.content-area{
+    background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7));
+    border-radius:var(--radius);
+    padding:30px;  /* ← CHANGED to 30px */
+    box-shadow:0 8px 22px rgba(10,20,16,0.06);
+    min-height:72vh;
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+   
+   .content-header {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+   }
+   
+   .content-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--accent1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+   }
+   
+   #disc {
+    margin-bottom: 15px;
+    background: var(--light-green);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent1);
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+   }
+   
+   .breakdown-section1 {
+    margin-top: 10px;
+    width: 100%;
+    color: var(--accent1);
+   }
+   
+   .breakdown-section1 h3,
+   .breakdown-section h3 {
+    font-size: 1.1rem;
+    color: var(--accent1);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--light-green);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+   }
+   
+   .breakdown-section {
+    margin-top: 30px;
+    width: 100%;
+   }
+   
+   /* Page Container */
+.page-container{
+    max-width:1200px;  /* ← CHANGED to 1200px */
+    margin:20px auto;
+    padding:12px;
+    display:grid;
+    grid-template-columns:260px 1fr;
+    gap:18px;
+    align-items:start;
+    transition: grid-template-columns 0.3s ease;
+}
+   
+   .page-container.collapsed {
+    grid-template-columns: 60px 1fr;
+   }
+   
+   /* Loading */
+   #loading {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(255,255,255,0.9);
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+    backdrop-filter: blur(2px);
+   }
+   
+   .loading-content {
+    background:#fff;
+    padding:20px 24px;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+   }
+   
+   .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent1);
+    border-radius:50%;
+    animation: spin 1s linear infinite;
+   }
+   
+   @keyframes spin {
+    to { transform: rotate(360deg); }
+   }
+   
+   @keyframes pulse {
+       0% { box-shadow: 0 0 0 0 rgba(15, 122, 74, 0.4); }
+       70% { box-shadow: 0 0 0 10px rgba(15, 122, 74, 0); }
+       100% { box-shadow: 0 0 0 0 rgba(15, 122, 74, 0); }
+   }
+   
+   /* Mobile */
+   @media (max-width: 768px) {
+    body { padding-bottom: 70px; }
+    .page-container { grid-template-columns: 1fr !important; padding: 8px; gap: 12px; margin-bottom: 0; }
+    .sidebar { display: none !important; }
+    .mobile-bottom-nav { display: flex !important; }
+    .content-area { height: auto; min-height: calc(100vh - 140px); padding: 12px; margin-bottom: 0; }
+    .dashboard-cards { grid-template-columns: 1fr; }
+    .category-grid { grid-template-columns: repeat(2, 1fr); }
+    .status-grid { grid-template-columns: repeat(2, 1fr); }
+    .breakdown-table-container { padding: 12px; }
+    .breakdown-table { min-width: 800px; }
+    #userName { font-size: 0.85rem; }
+    #logoutBtn { padding: 6px 12px; font-size: 0.8rem; }
+    
+   }
+   
+   @media (min-width: 769px) and (max-width: 1024px) {
+    .page-container { max-width: 95%; grid-template-columns: 220px 1fr; gap: 15px; }
+    .content-area { padding: 15px; }
+    .mobile-bottom-nav { display: none; }
+   }
+   
+   @media (min-width: 1025px) {
+    .mobile-bottom-nav { display: none; }
+   }
+   /* ============================================
+   FORCE BOTTOM NAVIGATION – NO RIGHT GAP
+   Works for both admin (5 items) and staff (4 items)
+   ============================================ */
+@media (max-width: 768px) {
+    /* Make bottom nav full width */
+    .mobile-bottom-nav {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: white !important;
+        border-top: 1px solid var(--border, #e1e8e5) !important;
+        z-index: 1000 !important;
+        flex-direction: row !important;
+    }
+    
+    /* Nav items container – full width, no gaps */
+    .mobile-nav-items {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: stretch !important;
+        align-items: center !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        gap: 0 !important;
+    }
+    
+    /* Each nav item – equal width, no gaps */
+    .mobile-nav-item {
+        flex: 1 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        padding: 8px 0 !important;
+        margin: 0 !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 0 !important;
+    }
+    
+    /* Icon and text styling */
+    .mobile-nav-icon {
+        font-size: 1.1rem !important;
+        margin-bottom: 2px !important;
+    }
+    
+    .mobile-nav-text {
+        font-size: 0.6rem !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Hide Users tab for non-admin – it's already hidden via class */
+    .mobile-nav-item.admin-only:not(.admin-visible) {
+        display: none !important;
+    }
+    
+    /* When Users tab is hidden, remaining items automatically fill space */
+    .mobile-nav-item {
+        flex: 1 1 0% !important;
+    }
+    
+    /* Remove any body padding that might interfere */
+    body {
+        padding-bottom: 70px !important;
+        margin: 0 !important;
+    }
+    
+    /* Ensure page container doesn't add extra spacing */
+    .page-container {
+        padding: 8px 8px 0 8px !important;
+        margin: 0 !important;
+    }
+}
+/* ============================================
+   FIX MOBILE RIGHT GAP - DASHBOARD
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Force full width on body and containers */
+    body {
+        padding-bottom: 70px !important;
+        margin: 0 !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .page-container {
+        padding: 8px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    
+    .content-area {
+        padding: 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Fix bottom navigation - full width, no gaps */
+    .mobile-bottom-nav {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: white !important;
+        border-top: 1px solid var(--border, #e1e8e5) !important;
+        z-index: 1000 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .mobile-nav-items {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .mobile-nav-item {
+        flex: 1 !important;
+        text-align: center !important;
+        padding: 8px 0 !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Fix category cards - prevent overflow */
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .category-card {
+        min-width: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 8px 4px !important;
+    }
+    
+    /* Fix status grid */
+    .status-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .status-card {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 8px 4px !important;
+    }
+    
+    /* Fix dashboard cards */
+    .dashboard-cards {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .card {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Fix breakdown tables */
+    .breakdown-table-container {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 8px !important;
+    }
+    
+    .breakdown-table {
+        min-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    /* Ensure all elements use border-box */
+    * {
+        box-sizing: border-box !important;
+    }
+}
+/* ============================================
+   FIX SIDEBAR SIZE - MATCH OTHER PAGES
+   ============================================ */
+
+/* Desktop sidebar - ensure consistent width */
+.sidebar {
+    width: 260px !important;
+    min-width: 260px !important;
+    padding: 12px !important;
+    box-sizing: border-box !important;
+}
+
+/* When sidebar is collapsed */
+.page-container.collapsed .sidebar {
+    width: 60px !important;
+    min-width: 60px !important;
+}
+
+/* Sidebar links - consistent spacing */
+.sidebar li a {
+    padding: 12px !important;
+    gap: 12px !important;
+}
+
+.sidebar li a .menu-icon {
+    width: 24px !important;
+    font-size: 1.2rem !important;
+}
+
+.sidebar li a .menu-text {
+    font-size: 0.9rem !important;
+}
+
+/* Mobile - hide sidebar as before */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none !important;
+    }
+}
+/* ============================================
+   FORCE SIDEBAR WIDTH - MATCH OTHER PAGES
+   ============================================ */
+.sidebar {
+    width: 260px !important;
+    min-width: 260px !important;
+    max-width: 260px !important;
+}
+
+.page-container.collapsed .sidebar {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}
+
+/* Sidebar links */
+.sidebar li a {
+    padding: 12px !important;
+}
+
+.sidebar li a .menu-icon {
+    width: 24px !important;
+    font-size: 1.2rem !important;
+}
+
+.sidebar li a .menu-text {
+    font-size: 0.9rem !important;
+}
+/* ============================================
+   FIX SIDEBAR ICON SIZE - MATCH OTHER PAGES
+   ============================================ */
+.sidebar li a .menu-icon {
+    width: 24px !important;
+    min-width: 24px !important;
+    font-size: 1.2rem !important;
+    text-align: center !important;
+}
+
+.sidebar li a .menu-icon i {
+    font-size: 1.2rem !important;
+}
+
+.sidebar li a .menu-text {
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+}
+
+/* Ensure sidebar width is correct */
+.sidebar {
+    width: 260px !important;
+    min-width: 260px !important;
+}
+
+.page-container.collapsed .sidebar {
+    width: 60px !important;
+    min-width: 60px !important;
+}
+
+.page-container.collapsed .sidebar li a .menu-icon {
+    font-size: 1.2rem !important;
+}
+/* ============================================
+   FIX MOBILE BOTTOM NAV HEIGHT - MATCH OTHER PAGES
+   ============================================ */
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        height: 70px !important;
+        min-height: 70px !important;
+        padding: 8px 0;
+    }
+    
+    .mobile-nav-items {
+        height: 100% !important;
+        min-height: 54px !important;
+    }
+    
+    .mobile-nav-item {
+        padding: 8px 0 !important;
+        height: 100% !important;
+    }
+    
+    .mobile-nav-icon {
+        font-size: 1.2rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .mobile-nav-text {
+        font-size: 0.7rem !important;
+    }
+}
+/* ============================================
+   MOBILE ONLY - ALIGN REFRESH BUTTON WITH TITLE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .content-header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .content-header h2 {
+        font-size: 0.85rem !important;
+        margin: 0 !important;
+        white-space: nowrap !important;
+    }
+    
+    #manual-refresh-btn {
+        padding: 4px 10px !important;
+        font-size: 0.65rem !important;
+        height: 28px !important;
+        margin-left: auto !important;
+        flex-shrink: 0 !important;
+    }
+    
+    #manual-refresh-btn i {
+        font-size: 0.6rem !important;
+    }
+}
+/* ============================================
+   GUEST USER - MOBILE NAVIGATION RESTRICTIONS
+   Only show Dashboard tab for guests on mobile
+   ============================================ */
+
+/* When user is guest, hide all mobile nav items except Dashboard */
+body.guest-user .mobile-nav-item:not(.mobile-nav-dashboard) {
+    display: none !important;
+}
+
+/* Make Dashboard tab take full width when guest */
+body.guest-user .mobile-nav-item.mobile-nav-dashboard {
+    flex: 1 !important;
+    width: 100% !important;
+}
+
+</style>
+</head>
+
+<body>
+<div class="bg-pattern">
+    <div class="bg-circle circle-1"></div>
+    <div class="bg-circle circle-2"></div>
+    <div class="bg-circle circle-3"></div>
+</div>
+
+<div class="page-container">
+<header class="topbar">
+    <div class="brand">
+        <img src="assets/MDRRMO Logo.png" class="logo" alt="Logo"/>
+        <div class="brand-text">
+            <h1>PUROK KALIGTASAN 133</h1>
+            <p>MDRRMO Alitagtag – Household Records System</p>
+        </div>
+    </div>
+    <div class="user-info">
+        <div class="user-dropdown" id="userDropdown">
+            <div class="user-btn" id="userBtn">
+                <i class="fas fa-user-circle"></i>
+                <div class="user-info-dropdown">
+                    <span class="user-fullname" id="userFullname">Loading...</span>
+                    <span class="user-role-dropdown" id="userRole">Loading...</span>
+                </div>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-container">
+      <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+<ul>
+    <li><a href="dashboard.html" class="active">
+        <span class="menu-icon"><i class="fas fa-tachometer-alt"></i></span> 
+        <span class="menu-text">Dashboard</span>
+    </a></li>
+    <li><a href="dataForm.html">
+        <span class="menu-icon"><i class="fas fa-edit"></i></span> 
+        <span class="menu-text">Data Entry</span>
+    </a></li>
+    <li><a href="records.html">
+        <span class="menu-icon"><i class="fas fa-database"></i></span> 
+        <span class="menu-text">Records & Management</span>
+    </a></li>
+    <li><a href="charts.html">
+        <span class="menu-icon"><i class="fas fa-chart-bar"></i></span> 
+        <span class="menu-text">Charts & Analytics</span>
+    </a></li>
+    <li class="admin-only"><a href="users.html">
+        <span class="menu-icon"><i class="fas fa-users-cog"></i></span> 
+        <span class="menu-text">User Management</span>
+    </a></li>
+</ul>
+    </div>
+  </aside>
+
+  <main class="content-area">
+<div class="content-header">
+    <h2><i class="fas fa-tachometer-alt"></i>Dashboard Overview</h2>
+    <button id="manual-refresh-btn">
+        <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+</div>
+    <div id="disc">This dashboard presents a comprehensive summary of all household records in the Purok Kaligtasan database. It provides real-time insights into population demographics, health status, social services, and calamity impact assessment for effective planning and emergency response.</div>
+
+    <!-- Top Cards -->
+    <div class="breakdown-section1">
+      <h3><i class="fas fa-database"></i> Alitagtag Data Overview</h3>
+    </div>
+    <div class="dashboard-cards">
+      <div class="card"><h3>Total Household Heads</h3><div id="totalHeads" class="card-value">0</div></div>
+      <div class="card"><h3>Total Household Members</h3><div id="totalMembers" class="card-value">0</div></div>
+      <div class="card" id="lastUpdatedCard"><h3>Last Updated</h3><div id="lastUpdated" class="card-value">---</div><div class="mini" id="lastUpdatedDetails">No recent updates</div></div>
+    </div>
+
+    <!-- Basic Population Overview Card -->
+    <div class="card population-overview-card">
+      <h3><i class="fas fa-chart-pie"></i> Population Overview</h3>
+      
+      <!-- Household Distribution Chart (MOVED HERE) -->
+      <div class="chart-container" style="margin: 0 0 20px 0; padding: 15px;">
+        <h3><i class="fas fa-chart-bar"></i> Household Distribution</h3>
+        <canvas id="barangayChart" height="140" style="max-height: 280px;"></canvas>
+      </div>
+
+      <!-- Geographic/Spatial Data Section -->
+      <div class="section-title"><i class="fas fa-map-marker-alt"></i> Geographic / Spatial Data</div>
+      <div class="category-grid" id="geographicStats"></div>
+      
+      <!-- Demographics Section (with LGBT card, no PWD) -->
+      <div class="section-title"><i class="fas fa-users"></i> Demographics</div>
+      <div class="category-grid" id="demographicsStats"></div>
+
+      <!-- FishR & RSBSA -->
+      <div class="section-title"><i class="fas fa-fish"></i> FishR & RSBSA Registered</div>
+      <div class="category-grid" id="fishrStats"></div>
+      
+      <!-- Health / Special Status Section (PWD only) -->
+      <div class="section-title"><i class="fas fa-heartbeat"></i> Health / Special Status</div>
+      <div class="category-grid" id="healthSpecialStats"></div>
+
+      <!-- Type of Disability Table -->
+      <div class="section-title"><i class="fas fa-wheelchair"></i> Type of Disability</div>
+      <div class="category-grid" id="disabilityTypeStats"></div>
+
+      <!-- Household / Social Status Section (Solo Parenting only, no LGBT) -->
+      <div class="section-title"><i class="fas fa-home"></i> Household / Social Status</div>
+      <div class="category-grid" id="householdSocialStats"></div>
+      
+      <!-- Health and Nutrition Status (Pregnant, Lactating, Common Sickness, Severe Illness) -->
+      <div class="section-title"><i class="fas fa-apple-alt"></i> Health and Nutrition Status</div>
+      <div class="category-grid" id="healthNutritionStats"></div>
+      
+      <!-- Educational Attainment -->
+      <div class="section-title"><i class="fas fa-graduation-cap"></i> Educational Attainment</div>
+      <div class="category-grid" id="educationStats"></div>
+      
+      <!-- Employment Status -->
+      <div class="section-title"><i class="fas fa-briefcase"></i> Employment Status</div>
+      <div class="category-grid" id="employmentStats"></div>
+      
+      <!-- Job Categories -->
+      <div class="section-title"><i class="fas fa-tasks"></i> Job Title and Description</div>
+      <div class="job-category-group"><div class="job-category-title">Office & Administrative Jobs</div><div class="category-grid" id="officeJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">Business & Management</div><div class="category-grid" id="businessJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">Accounting & Finance</div><div class="category-grid" id="accountingJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">IT & Tech</div><div class="category-grid" id="itJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">Healthcare</div><div class="category-grid" id="healthcareJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">Education</div><div class="category-grid" id="educationJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">Sales & Customer Service</div><div class="category-grid" id="salesJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">Skilled Work & Labor</div><div class="category-grid" id="skilledJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">Delivery & Logistics</div><div class="category-grid" id="deliveryJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">Food & Hospitality</div><div class="category-grid" id="foodJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">Security & Public Service</div><div class="category-grid" id="securityJobs"></div></div>
+      <div class="job-category-group"><div class="job-category-title">Media, Design & Creative</div><div class="category-grid" id="mediaJobs"></div></div>
+      
+      <!-- OFW Countries -->
+      <div class="section-title"><i class="fas fa-globe-asia"></i> OFW Countries</div>
+      <div class="category-grid" id="ofwCountriesStats"></div>
+      
+      <!-- Domestic Livestock -->
+      <div class="section-title"><i class="fas fa-paw"></i> Domestic Livestock</div>
+      <div class="category-grid" id="livestockStats"></div>
+
+    <!-- Post-Calamity Impact Summary (shows only count, red color for numbers) -->
+      <div class="section-title"><i class="fas fa-tornado"></i> Post-Calamity Impact Summary</div>
+      <div class="status-grid" id="calamityImpactStats"></div>
+    </div>
+
+    <!-- Barangay Breakdown Section -->
+    <div class="breakdown-section">
+      <h3><i class="fas fa-table"></i> Barangay Data Overview</h3>
+
+      <!-- 1. Demographics & Location Availability (NO PWD column) -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-chart-bar"></i> Demographics & Location Availability</h4>
+        <table class="breakdown-table" id="tblSummary">
+          <thead><tr><th>Barangay</th><th>Male</th><th>Female</th><th>LGBTQ+</th><th>With Coordinates</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+            <!-- 8. Sitio/Purok Summary -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-map-marker-alt"></i> Sitio / Purok Summary</h4>
+        <table class="breakdown-table" id="tblSitio">
+          <thead><tr><th>Barangay</th><th>I</th><th>II</th><th>III</th><th>IV</th><th>V</th><th>VI</th><th>VII</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+            <!-- 7. Population Age Groups -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-users"></i> Population Age Groups</h4>
+        <table class="breakdown-table" id="tblAge">
+          <thead><tr><th>Barangay</th><th>0-5</th><th>6-17</th><th>18-59</th><th>60+</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+            <!-- 10. Educational Attainment by Barangay -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-graduation-cap"></i> Educational Attainment</h4>
+        <table class="breakdown-table" id="tblBarangayEducation">
+          <thead><tr><th>Barangay</th><th>No Formal</th><th>Elem Level</th><th>Elem Grad</th><th>JHS Level</th><th>JHS Grad</th><th>SHS Level</th><th>SHS Grad</th><th>ALS Grad</th><th>SPED Grad</th><th>Vocational Grad</th><th>College Level</th><th>College Grad</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+            <!-- 12. FishR & RSBSA Registration by Barangay -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-fish"></i> FishR & RSBSA Registration</h4>
+        <table class="breakdown-table" id="tblBarangayFishR">
+          <thead><tr><th>Barangay</th><th>FishR</th><th>RSBSA</th><th>Both</th><th>Not Registered</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+                  <!-- 13. OFW Countries by Barangay -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-globe-asia"></i> OFW Countries</h4>
+        <table class="breakdown-table" id="tblBarangayOFW">
+          <thead><tr><th>Barangay</th><th>Saudi</th><th>UAE</th><th>Qatar</th><th>Kuwait</th><th>Bahrain</th><th>Oman</th><th>Hong Kong</th><th>Singapore</th><th>Japan</th><th>Taiwan</th><th>Malaysia</th><th>Australia</th><th>New Zealand</th><th>Italy</th><th>UK</th><th>Germany</th><th>Cyprus</th><th>Canada</th><th>USA</th><th>Libya</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      
+      <!-- 4. Household / Social Status per Barangay (Solo Parenting only) - NEW -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-home"></i> Household / Social Status</h4>
+        <table class="breakdown-table" id="tblHouseholdSocialStatus">
+          <thead><tr><th>Barangay</th><th>Solo Parenting</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+            <!-- 3. Health / Special Status per Barangay (PWD and Not PWD) - NEW -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-wheelchair"></i> Health / Special Status</h4>
+        <table class="breakdown-table" id="tblHealthSpecialStatus">
+          <thead><tr><th>Barangay</th><th>PWD</th><th>Not PWD</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+            <!-- 6. Type of Disability per Barangay - NEW -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-wheelchair"></i> Type of Disability</h4>
+        <table class="breakdown-table" id="tblDisabilityType">
+          <thead><tr><th>Barangay</th><th>Physical</th><th>Visual</th><th>Hearing</th><th>Speech</th><th>Intellectual</th><th>Psychosocial</th><th>Learning</th><th>Multiple</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+            <!-- 5. Health and Nutrition Status per Barangay (Pregnant, Lactating, Common Sickness, Severe Illness) - NEW -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-heartbeat"></i> Health and Nutrition Status</h4>
+        <table class="breakdown-table" id="tblHealthNutrition">
+          <thead><tr><th>Barangay</th><th>Pregnant</th><th>Lactating</th><th>Common Sickness</th><th>Severe Illness</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+            <!-- 11. Employment Status by Barangay -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-briefcase"></i> Employment Status</h4>
+        <table class="breakdown-table" id="tblBarangayEmployment">
+          <thead><tr><th>Barangay</th><th>Employed</th><th>Unemployed</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+            <!-- 9. Domestic Livestock -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-paw"></i> Domestic Livestock</h4>
+        <table class="breakdown-table" id="tblLivestock">
+          <thead><tr><th>Barangay</th><th>Dog</th><th>Cat</th><th>Pig</th><th>Cow</th><th>Carabao</th><th>Chicken</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- 2. Government Support -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-handshake"></i> Government Assistance Programs</h4>
+        <table class="breakdown-table" id="tblSupport">
+          <thead><tr><th>Barangay</th><th>TUPAD</th><th>Local 4Ps</th><th>National 4Ps</th><th>Local SP</th><th>National SP</th><th>Solo Parent</th><th>Relief Goods</th><th>Cash Subsidy</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="mobile-bottom-nav">
+    <div class="mobile-nav-items">
+        <a href="dashboard.html" class="mobile-nav-item active">
+            <span class="mobile-nav-icon"><i class="fas fa-tachometer-alt"></i></span>
+            <span class="mobile-nav-text">Dashboard</span>
+        </a>
+        <a href="dataForm.html" class="mobile-nav-item">
+            <span class="mobile-nav-icon"><i class="fas fa-edit"></i></span>
+            <span class="mobile-nav-text">Data Entry</span>
+        </a>
+        <a href="records.html" class="mobile-nav-item">
+            <span class="mobile-nav-icon"><i class="fas fa-database"></i></span>
+            <span class="mobile-nav-text">Records</span>
+        </a>
+        <a href="charts.html" class="mobile-nav-item">
+            <span class="mobile-nav-icon"><i class="fas fa-chart-bar"></i></span>
+            <span class="mobile-nav-text">Charts</span>
+        </a>
+        <a href="users.html" class="mobile-nav-item admin-only">
+            <span class="mobile-nav-icon"><i class="fas fa-users-cog"></i></span>
+            <span class="mobile-nav-text">Users</span>
+        </a>
+    </div>
+</nav>
+
+<div id="loading"><div class="loading-content"><div class="loading-spinner"></div><div>Loading dashboard data…</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ============================================
+// SUPABASE CONFIGURATION - Use unique variable name
+// ============================================
+const SUPABASE_URL = 'https://opibntxwagnjazpbtxrv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UwyTZU3BYj41z0D7beu9Hg_pIZcLeWN';
+
+// Create a dedicated dashboard supabase client with unique name
+let dashboardSupabase = null;
+
+// Initialize Supabase client
+if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+    dashboardSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✅ Dashboard Supabase client created');
+} else if (window.supabaseClient && typeof window.supabaseClient.from === 'function') {
+    dashboardSupabase = window.supabaseClient;
+    console.log('✅ Using existing window.supabaseClient');
+} else {
+    console.error('❌ Cannot initialize Supabase - SDK not loaded');
+}
+
+let chart = null;
+let refreshInterval = null;
+
+// Age calculation from birthdate
+function calculateAgeGroup(birthdate) {
+    if (!birthdate) return 'Unknown';
+    let birth;
+    if (birthdate.includes('/')) {
+        const parts = birthdate.split('/');
+        birth = new Date(parts[2], parts[0] - 1, parts[1]);
+    } else {
+        birth = new Date(birthdate);
+    }
+    if (isNaN(birth)) return 'Unknown';
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    
+    if (age < 1) return 'Infant (<1)';
+    if (age < 6) return '0-5';
+    if (age < 18) return '6-17';
+    if (age < 60) return '18-59';
+    return '60+';
+}
+
+// Calculate age from birthdate string
+function calculateAge(birthdateStr) {
+    if (!birthdateStr) return null;
+    let birthdate;
+    if (birthdateStr.includes('/')) {
+        const parts = birthdateStr.split('/');
+        birthdate = new Date(parts[2], parts[0] - 1, parts[1]);
+    } else {
+        birthdate = new Date(birthdateStr);
+    }
+    if (isNaN(birthdate)) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birthdate.getFullYear();
+    const m = today.getMonth() - birthdate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthdate.getDate())) age--;
+    return age;
+}
+
+// Fetch data from Supabase
+async function fetchDashboardData() {
+    console.log('Fetching dashboard data from Supabase...');
+    
+    if (!dashboardSupabase) {
+        console.error('Dashboard Supabase client not initialized');
+        return null;
+    }
+    
+    try {
+        // Test connection first
+        const { error: testError } = await dashboardSupabase
+            .from('households')
+            .select('id', { count: 'exact', head: true });
+        
+        if (testError) {
+            console.error('Supabase connection test failed:', testError);
+            return null;
+        }
+        console.log('Supabase connection successful');
+        
+        // Fetch households
+        const { data: households, error: householdsError } = await dashboardSupabase
+            .from('households')
+            .select('*');
+        
+        if (householdsError) {
+            console.error('Households fetch error:', householdsError);
+            throw householdsError;
+        }
+        
+        // Fetch all persons
+        const { data: persons, error: personsError } = await dashboardSupabase
+            .from('persons')
+            .select('*');
+        
+        if (personsError) {
+            console.error('Persons fetch error:', personsError);
+            throw personsError;
+        }
+        
+        // Fetch livestock
+        const { data: livestock, error: livestockError } = await dashboardSupabase
+            .from('livestock')
+            .select('*');
+        
+        if (livestockError) console.warn('Livestock fetch error:', livestockError);
+        
+        // Fetch gov assistance
+        const { data: govAssistance, error: govError } = await dashboardSupabase
+            .from('gov_assistance')
+            .select('*');
+        
+        if (govError) console.warn('Gov assistance fetch error:', govError);
+        
+        console.log(`✅ Fetched: ${households?.length || 0} households, ${persons?.length || 0} persons`);
+        
+        return { households: households || [], persons: persons || [], livestock: livestock || [], govAssistance: govAssistance || [] };
+        
+    } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        return null;
+    }
+}
+
+// Process and display dashboard data
+async function loadDashboard(showLoader = false) {
+    if (showLoader) showLoading(true);
+    
+    try {
+        const data = await fetchDashboardData();
+        if (!data || !data.households || data.households.length === 0) {
+            console.warn('No data received or empty dataset');
+            if (showLoader) showLoading(false);
+            return;
+        }
+        
+        processDashboardData(data);
+        
+    } catch (err) {
+        console.error('Dashboard error:', err);
+    } finally {
+        if (showLoader) showLoading(false);
+    }
+}
+
+function processDashboardData(data) {
+    const { households, persons, livestock } = data;
+    
+    console.log('Processing data...');
+    
+    // Group by barangay
+    const barangayMap = {};
+    
+    // Initialize barangay map from households
+    households.forEach(h => {
+        const barangay = h.barangay || 'Unknown';
+        if (!barangayMap[barangay]) {
+            barangayMap[barangay] = {
+                households: 0,
+                members: 0,
+                male: 0, female: 0, lgbt: 0,
+                pwd: 0,
+                employed: 0, unemployed: 0,
+                ofw: 0,
+                soloParenting: 0,
+                pregnant: 0, lactating: 0,
+                ageGroups: { '0-5': 0, '6-17': 0, '18-59': 0, '60+': 0 },
+                education: {},
+                disabilityTypes: { physical: 0, visual: 0, hearing: 0, speech: 0, intellectual: 0, psychosocial: 0, learning: 0, multiple: 0 },
+                livestock: { dog: 0, cat: 0, pig: 0, cow: 0, carabao: 0, chicken: 0 },
+                coordinates: h.coordinate_lat && h.coordinate_lng ? 1 : 0
+            };
+        }
+        barangayMap[barangay].households++;
+        if (h.coordinate_lat && h.coordinate_lng) {
+            barangayMap[barangay].coordinates++;
+        }
+    });
+    
+    // Process persons
+    let totalPersons = 0;
+    let totalMale = 0, totalFemale = 0, totalLgbt = 0;
+    let totalPwd = 0, totalEmployed = 0, totalUnemployed = 0, totalOfw = 0;
+    let totalSoloParenting = 0, totalPregnant = 0, totalLactating = 0;
+    let ageGroupTotals = { '0-5': 0, '6-17': 0, '18-59': 0, '60+': 0 };
+    let educationTotals = {};
+    let disabilityTypeTotals = { physical: 0, visual: 0, hearing: 0, speech: 0, intellectual: 0, psychosocial: 0, learning: 0, multiple: 0 };
+    let livestockTotals = { dog: 0, cat: 0, pig: 0, cow: 0, carabao: 0, chicken: 0 };
+    let ofwCountries = {};
+    
+    persons.forEach(p => {
+        totalPersons++;
+        
+        // Find barangay from household
+        let barangay = 'Unknown';
+        const household = households.find(h => h.id === p.household_id);
+        if (household) {
+            barangay = household.barangay || 'Unknown';
+        }
+        
+        const b = barangayMap[barangay];
+        if (b) {
+            if (p.person_type === 'MEMBER') b.members++;
+            
+            // Gender
+            const gender = (p.gender || '').toLowerCase();
+            if (gender === 'male') { b.male++; totalMale++; }
+            else if (gender === 'female') { b.female++; totalFemale++; }
+            else if (gender === 'lgbtq+') { b.lgbt++; totalLgbt++; }
+            
+            // PWD
+            if (p.is_pwd === true) { b.pwd++; totalPwd++; }
+            
+            // Disability type
+            const disability = (p.disability_type || '').toLowerCase();
+            if (disability.includes('physical')) { b.disabilityTypes.physical++; disabilityTypeTotals.physical++; }
+            else if (disability.includes('visual')) { b.disabilityTypes.visual++; disabilityTypeTotals.visual++; }
+            else if (disability.includes('hearing')) { b.disabilityTypes.hearing++; disabilityTypeTotals.hearing++; }
+            else if (disability.includes('speech')) { b.disabilityTypes.speech++; disabilityTypeTotals.speech++; }
+            else if (disability.includes('intellectual')) { b.disabilityTypes.intellectual++; disabilityTypeTotals.intellectual++; }
+            else if (disability.includes('psychosocial')) { b.disabilityTypes.psychosocial++; disabilityTypeTotals.psychosocial++; }
+            else if (disability.includes('learning')) { b.disabilityTypes.learning++; disabilityTypeTotals.learning++; }
+            else if (disability.includes('multiple')) { b.disabilityTypes.multiple++; disabilityTypeTotals.multiple++; }
+            
+            // Solo Parenting
+            if (p.solo_parenting === 'Yes') { b.soloParenting++; totalSoloParenting++; }
+            
+            // Pregnant
+            if (p.pregnant === 'Yes') { b.pregnant++; totalPregnant++; }
+            
+            // Lactating
+            if (p.lactating === 'Yes') { b.lactating++; totalLactating++; }
+            
+            // Employment
+            if (p.employment_status === 'Employed') { b.employed++; totalEmployed++; }
+            else if (p.employment_status === 'Unemployed') { b.unemployed++; totalUnemployed++; }
+            
+            // OFW
+            if (p.is_ofw === true) { 
+                b.ofw++; 
+                totalOfw++;
+                if (p.ofw_country) {
+                    const country = p.ofw_country;
+                    ofwCountries[country] = (ofwCountries[country] || 0) + 1;
+                }
+            }
+            
+            // Age Group
+            const age = calculateAge(p.birthdate);
+            let ageGroup = '18-59';
+            if (age !== null) {
+                if (age < 6) ageGroup = '0-5';
+                else if (age < 18) ageGroup = '6-17';
+                else if (age < 60) ageGroup = '18-59';
+                else ageGroup = '60+';
+                b.ageGroups[ageGroup] = (b.ageGroups[ageGroup] || 0) + 1;
+                ageGroupTotals[ageGroup]++;
+            }
+            
+            // Education
+            const edu = p.educational_attainment;
+            if (edu) {
+                b.education[edu] = (b.education[edu] || 0) + 1;
+                educationTotals[edu] = (educationTotals[edu] || 0) + 1;
+            }
+        }
+    });
+    
+    // Process Livestock
+    livestock.forEach(l => {
+        const household = households.find(h => h.id === l.household_id);
+        if (household) {
+            const barangay = household.barangay || 'Unknown';
+            const b = barangayMap[barangay];
+            if (b) {
+                const type = (l.animal_type || '').toLowerCase();
+                if (type === 'dog') { b.livestock.dog += l.quantity; livestockTotals.dog += l.quantity; }
+                else if (type === 'cat') { b.livestock.cat += l.quantity; livestockTotals.cat += l.quantity; }
+                else if (type === 'pig') { b.livestock.pig += l.quantity; livestockTotals.pig += l.quantity; }
+                else if (type === 'cow') { b.livestock.cow += l.quantity; livestockTotals.cow += l.quantity; }
+                else if (type === 'carabao') { b.livestock.carabao += l.quantity; livestockTotals.carabao += l.quantity; }
+                else if (type === 'chicken') { b.livestock.chicken += l.quantity; livestockTotals.chicken += l.quantity; }
+            }
+        }
+    });
+    
+    // Update UI elements
+    const totalHeadsEl = document.getElementById('totalHeads');
+    const totalMembersEl = document.getElementById('totalMembers');
+    if (totalHeadsEl) totalHeadsEl.innerText = households.length;
+    if (totalMembersEl) totalMembersEl.innerText = totalPersons - households.length;
+    
+    // Demographics (gender)
+    const demographicsDiv = document.getElementById('demographicsStats');
+    if (demographicsDiv) {
+        demographicsDiv.innerHTML = `
+            <div class="category-card"><div class="category-label">Male</div><div class="category-value">${totalMale}</div></div>
+            <div class="category-card"><div class="category-label">Female</div><div class="category-value">${totalFemale}</div></div>
+            <div class="category-card"><div class="category-label">LGBTQ+</div><div class="category-value">${totalLgbt}</div></div>
+        `;
+    }
+    
+    // Health Special (PWD)
+    const healthSpecialDiv = document.getElementById('healthSpecialStats');
+    if (healthSpecialDiv) {
+        healthSpecialDiv.innerHTML = `<div class="category-card"><div class="category-label">PWD</div><div class="category-value">${totalPwd}</div></div>`;
+    }
+    
+    // Household Social Status
+    const householdSocialDiv = document.getElementById('householdSocialStats');
+    if (householdSocialDiv) {
+        householdSocialDiv.innerHTML = `<div class="category-card"><div class="category-label">Solo Parenting</div><div class="category-value">${totalSoloParenting}</div></div>`;
+    }
+    
+    // Health Nutrition
+    const healthNutritionDiv = document.getElementById('healthNutritionStats');
+    if (healthNutritionDiv) {
+        healthNutritionDiv.innerHTML = `
+            <div class="category-card"><div class="category-label">Pregnant</div><div class="category-value">${totalPregnant}</div></div>
+            <div class="category-card"><div class="category-label">Lactating</div><div class="category-value">${totalLactating}</div></div>
+        `;
+    }
+    
+    // Disability Types
+    const disabilityDiv = document.getElementById('disabilityTypeStats');
+    if (disabilityDiv) {
+        const disabilityMap = {
+            physical: 'Physical Disability', visual: 'Visual Disability', hearing: 'Hearing Disability',
+            speech: 'Speech Impairment', intellectual: 'Intellectual Disability', psychosocial: 'Psychosocial Disability',
+            learning: 'Learning Disability', multiple: 'Multiple Disabilities'
+        };
+        disabilityDiv.innerHTML = Object.entries(disabilityTypeTotals)
+            .filter(([_, count]) => count > 0)
+            .map(([type, count]) => `<div class="category-card"><div class="category-label">${disabilityMap[type] || type}</div><div class="category-value">${count}</div></div>`)
+            .join('');
+        if (Object.values(disabilityTypeTotals).every(v => v === 0)) {
+            disabilityDiv.innerHTML = '<div class="category-card"><div class="category-label">No PWD records</div><div class="category-value">0</div></div>';
+        }
+    }
+    
+    // Educational Attainment
+    const educationStatsDiv = document.getElementById('educationStats');
+    if (educationStatsDiv) {
+        const topEdu = Object.entries(educationTotals).sort((a,b) => b[1] - a[1]).slice(0, 12);
+        educationStatsDiv.innerHTML = topEdu.map(([edu, count]) => 
+            `<div class="category-card"><div class="category-label">${edu.substring(0, 25)}</div><div class="category-value">${count}</div></div>`
+        ).join('');
+        if (topEdu.length === 0) educationStatsDiv.innerHTML = '<div class="category-card">No education data</div>';
+    }
+    
+    // Employment Status
+    const employmentStatsDiv = document.getElementById('employmentStats');
+    if (employmentStatsDiv) {
+        employmentStatsDiv.innerHTML = `
+            <div class="category-card"><div class="category-label">Employed</div><div class="category-value">${totalEmployed}</div></div>
+            <div class="category-card"><div class="category-label">Unemployed</div><div class="category-value">${totalUnemployed}</div></div>
+        `;
+    }
+    
+    // OFW Countries
+    const ofwDiv = document.getElementById('ofwCountriesStats');
+    if (ofwDiv) {
+        ofwDiv.innerHTML = Object.entries(ofwCountries)
+            .sort((a,b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([country, count]) => `<div class="category-card"><div class="category-label">${country}</div><div class="category-value">${count}</div></div>`)
+            .join('');
+        if (Object.keys(ofwCountries).length === 0) {
+            ofwDiv.innerHTML = '<div class="category-card">No OFW data</div>';
+        }
+    }
+    
+    // Livestock
+    const livestockDiv = document.getElementById('livestockStats');
+    if (livestockDiv) {
+        const livestockNames = { dog: 'Dog', cat: 'Cat', pig: 'Pig', cow: 'Cow', carabao: 'Carabao', chicken: 'Chicken' };
+        livestockDiv.innerHTML = Object.entries(livestockTotals)
+            .filter(([_, count]) => count > 0)
+            .map(([animal, count]) => `<div class="category-card"><div class="category-label">${livestockNames[animal]}</div><div class="category-value">${count}</div></div>`)
+            .join('');
+        if (Object.values(livestockTotals).every(v => v === 0)) {
+            livestockDiv.innerHTML = '<div class="category-card">No livestock records</div>';
+        }
+    }
+    
+    // Update chart
+    if (chart) chart.destroy();
+    const ctx = document.getElementById('barangayChart');
+    if (ctx) {
+        const labels = Object.keys(barangayMap).sort();
+        const headsData = labels.map(l => barangayMap[l].households);
+        const membersData = labels.map(l => barangayMap[l].members);
+        
+        chart = new Chart(ctx, {
+            type: 'bar',
+            data: { 
+                labels, 
+                datasets: [
+                    { label: 'Heads', data: headsData, backgroundColor: '#2b9348', borderRadius: 6 },
+                    { label: 'Members', data: membersData, backgroundColor: '#55a630', borderRadius: 6 }
+                ] 
+            },
+            options: { responsive: true, maintainAspectRatio: true }
+        });
+    }
+    
+    console.log('✅ Dashboard updated successfully');
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+function showLoading(show) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = show ? 'flex' : 'none';
+}
+
+function checkLogin() {
+    const loggedIn = localStorage.getItem('loggedIn') === 'true';
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    
+    if (!loggedIn && !isGuest) {
+        window.location.href = 'index.html?session=expired';
+        return false;
+    }
+    
+    // Get user info from localStorage
+    const staffName = localStorage.getItem('staffName');
+    const username = localStorage.getItem('username');
+    const userRole = localStorage.getItem('userRole');
+    
+    // Determine display name - priority: staffName > username > Guest User
+    let displayName = 'User';
+    if (isGuest) {
+        displayName = 'Guest User';
+    } else if (staffName && staffName.trim() !== '') {
+        displayName = staffName;
+    } else if (username && username.trim() !== '') {
+        displayName = username;
+    }
+    
+    // Determine role display
+    let displayRole = '';
+    if (isGuest) {
+        displayRole = 'Guest (View Only)';
+    } else if (userRole && userRole.trim() !== '') {
+        displayRole = userRole;
+    } else {
+        displayRole = 'Staff';
+    }
+    
+    console.log('User info - Name:', displayName, 'Role:', displayRole, 'IsGuest:', isGuest);
+    
+    // Update the user fullname element (for the header dropdown)
+    const userFullnameElement = document.getElementById('userFullname');
+    if (userFullnameElement) {
+        userFullnameElement.innerText = displayName;
+    }
+    
+    // Update the user role element
+    const userRoleElement = document.getElementById('userRole');
+    if (userRoleElement) {
+        userRoleElement.innerText = displayRole;
+    }
+    
+    // Also update the simple userName element if it exists (for compatibility)
+    const userNameElement = document.getElementById('userName');
+    if (userNameElement) {
+        userNameElement.innerHTML = `<i class="fas fa-user-circle"></i> ${displayName}`;
+    }
+    
+    // Handle admin visibility
+    const isAdmin = userRole && userRole.toLowerCase() === 'admin';
+    const adminItems = document.querySelectorAll('.admin-only');
+    adminItems.forEach(item => {
+        if (isAdmin) {
+            item.classList.add('admin-visible');
+            item.style.display = 'block';
+        } else {
+            item.classList.remove('admin-visible');
+            item.style.display = 'none';
+        }
+    });
+    
+    return true;
+}
+function setupDropdown() {
+    const userBtn = document.getElementById('userBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    
+    if (userBtn && userDropdown) {
+        userBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            userDropdown.classList.remove('active');
+        });
+    }
+}
+function handleLogout(e) {
+    if (e) e.preventDefault();
+    console.log('Logging out...');
+    localStorage.clear();
+    sessionStorage.clear();
+    // Clear any other stored data
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('isGuest');
+    localStorage.removeItem('username');
+    localStorage.removeItem('staffName');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('assignedBarangay');
+    localStorage.removeItem('sessionId');
+    localStorage.removeItem('loginTime');
+    // Redirect to login page
+    window.location.href = 'index.html';
+}
+
+// Add this function to setup the dropdown logout
+function setupLogoutHandler() {
+    // Find the logout link inside the dropdown menu
+    const logoutLink = document.querySelector('#logoutBtn');
+    if (logoutLink) {
+        // Remove any existing listeners
+        const newLogoutLink = logoutLink.cloneNode(true);
+        logoutLink.parentNode.replaceChild(newLogoutLink, logoutLink);
+        newLogoutLink.addEventListener('click', handleLogout);
+        console.log('Logout button handler attached');
+    } else {
+        console.error('Logout button not found');
+    }
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('DOM loaded, initializing dashboard...');
+    
+    if (!checkLogin()) return;
+    
+    // Wait for Supabase SDK to be ready
+    let retries = 0;
+    while ((!dashboardSupabase || typeof dashboardSupabase.from !== 'function') && retries < 10) {
+        if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+            dashboardSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('✅ Dashboard Supabase client created on retry', retries + 1);
+            break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+        retries++;
+        console.log(`Waiting for Supabase SDK... attempt ${retries}`);
+    }
+    
+    if (!dashboardSupabase || typeof dashboardSupabase.from !== 'function') {
+        console.error('Supabase client not available after waiting');
+        return;
+    }
+    
+    await loadDashboard(true);
+    
+    const refreshBtn = document.getElementById('manual-refresh-btn');
+    if (refreshBtn) refreshBtn.addEventListener('click', () => loadDashboard(true));
+    
+    setupLogoutHandler();
+    setupDropdown();
+    
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => loadDashboard(false), 30000);
+});
+</script>
+</body>
+</html>

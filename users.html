@@ -1,0 +1,2854 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>User Management — Purok Kaligtasan</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="css/uniform-styles.css">
+<link rel="stylesheet" href="css/header-styles.css">
+<link rel="stylesheet" href="css/user-style.css">
+<style>
+   :root{
+    --bg:#f6f8f7;
+    --card-bg:#fff;
+    --muted:#6b6f6b;
+    --accent1:#0f7a4a;
+    --accent2:#34b78f;
+    --accent3: #ff7a00;
+    --accent4: #ffa500;
+    --light-green: #e9f7f2;
+    --border: #e1e8e5;
+    --shadow: 0 6px 18px rgba(6,30,20,0.06);
+    --shadow-dark: 0 6px 20px rgba(5,40,25,0.12);
+    --radius:12px;
+    --radius-sm:8px;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+   }
+   /* Modal Animation */
+   @keyframes modalSlideUp {
+     from { 
+         opacity: 0;
+         transform: translateY(8px);
+     }
+     to { 
+         opacity: 1;
+         transform: translateY(0);
+     }
+   }
+   
+   /* Password strength indicator */
+   .password-strength {
+     margin-top: 5px;
+     font-size: 0.7rem;
+   }
+   .strength-weak { color: #dc2626; }
+   .strength-medium { color: #ff9800; }
+   .strength-strong { color: #0f7a4a; }
+   .strength-very-strong { color: #0f7a4a; font-weight: bold; }
+   
+   /* Enhanced tooltips for protected admin buttons */
+   .actions-cell button[disabled] {
+     position: relative;
+   }
+
+   .actions-cell button[disabled]:hover::after {
+     content: attr(title);
+     position: absolute;
+     bottom: 100%;
+     left: 50%;
+     transform: translateX(-50%);
+     background: #333;
+     color: white;
+     padding: 4px 8px;
+     border-radius: 4px;
+     font-size: 0.7rem;
+     white-space: nowrap;
+     z-index: 1000;
+     margin-bottom: 5px;
+   }
+
+   .actions-cell button[disabled]:hover::before {
+     content: "";
+     position: absolute;
+     bottom: 100%;
+     left: 50%;
+     transform: translateX(-50%);
+     border: 5px solid transparent;
+     border-top-color: #333;
+     z-index: 1000;
+     margin-bottom: -5px;
+   }
+
+   /* Protected admin row styling */
+   .users-table tbody tr:hover {
+     background: rgba(52,183,143,0.05);
+   }
+
+   /* Special styling for protected admin row */
+   .users-table tbody tr:has(.actions-cell button[disabled]) {
+     background: rgba(255, 245, 204, 0.1);
+   }
+
+   .users-table tbody tr:has(.actions-cell button[disabled]):hover {
+     background: rgba(255, 245, 204, 0.2);
+   }
+   
+   /* Background decorative elements */
+   .bg-pattern {
+     position: absolute;
+     width: 100%;
+     height: 100%;
+     overflow: hidden;
+     z-index: -1;
+   }
+   
+   .bg-circle {
+     position: absolute;
+     border-radius: 50%;
+     background: rgba(15, 122, 74, 0.05);
+   }
+   
+   .circle-1 {
+     width: 300px;
+     height: 300px;
+     top: -150px;
+     right: -150px;
+   }
+   
+   .circle-2 {
+     width: 200px;
+     height: 200px;
+     bottom: -100px;
+     left: -100px;
+     background: rgba(255, 122, 0, 0.05);
+   }
+   
+   .circle-3 {
+     width: 150px;
+     height: 150px;
+     top: 50%;
+     left: 10%;
+     background: rgba(52, 183, 143, 0.05);
+   }
+   .admin-only {
+    display: none !important;
+}
+
+/* Class to show admin elements - applied by JavaScript */
+.admin-only.admin-visible {
+    display: block !important;
+}
+
+/* For list items */
+li.admin-only {
+    display: none !important;
+}
+
+li.admin-only.admin-visible {
+    display: list-item !important;
+}
+   /* Description Styling */
+   #disc {
+    margin-bottom: 10px;
+    background: var(--light-green);
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent1);
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+   }
+   
+   body {
+    background-color: var(--bg);
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    padding-bottom: 70px;
+   }
+
+   .page-container{
+    max-width:1200px;
+    margin:20px auto;
+    padding:12px;
+    display:grid;
+    grid-template-columns:260px 1fr;
+    gap:18px;
+    align-items:start;
+    transition: grid-template-columns 0.3s ease;
+   }
+
+   .page-container.collapsed {
+    grid-template-columns: 60px 1fr;
+   }
+
+   /* Topbar - Enhanced */
+   .topbar{
+    grid-column:1/-1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 14px;
+    border-radius:var(--radius);
+    background:linear-gradient(90deg, var(--accent1), var(--accent2));
+    color:#fff;
+    box-shadow:var(--shadow-dark);
+   }
+
+   .brand{
+    display:flex;
+    gap:12px;
+    align-items:center;
+   }
+
+   .brand .logo{
+    width:60px;
+    height:60px;
+    border-radius:var(--radius-sm);
+    object-fit:contain;
+   }
+
+   .brand-text h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+   }
+
+   .brand-text p {
+    font-size:12px;
+    opacity:0.95;
+    margin: 4px 0 0 0;
+   }
+
+   .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+   }
+
+   #userName {
+    font-weight: 600;
+    border-radius: 20px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+   }
+
+   #logoutBtn {
+    background: rgba(255,255,255,0.25);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+   }
+
+   #logoutBtn:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-1px);
+   }
+
+   /* Sidebar - Collapsible */
+   .sidebar{
+    background:linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.20));
+    border-radius:var(--radius);
+    padding:12px;
+    height:calc(100vh - 120px);
+    position:sticky;
+    top:72px;
+    overflow:auto;
+    transition: width 0.3s ease;
+    z-index: 100;
+   }
+
+   .sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+   }
+
+   .sidebar-toggle {
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+   }
+
+   .sidebar-toggle:hover {
+    transform: scale(1.1);
+   }
+
+   .sidebar ul{
+    list-style:none;
+    padding:0;
+    margin:0;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    flex: 1;
+   }
+
+   .sidebar li a{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    text-decoration: none;
+    color: var(--muted);
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+   }
+
+   .sidebar li a:hover{
+    background: var(--light-green);
+    color: var(--accent1);
+   }
+
+   .sidebar li a.active{
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    color: #fff;
+    box-shadow: 0 4px 8px rgba(15,122,74,0.2);
+   }
+
+   .sidebar li a .menu-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+   }
+
+   .sidebar li a .menu-text {
+    transition: opacity 0.3s ease;
+   }
+
+   .page-container.collapsed .sidebar li a .menu-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+   }
+
+   /* REMOVED: Mobile Logout Button in Sidebar */
+   .mobile-logout-container {
+    display: none !important;
+   }
+
+   /* Content Area */
+   .content-area{
+    background:linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.6));
+    border-radius:var(--radius);
+    padding:18px;
+    box-shadow:0 8px 22px rgba(10,20,16,0.06);
+    min-height:72vh;
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+   }
+
+   /* Content Header */
+   .content-header {
+    margin-top: 0;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+   }
+
+   .content-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--accent1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+   }
+
+   /* Mobile Bottom Navigation - Fixed Position */
+   .mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--border);
+    z-index: 1000;
+    padding: 8px 0;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+    height: 70px;
+    box-sizing: border-box;
+    overflow: hidden;
+   }
+
+   .mobile-nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+   }
+
+   .mobile-nav-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    color: var(--muted) !important;
+    padding: 8px 12px !important;
+    border-radius: var(--radius-sm) !important;
+    transition: all 0.3s ease !important;
+    min-width: 60px !important;
+    flex: 1 !important;
+    height: 100% !important;
+    justify-content: center !important;
+   }
+
+   /* Admin items - initially hidden */
+   .mobile-nav-item.admin-only {
+    display: none !important;
+   }
+
+   /* Show admin items when user is admin */
+   .mobile-nav-item.admin-only.admin-visible {
+    display: flex !important;
+   }
+
+   /* Active state for all tabs */
+   .mobile-nav-item.active {
+    color: var(--accent1) !important;
+    background: var(--light-green) !important;
+   }
+
+   /* Icon and text for all tabs */
+   .mobile-nav-icon {
+    font-size: 1.2rem !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+    text-align: center !important;
+    width: 100% !important;
+   }
+
+   .mobile-nav-text {
+    font-size: 0.7rem !important;
+    font-weight: 500 !important;
+    display: block !important;
+    text-align: center !important;
+    width: 100% !important;
+   }
+
+   /* Mobile Styles */
+   @media (max-width: 768px) {
+    body {
+        padding-bottom: 70px;
+    }
+    
+    .page-container {
+        grid-template-columns: 1fr !important;
+        padding: 8px;
+        gap: 12px;
+        margin-bottom: 0;
+    }
+    
+    .page-container.collapsed {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .sidebar {
+        display: none !important;
+    }
+    
+    .mobile-bottom-nav {
+        display: flex !important;
+        flex-direction: column;
+    }
+    
+    .mobile-menu-toggle {
+        display: none !important;
+    }
+    
+    .content-area {
+        height: auto;
+        min-height: calc(100vh - 140px);
+        padding: 12px;
+        margin-bottom: 0;
+    }
+    
+    .user-info {
+        gap: 8px;
+    }
+    
+    #userName {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+    
+    #logoutBtn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .content-area {
+        margin-bottom: 70px;
+    }
+    
+    .users-table-wrap {
+        overflow-x: auto;
+        min-width: 100%;
+    }
+    
+    .users-table {
+        table-layout: auto;
+        min-width: 700px;
+    }
+    
+    .users-table th,
+    .users-table td {
+        font-size: 12px;
+        padding: 10px 8px;
+    }
+    
+    .users-table th:nth-child(1),
+    .users-table th:nth-child(2),
+    .users-table th:nth-child(3),
+    .users-table th:nth-child(4),
+    .users-table th:nth-child(5),
+    #activityTable th:nth-child(1),
+    #activityTable th:nth-child(2),
+    #activityTable th:nth-child(3),
+    #activityTable th:nth-child(4),
+    #activityTable th:nth-child(5),
+    #activityTable th:nth-child(6),
+    #logsTable th:nth-child(1),
+    #logsTable th:nth-child(2),
+    #logsTable th:nth-child(3),
+    #logsTable th:nth-child(4),
+    #logsTable th:nth-child(5) {
+        width: auto !important;
+        min-width: auto !important;
+    }
+    
+    .users-table td {
+        white-space: nowrap;
+    }
+    
+    #logsTable td:nth-child(5) {
+        white-space: normal;
+        min-width: 150px;
+        max-width: 200px;
+    }
+    
+    .modal-overlay {
+        padding: 8px;
+    }
+    
+    .modal-box {
+        max-width: 92%;
+        padding: 12px;
+        margin: 8px;
+    }
+    
+    .modal-header {
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+    }
+    
+    .modal-header h3 {
+        font-size: 1rem;
+    }
+    
+    .modal-delete .modal-header,
+    .modal-reset .modal-header {
+        margin: -12px -12px 12px -12px;
+        padding: 10px 12px;
+    }
+    
+    .modal-delete .warning-icon,
+    .modal-reset .reset-icon {
+        font-size: 1.8rem;
+    }
+    
+    .modal-delete .warning-text,
+    .modal-reset .reset-text {
+        font-size: 0.85rem;
+    }
+    
+    .form-group {
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        padding: 6px 8px;
+        height: 34px;
+        font-size: 0.82rem;
+    }
+    
+    .btn {
+        padding: 6px 10px;
+        height: 34px;
+        font-size: 0.8rem;
+    }
+    
+    #logsModal .modal-box {
+        max-width: 98%;
+        max-height: 85vh;
+    }
+    
+    #logsModal .modal-header h3 {
+        font-size: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .toolbar-row-1 {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .toggle-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .toolbar-row-2 {
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+    
+    .cards-row {
+        flex-direction: column;
+    }
+    
+    .card {
+        min-width: 100%;
+    }
+    
+    .actions-cell {
+        justify-content: flex-start;
+    }
+   }
+
+   /* Tablet Styles */
+   @media (min-width: 769px) and (max-width: 1024px) {
+    .page-container {
+        max-width: 95%;
+        grid-template-columns: 220px 1fr;
+        gap: 15px;
+        padding: 10px;
+    }
+    
+    .content-area {
+        padding: 15px;
+    }
+    
+    .mobile-bottom-nav {
+        display: none;
+    }
+   }
+
+   /* Desktop Styles */
+   @media (min-width: 1025px) {
+    .mobile-bottom-nav {
+        display: none;
+    }
+    
+    .mobile-menu-toggle {
+        display: none;
+    }
+   }
+
+   /* Print styles */
+   @media print {
+    body * {
+        visibility: hidden;
+        background: white !important;
+        color: black !important;
+    }
+    
+    .content-area,
+    .content-area * {
+        visibility: visible;
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+    }
+    
+    .content-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        height: auto !important;
+        padding: 20px !important;
+        overflow: visible !important;
+        page-break-before: always;
+    }
+    
+    .page-container {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+    
+    .topbar,
+    .sidebar,
+    .toolbar,
+    .mobile-bottom-nav,
+    .mobile-menu-toggle {
+        display: none !important;
+    }
+   }
+
+   /* Stats - Made Smaller */
+   .stats-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+   }
+
+   .stat-item {
+    text-align: center;
+    min-width: 70px;
+    padding: 6px 8px;
+    background: white;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+   }
+
+   .stat-item span {
+    font-size: 0.75rem;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 2px;
+   }
+
+   .stat-item .value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent1);
+    display: block;
+   }
+
+   /* Toolbar - New Layout */
+   .toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+   }
+
+   /* Toolbar Row with Search and Toggle */
+   .toolbar-row-1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+   }
+
+   /* Full width search bar */
+   .search-container {
+    position: relative;
+    flex: 1;
+    width: 100%;
+   }
+
+   .search-container i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 0.9rem;
+    z-index: 1;
+   }
+
+   .search-box{
+    padding: 10px 12px 10px 32px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    background: white;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+   }
+
+   .search-box:focus {
+    outline: none;
+    border-color: var(--accent1);
+    box-shadow: 0 0 0 3px rgba(15,122,74,0.1);
+   }
+
+   /* Simple toggle buttons on the right */
+   .toggle-buttons {
+    display: flex;
+    gap: 4px;
+    background: var(--light-green);
+    border-radius: var(--radius-sm);
+    padding: 2px;
+    min-width: 180px;
+    justify-content: center;
+   }
+
+   .toggle-btn {
+    padding: 6px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--muted);
+    min-width: 60px;
+    text-align: center;
+    white-space: nowrap;
+   }
+
+   .toggle-btn:hover {
+    background: rgba(255,255,255,0.7);
+    color: var(--accent1);
+   }
+
+   .toggle-btn.active {
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    color: white;
+    box-shadow: 0 2px 4px rgba(15,122,74,0.2);
+   }
+
+   .toolbar-row-2 {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: center;
+   }
+
+   /* Cards Row */
+   .cards-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+   }
+
+   .card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    flex: 1;
+    min-width: 200px;
+   }
+
+   .card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--accent1);
+    font-size: 1rem;
+   }
+
+   .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent1);
+    margin-top: 8px;
+   }
+
+   /* Fix table glitching - Improved */
+   .users-table-wrap {
+       flex: 1;
+       background: white;
+       border-radius: var(--radius);
+       box-shadow: var(--shadow);
+       overflow: hidden;
+       position: relative;
+       margin-bottom: 16px;
+       border: 1px solid var(--border);
+       min-height: 400px;
+       display: flex;
+       flex-direction: column;
+       overflow-x: auto;
+   }
+
+   .users-table {
+       width: 100%;
+       border-collapse: separate;
+       border-spacing: 0;
+       font-size: 14px;
+       table-layout: fixed;
+       min-width: 800px;
+   }
+
+   /* Fixed column widths for users table */
+   .users-table th:nth-child(1) { width: 20%; min-width: 120px; }
+   .users-table th:nth-child(2) { width: 25%; min-width: 150px; }
+   .users-table th:nth-child(3) { width: 15%; min-width: 100px; }
+   .users-table th:nth-child(4) { width: 25%; min-width: 150px; }
+   .users-table th:nth-child(5) { width: 15%; min-width: 120px; }
+
+   /* Fixed column widths for activity table */
+   #activityTable th:nth-child(1) { width: 15%; min-width: 100px; }
+   #activityTable th:nth-child(2) { width: 12%; min-width: 80px; }
+   #activityTable th:nth-child(3) { width: 20%; min-width: 140px; }
+   #activityTable th:nth-child(4) { width: 20%; min-width: 140px; }
+   #activityTable th:nth-child(5) { width: 15%; min-width: 100px; }
+   #activityTable th:nth-child(6) { width: 18%; min-width: 120px; }
+
+   /* Fixed column widths for logs table */
+   #logsTable th:nth-child(1) { width: 20%; min-width: 150px; }
+   #logsTable th:nth-child(2) { width: 15%; min-width: 100px; }
+   #logsTable th:nth-child(3) { width: 15%; min-width: 100px; }
+   #logsTable th:nth-child(4) { width: 15%; min-width: 100px; }
+   #logsTable th:nth-child(5) { width: 35%; min-width: 200px; }
+
+   .users-table th {
+       background: var(--light-green);
+       padding: 14px 10px;
+       text-align: center;
+       font-weight: 600;
+       position: sticky;
+       top: 0;
+       z-index: 100;
+       font-size: 14px;
+       color: var(--accent1);
+       border-bottom: 2px solid rgba(15,122,74,0.15);
+       white-space: nowrap;
+       vertical-align: middle;
+       height: 44px;
+       box-sizing: border-box;
+   }
+
+   .users-table td {
+       padding: 12px 10px;
+       font-size: 14px;
+       border-bottom: 1px solid rgba(15,122,74,0.08);
+       vertical-align: middle;
+       color: var(--muted);
+       text-align: center;
+       height: 44px;
+       box-sizing: border-box;
+       line-height: 1.4;
+       word-wrap: break-word;
+       overflow: hidden;
+       text-overflow: ellipsis;
+       white-space: nowrap;
+   }
+
+   #logsTable td:nth-child(5) {
+       white-space: normal;
+       word-wrap: break-word;
+       overflow-wrap: break-word;
+       text-align: left;
+       max-width: 300px;
+       min-width: 200px;
+       text-overflow: unset;
+   }
+
+   /* Center role badges */
+   .users-table td:nth-child(3) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+   }
+
+   .users-table tbody tr:hover {
+    background: rgba(52,183,143,0.05);
+   }
+
+   /* Actions column */
+   .actions-cell {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+   }
+
+   .icon-btn {
+    background: none;
+    border: 0;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    transition: all 0.2s ease;
+   }
+
+   .icon-btn:hover {
+    background: var(--light-green);
+    color: var(--accent1);
+    transform: translateY(-1px);
+   }
+
+   /* Button styles */
+   .btn {
+    border: 0;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    color: #fff;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    height: 36px;
+    box-sizing: border-box;
+    position: relative;
+   }
+
+   .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(15,122,74,0.2);
+   }
+
+   .btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+   }
+
+   .btn-secondary {
+    background: transparent;
+    color: var(--accent1);
+    border: 1px solid var(--accent1);
+   }
+
+   /* Save button loading state */
+   .btn-saving {
+    opacity: 0.8;
+    pointer-events: none;
+   }
+
+   .btn-saving i {
+    animation: spin 1s linear infinite;
+   }
+
+   @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+   }
+
+   /* Modal overlay styles */
+   .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 16px;
+   }
+
+   /* Form styles */
+   .form-group {
+    margin-bottom: 10px;
+   }
+
+   .form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 500;
+   }
+
+   .form-control {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    box-sizing: border-box;
+    height: 30px;
+   }
+
+   .form-control:focus {
+    outline: none;
+    border-color: var(--accent1);
+    box-shadow: 0 0 0 3px rgba(15,122,74,0.1);
+   }
+
+   .form-hint {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 3px;
+   }
+
+   .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+   }
+
+   /* Modal body input with icon */
+   .modal-body .input-with-icon {
+    position: relative;
+   }
+
+   .modal-body .input-with-icon .password-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 3px;
+   }
+
+   .modal-body .input-with-icon input {
+    padding-right: 32px !important;
+   }
+
+   /* Tabs styling */
+   .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 4px;
+   }
+
+   .tab-btn {
+    padding: 8px 16px;
+    background: var(--light-green);
+    border: none;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.2s ease;
+    position: relative;
+    bottom: -2px;
+   }
+
+   .tab-btn:hover {
+    background: rgba(15,122,74,0.1);
+   }
+
+   .tab-btn.active {
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    color: white;
+    box-shadow: 0 2px 4px rgba(15,122,74,0.2);
+    border-bottom: 2px solid var(--accent1);
+   }
+
+   .tab-content {
+    display: none;
+   }
+
+   .tab-content.active {
+    display: block;
+   }
+
+   /* Sub-tabs for audit logs */
+   .tab-btn-small {
+       padding: 6px 12px;
+       background: var(--light-green);
+       border: none;
+       border-radius: var(--radius-sm);
+       cursor: pointer;
+       font-weight: 500;
+       color: var(--muted);
+       transition: all 0.2s ease;
+       font-size: 0.85rem;
+       margin-right: 4px;
+   }
+
+   .tab-btn-small:hover {
+       background: rgba(15,122,74,0.1);
+   }
+
+   .tab-btn-small.active {
+       background: linear-gradient(90deg, var(--accent1), var(--accent2));
+       color: white;
+       box-shadow: 0 2px 4px rgba(15,122,74,0.2);
+   }
+
+   /* Status badges */
+   .status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+   }
+
+   .status-online {
+    background: #e9f7f2;
+    color: #0f7a4a;
+    border: 1px solid #0f7a4a;
+   }
+
+   .status-offline {
+    background: #f0f0f0;
+    color: #666;
+    border: 1px solid #ddd;
+   }
+
+   .status-idle {
+    background: #fff8e1;
+    color: #ff9800;
+    border: 1px solid #ff9800;
+   }
+   
+   /* Table wrapper fix for glitching */
+   .users-table-wrap {
+       overflow-x: auto;
+       -webkit-overflow-scrolling: touch;
+   }
+   
+   .users-table {
+       border-collapse: collapse;
+       width: 100%;
+   }
+   
+   .users-table th, .users-table td {
+       white-space: nowrap;
+   }
+   
+   #logsTable td:nth-child(5) {
+       white-space: normal;
+       word-break: break-word;
+   }
+   /* Quick fix - force scrollbar on users table */
+.users-table-wrap {
+    overflow-y: scroll !important;
+    max-height: 500px !important;
+}
+
+/* On desktop, make it taller */
+@media (min-width: 1025px) {
+    .users-table-wrap {
+        max-height: calc(100vh - 300px) !important;
+    }
+}
+</style>
+</head>
+<body>
+    <!-- Background pattern -->
+    <div class="bg-pattern">
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+        <div class="bg-circle circle-3"></div>
+    </div>
+<div class="page-container">
+<header class="topbar">
+    <div class="brand">
+        <img src="assets/MDRRMO Logo.png" class="logo" alt="Logo"/>
+        <div class="brand-text">
+            <h1>PUROK KALIGTASAN 133</h1>
+            <p>MDRRMO Alitagtag – Household Records System</p>
+        </div>
+    </div>
+    <div class="user-info">
+        <div class="user-dropdown" id="userDropdown">
+            <div class="user-btn" id="userBtn">
+                <i class="fas fa-user-circle"></i>
+                <div class="user-info-dropdown">
+                    <span class="user-fullname" id="userFullname">Loading...</span>
+                    <span class="user-role-dropdown" id="userRole">Loading...</span>
+                </div>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-container">
+      <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+<ul>
+    <li><a href="dashboard.html">
+        <span class="menu-icon"><i class="fas fa-tachometer-alt"></i></span> 
+        <span class="menu-text">Dashboard</span>
+    </a></li>
+    <li><a href="dataForm.html">
+        <span class="menu-icon"><i class="fas fa-edit"></i></span> 
+        <span class="menu-text">Data Entry</span>
+    </a></li>
+    <li><a href="records.html">
+        <span class="menu-icon"><i class="fas fa-database"></i></span> 
+        <span class="menu-text">Records & Management</span>
+    </a></li>
+    <li><a href="charts.html">
+        <span class="menu-icon"><i class="fas fa-chart-bar"></i></span> 
+        <span class="menu-text">Charts & Analytics</span>
+    </a></li>
+    <li class="admin-only"><a href="users.html" class="active">
+        <span class="menu-icon"><i class="fas fa-users-cog"></i></span> 
+        <span class="menu-text">User Management</span>
+    </a></li>
+</ul>
+    </div>
+  </aside>
+
+  <!-- Error Message -->
+  <div class="error-message" id="errorMessage" style="display: none;">
+    <i class="fas fa-exclamation-triangle"></i> 
+    <span id="errorText">Failed to fetch data. Please check your connection.</span>
+    <button onclick="document.getElementById('errorMessage').style.display = 'none'" style="float:right; background:none; border:none; color:#c00; cursor:pointer;">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <main class="content-area">
+    <div class="content-header">
+      <h2><i class="fas fa-users-cog"></i>User Management</h2>
+    </div>
+     <div id="disc">The User Management section allows administrators to create, update, and control access for all system users. It ensures that only authorized personnel can view, edit, or manage household records. Through this section, admins can assign roles, reset passwords, activate or deactivate accounts, and monitor user activity to maintain data security and system integrity.</div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <!-- Row with Search and Toggle Buttons -->
+      <div class="toolbar-row-1">
+        <!-- Full Width Search Bar -->
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input id="filterUser" class="search-box" placeholder="Search by username or full name..." />
+        </div>
+        
+        <!-- Toggle Buttons Only (right side) -->
+        <div class="toggle-buttons" id="roleToggle">
+          <button class="toggle-btn active" data-role="all">All</button>
+          <button class="toggle-btn" data-role="Admin">Admin</button>
+          <button class="toggle-btn" data-role="Staff">Staff</button>
+        </div>
+      </div>
+      
+      <div class="toolbar-row-2">
+        <button id="viewLogsBtn" class="btn btn-secondary">
+          <i class="fas fa-history"></i> View Logs
+        </button>
+        <button id="openAddUser" class="btn">
+          <i class="fas fa-user-plus"></i> Add User
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="cards-row">
+      <div class="card">
+        <h3>Total Users</h3>
+        <div id="statTotal" class="stat-value">0</div>
+      </div>
+      <div class="card">
+        <h3>Admins</h3>
+        <div id="statAdmins" class="stat-value">0</div>
+      </div>
+      <div class="card">
+        <h3>Staff</h3>
+        <div id="statStaff" class="stat-value">0</div>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="users-table-wrap">
+      <table class="users-table" id="usersTable">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Full Name</th>
+            <th>Role</th>
+            <th>Barangay</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody">
+          <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading users...
+        </tbody>
+       </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="mobile-bottom-nav">
+    <div class="mobile-nav-items">
+        <a href="dashboard.html" class="mobile-nav-item">
+            <span class="mobile-nav-icon"><i class="fas fa-tachometer-alt"></i></span>
+            <span class="mobile-nav-text">Dashboard</span>
+        </a>
+        <a href="dataForm.html" class="mobile-nav-item">
+            <span class="mobile-nav-icon"><i class="fas fa-edit"></i></span>
+            <span class="mobile-nav-text">Data Entry</span>
+        </a>
+        <a href="records.html" class="mobile-nav-item">
+            <span class="mobile-nav-icon"><i class="fas fa-database"></i></span>
+            <span class="mobile-nav-text">Records</span>
+        </a>
+        <a href="charts.html" class="mobile-nav-item">
+            <span class="mobile-nav-icon"><i class="fas fa-chart-bar"></i></span>
+            <span class="mobile-nav-text">Charts</span>
+        </a>
+        <a href="users.html" class="mobile-nav-item admin-only active">
+            <span class="mobile-nav-icon"><i class="fas fa-users-cog"></i></span>
+            <span class="mobile-nav-text">Users</span>
+        </a>
+    </div>
+</nav>
+
+<!-- Add/Edit User Modal -->
+<div id="userModal" class="modal-overlay">
+  <div class="modal-box" style="background: white; border-radius: 12px; max-width: 420px; width: 100%; box-shadow: 0 15px 30px rgba(0,0,0,0.1); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+      <h3 id="modalTitle" style="margin: 0; color: var(--accent1); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-user-plus"></i> Add New User
+      </h3>
+      <button id="closeModal" class="icon-btn" style="background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--muted);">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+      <form id="userForm">
+        <div class="form-group">
+          <label for="user_username">Username *</label>
+          <input id="user_username" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label for="user_fullname">Full Name</label>
+          <input id="user_fullname" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label for="user_role">Role</label>
+          <select id="user_role" class="form-control">
+            <option value="Staff">Staff</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="user_barangay">Assigned Barangay</label>
+          <select id="user_barangay" class="form-control">
+            <option value="">ALL</option>
+            <option>Balagbag</option><option>Concepcion</option><option>Concordia</option>
+            <option>Dalipit East</option><option>Dalipit West</option>
+            <option>Dominador East</option><option>Dominador West</option>
+            <option>Munlawin Sur</option><option>Munlawin Norte</option>
+            <option>Muzon Primero</option><option>Muzon Segundo</option>
+            <option>Pinagkurusan</option><option>Ping-As</option>
+            <option>Poblacion East</option><option>Poblacion West</option>
+            <option>San Jose</option><option>San Juan</option>
+            <option>Santa Cruz</option><option>Tadlac</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="user_password">Password <span id="passwordRequired" style="color: #ef4444; font-size: 0.7rem;">*</span></label>
+          <div class="input-with-icon" style="position: relative;">
+            <input id="user_password" type="password" class="form-control" placeholder="Enter new password" style="padding-right: 35px;" />
+            <button type="button" class="password-toggle" id="toggleModalPassword" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #6b6f6b; cursor: pointer; font-size: 0.9rem; padding: 5px; z-index: 10;">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div id="passwordHint" class="form-hint password-strength" style="font-size: 0.7rem; margin-top: 5px;"></div>
+          <div class="form-hint" style="font-size: 0.65rem; color: #666; margin-top: 5px;">
+            <i class="fas fa-info-circle"></i> Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="form-actions" style="display: flex; gap: 8px; justify-content: flex-end; padding: 16px 20px; border-top: 1px solid var(--border);">
+      <button id="cancelModal" class="btn btn-secondary">Cancel</button>
+      <button id="saveUserBtn" class="btn">
+        <i class="fas fa-save"></i> Save
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- User Saved Success Modal -->
+<div id="userSavedSuccessModal" class="modal-overlay">
+  <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+    <div style="padding: 20px 20px 12px 20px; text-align: center;">
+      <div style="margin-bottom: 8px;">
+        <i class="fas fa-check-circle" style="font-size: 1.6rem; color: #0f7a4a; opacity: 0.7;"></i>
+      </div>
+      <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;" id="userSavedTitle">
+        User Saved Successfully!
+      </h3>
+      <p style="margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;" id="userSavedMessage">
+        The user has been successfully saved to the system.
+      </p>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+      <button id="closeUserSavedSuccess" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;"
+        onmouseover="this.style.backgroundColor='#0f7a4a'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#0f7a4a';">
+        <i class="fas fa-check"></i> OK
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Password Modal - Confirmation -->
+<div id="resetModal" class="modal-overlay">
+  <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+    <div style="padding: 20px 20px 12px 20px; text-align: center;">
+      <div style="margin-bottom: 8px;">
+        <i class="fas fa-key" style="font-size: 1.6rem; color: #ff9800; opacity: 0.7;"></i>
+      </div>
+      <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">
+        Reset Password
+      </h3>
+      <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;">
+        Are you sure you want to reset the password for this user?
+      </p>
+      <div style="margin: 8px 0; padding: 6px; background: #e9f7f2; border-radius: 6px; font-size: 0.75rem;">
+        <span style="color: #0f7a4a; font-weight: 600;">User:</span> <span id="resetUserName" style="color: #1e293b;">user</span>
+      </div>
+      <div style="margin-top: 8px; padding: 6px; background: #f8fafc; border-radius: 6px; font-size: 0.7rem; text-align: left;">
+        <i class="fas fa-info-circle" style="color: #ff9800; margin-right: 4px;"></i>
+        Password will be reset to: <code style="background: #fff8e1; padding: 2px 4px; border-radius: 4px;">password123</code>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+      <button id="cancelReset" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;"
+        onmouseover="this.style.backgroundColor='#ef4444'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#ef4444';">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button id="confirmReset" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;"
+        onmouseover="this.style.backgroundColor='#0f7a4a'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#0f7a4a';">
+        <i class="fas fa-redo-alt"></i> Reset
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Password Success Modal -->
+<div id="resetSuccessModal" class="modal-overlay">
+  <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+    <div style="padding: 20px 20px 12px 20px; text-align: center;">
+      <div style="margin-bottom: 8px;">
+        <i class="fas fa-check-circle" style="font-size: 1.6rem; color: #0f7a4a; opacity: 0.7;"></i>
+      </div>
+      <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">
+        Password Reset Successful!
+      </h3>
+      <p style="margin: 8px 0 0 0; color: #64748b; font-size: 0.7rem; line-height: 1.4;">
+        <i class="fas fa-info-circle"></i> User must change password on next login.
+      </p>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+      <button id="closeResetSuccess" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;"
+        onmouseover="this.style.backgroundColor='#0f7a4a'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#0f7a4a';">
+        <i class="fas fa-check"></i> OK
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal-overlay">
+  <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+    <div style="padding: 20px 20px 12px 20px; text-align: center;">
+      <div style="margin-bottom: 8px;">
+        <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ef4444; opacity: 0.7;"></i>
+      </div>
+      <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">
+        Delete User
+      </h3>
+      <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;">
+        Are you sure you want to delete this user? This action cannot be undone.
+      </p>
+      <div style="margin: 8px 0; padding: 6px; background: #e9f7f2; border-radius: 6px; font-size: 0.75rem;">
+        <span style="color: #0f7a4a; font-weight: 600;">User:</span> <span id="deleteUserName" style="color: #1e293b;">user</span>
+      </div>
+      <div style="margin-top: 8px; padding: 6px; background: #ffeaea; border-radius: 6px; font-size: 0.7rem; text-align: left;">
+        <i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 4px;"></i>
+        All associated data will be permanently removed.
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+      <button id="cancelDelete" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;"
+        onmouseover="this.style.backgroundColor='#ef4444'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#ef4444';">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button id="confirmDelete" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;"
+        onmouseover="this.style.backgroundColor='#0f7a4a'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#0f7a4a';">
+        <i class="fas fa-trash-alt"></i> Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Success Modal -->
+<div id="deleteSuccessModal" class="modal-overlay">
+  <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+    <div style="padding: 20px 20px 12px 20px; text-align: center;">
+      <div style="margin-bottom: 8px;">
+        <i class="fas fa-trash-alt" style="font-size: 1.6rem; color: #ef4444; opacity: 0.7;"></i>
+      </div>
+      <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">
+        User Deleted
+      </h3>
+      <p style="margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;">
+        The user has been successfully deleted from the system.
+      </p>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+      <button id="closeDeleteSuccess" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;"
+        onmouseover="this.style.backgroundColor='#0f7a4a'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#0f7a4a';">
+        <i class="fas fa-check"></i> OK
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Alert Modal -->
+<div id="customAlertModal" class="modal-overlay">
+  <div style="background: white; border-radius: 12px; max-width: 320px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+    <div style="padding: 20px 20px 12px 20px; text-align: center;">
+      <div style="margin-bottom: 8px;">
+        <i id="alertIcon" class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff9800; opacity: 0.7;"></i>
+      </div>
+      <h3 id="alertTitle" style="margin: 0 0 8px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">
+        Notice
+      </h3>
+      <p id="alertMessage" style="margin: 0; color: #64748b; font-size: 0.85rem; line-height: 1.4; font-weight: 400;">
+        Message here
+      </p>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+      <button id="closeAlertBtn" style="flex: 1; padding: 8px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;"
+        onmouseover="this.style.backgroundColor='#0f7a4a'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#0f7a4a';">
+        <i class="fas fa-check"></i> OK
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Confirm Modal -->
+<div id="customConfirmModal" class="modal-overlay">
+  <div style="background: white; border-radius: 12px; max-width: 320px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+    <div style="padding: 20px 20px 12px 20px; text-align: center;">
+      <div style="margin-bottom: 8px;">
+        <i id="confirmIcon" class="fas fa-question-circle" style="font-size: 1.6rem; color: #ff9800; opacity: 0.7;"></i>
+      </div>
+      <h3 id="confirmTitle" style="margin: 0 0 8px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">
+        Confirm Action
+      </h3>
+      <p id="confirmMessage" style="margin: 0; color: #64748b; font-size: 0.85rem; line-height: 1.4; font-weight: 400;">
+        Are you sure?
+      </p>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+      <button id="confirmCancelBtn" style="flex: 1; padding: 8px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;"
+        onmouseover="this.style.backgroundColor='#ef4444'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#ef4444';">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button id="confirmOkBtn" style="flex: 1; padding: 8px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;"
+        onmouseover="this.style.backgroundColor='#0f7a4a'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#0f7a4a';">
+        <i class="fas fa-check"></i> Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Logs Modal with User Activity - Updated Header -->
+<div id="logsModal" class="modal-overlay">
+  <div class="modal-box" style="background: white; border-radius: 12px; max-width: 1100px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 30px rgba(0,0,0,0.1); animation: modalSlideUp 0.2s ease;">
+    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+      <h3 style="margin: 0; color: var(--accent1); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-user-clock"></i> User Activity & Audit Logs
+      </h3>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <button id="refreshLogsBtn" class="icon-btn" style="background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--muted);" title="Refresh">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+        <button id="closeLogsModalBtn" class="icon-btn" style="background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--muted);">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="modal-body" style="padding: 20px;">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="activity">User Activity</button>
+        <button class="tab-btn" data-tab="audit">Audit Logs</button>
+      </div>
+      
+      <!-- User Activity Tab -->
+      <div class="tab-content active" id="activityTab">
+        <div class="stats-container" style="justify-content: flex-start; margin-bottom: 16px;">
+          <div class="stat-item">
+            <span>Online Now</span>
+            <div id="statOnline" class="value" style="color: #0f7a4a;">0</div>
+          </div>
+          <div class="stat-item">
+            <span>Active User Today</span>
+            <div id="statToday" class="value">0</div>
+          </div>
+          <div class="stat-item">
+            <span>Total Users</span>
+            <div id="statTotalUsers" class="value">0</div>
+          </div>
+        </div>
+        
+        <div class="search-container" style="margin-bottom: 16px;">
+          <i class="fas fa-search"></i>
+          <input id="searchActivity" class="search-box" placeholder="Search users..." />
+        </div>
+        
+        <div class="users-table-wrap" style="min-height: 300px; overflow-x: auto;">
+          <table class="users-table" id="activityTable" style="min-width: 600px;">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th>Last Activity</th>
+                <th>Active Time</th>
+                <th>Session Duration</th>
+              </tr>
+            </thead>
+            <tbody id="activityBody">
+              <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading activity data...
+            </tbody>
+           </table>
+        </div>
+      </div>
+      
+      <!-- Audit Logs Tab -->
+      <div class="tab-content" id="auditTab">
+        <div class="tabs" style="margin-bottom: 16px; border-bottom: 1px solid var(--border);">
+          <button class="tab-btn-small active" data-category="all">All Logs</button>
+          <button class="tab-btn-small" data-category="today">Today</button>
+          <button class="tab-btn-small" data-category="yesterday">Yesterday</button>
+          <button class="tab-btn-small" data-category="older">Older</button>
+        </div>
+        
+        <div class="search-container" style="margin-bottom: 16px;">
+          <i class="fas fa-search"></i>
+          <input id="searchAudit" class="search-box" placeholder="Search audit logs..." />
+        </div>
+        
+        <div class="users-table-wrap" style="min-height: 300px; overflow-x: auto;">
+          <table class="users-table" id="logsTable" style="min-width: 800px;">
+            <thead>
+              <tr>
+                <th style="width: 20%;">Timestamp</th>
+                <th style="width: 15%;">Action</th>
+                <th style="width: 15%;">Actor</th>
+                <th style="width: 15%;">Target</th>
+                <th style="width: 35%; text-align: left;">Details</th>
+              </tr>
+            </thead>
+            <tbody id="logsBody">
+              <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading logs...
+            </tbody>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// SUPABASE CONFIGURATION
+// ============================================
+const SUPABASE_URL = 'https://opibntxwagnjazpbtxrv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UwyTZU3BYj41z0D7beu9Hg_pIZcLeWN';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ============ STATE ============ */
+let ALL_USERS = [];
+let EDIT_TARGET = null;
+let CURRENT_ROLE_FILTER = 'all';
+let AUDIT_LOGS_DATA = null;
+let DELETE_TARGET_USER = null;
+let RESET_TARGET_USER = null;
+
+function isProtectedAdmin(user) {
+  return user && user.username && user.username.toLowerCase() === 'admin';
+}
+
+/* ============ HELPER FUNCTIONS ============ */
+async function sha256Hash(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function escapeHtml(text) {
+  if (text === null || text === undefined) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/* ============ CUSTOM ALERT MODAL ============ */
+function showAlert(message, title = "Notice", type = "warning") {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('customAlertModal');
+    const titleEl = document.getElementById('alertTitle');
+    const messageEl = document.getElementById('alertMessage');
+    const iconEl = document.getElementById('alertIcon');
+    const closeBtn = document.getElementById('closeAlertBtn');
+    
+    if (!modal) {
+      alert(message);
+      resolve();
+      return;
+    }
+    
+    if (type === "error") {
+      iconEl.className = "fas fa-times-circle";
+      iconEl.style.color = "#ef4444";
+      titleEl.textContent = title || "Error";
+    } else if (type === "success") {
+      iconEl.className = "fas fa-check-circle";
+      iconEl.style.color = "#0f7a4a";
+      titleEl.textContent = title || "Success";
+    } else if (type === "warning") {
+      iconEl.className = "fas fa-exclamation-triangle";
+      iconEl.style.color = "#ff9800";
+      titleEl.textContent = title || "Warning";
+    } else {
+      iconEl.className = "fas fa-info-circle";
+      iconEl.style.color = "#0f7a4a";
+      titleEl.textContent = title || "Information";
+    }
+    
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    modal.style.display = 'flex';
+    
+    const handleClose = () => {
+      modal.style.display = 'none';
+      closeBtn.removeEventListener('click', handleClose);
+      resolve();
+    };
+    
+    closeBtn.addEventListener('click', handleClose);
+    
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+        resolve();
+      }
+    });
+  });
+}
+
+function showConfirm(message, title = "Confirm Action") {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('customConfirmModal');
+    const titleEl = document.getElementById('confirmTitle');
+    const messageEl = document.getElementById('confirmMessage');
+    const confirmBtn = document.getElementById('confirmOkBtn');
+    const cancelBtn = document.getElementById('confirmCancelBtn');
+    
+    if (!modal) {
+      resolve(confirm(message));
+      return;
+    }
+    
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    modal.style.display = 'flex';
+    
+    const handleConfirm = () => {
+      modal.style.display = 'none';
+      cleanup();
+      resolve(true);
+    };
+    
+    const handleCancel = () => {
+      modal.style.display = 'none';
+      cleanup();
+      resolve(false);
+    };
+    
+    const cleanup = () => {
+      confirmBtn.removeEventListener('click', handleConfirm);
+      cancelBtn.removeEventListener('click', handleCancel);
+    };
+    
+    confirmBtn.addEventListener('click', handleConfirm);
+    cancelBtn.addEventListener('click', handleCancel);
+    
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+        cleanup();
+        resolve(false);
+      }
+    });
+  });
+}
+
+/* ============ PASSWORD STRENGTH CHECKER ============ */
+function checkPasswordStrength(password) {
+  if (!password) return { score: 0, message: '', class: '' };
+  
+  let score = 0;
+  let message = '';
+  let className = '';
+  
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++;
+  
+  if (score <= 2) {
+    message = 'Weak password - use at least 8 characters with uppercase, numbers, and symbols';
+    className = 'strength-weak';
+  } else if (score <= 4) {
+    message = 'Medium password - add uppercase letters and symbols for better security';
+    className = 'strength-medium';
+  } else if (score <= 6) {
+    message = 'Strong password!';
+    className = 'strength-strong';
+  } else {
+    message = 'Very Strong password! Excellent security!';
+    className = 'strength-very-strong';
+  }
+  
+  return { score, message, className };
+}
+
+/* ============ LOAD USERS FROM SUPABASE ============ */
+async function loadUsers() {
+  try {
+    console.log('Loading users from Supabase...');
+    
+    const { data: users, error } = await supabaseClient
+      .from('users')
+      .select('username, full_name, role, assigned_barangay, is_active, must_change_password')
+      .order('username');
+    
+    if (error) throw error;
+    
+    console.log('✅ Loaded users:', users);
+    
+    ALL_USERS = users.map(user => ({
+      Username: user.username,
+      FullName: user.full_name || '',
+      Role: user.role || 'Staff',
+      AssignedBarangay: user.assigned_barangay || '',
+      is_active: user.is_active,
+      must_change_password: user.must_change_password
+    }));
+    
+    renderUsers();
+    updateStats();
+    
+  } catch(err) {
+    console.error('Load users error:', err);
+    await showAlert("Error loading users: " + err.message, "Error", "error");
+  }
+}
+
+/* ============ RENDER USERS ============ */
+function renderUsers(filter = "", roleFilter = CURRENT_ROLE_FILTER) {
+  const tbody = document.getElementById("usersBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  
+  let filtered = ALL_USERS;
+  
+  if (roleFilter !== 'all') {
+    filtered = ALL_USERS.filter(user => user.Role === roleFilter);
+  }
+  
+  if (filter) {
+    const searchLower = filter.toLowerCase();
+    filtered = filtered.filter(user => {
+      return (user.Username || '').toLowerCase().includes(searchLower) || 
+             (user.FullName || '').toLowerCase().includes(searchLower);
+    });
+  }
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 40px 20px;">No users found<\/td><\/tr>`;
+    return;
+  }
+  
+  filtered.forEach(user => {
+    const tr = document.createElement("tr");
+    const isProtected = isProtectedAdmin(user);
+    
+    let actionButtonsHtml = '';
+    if (isProtected) {
+      actionButtonsHtml = `
+        <button class="icon-btn" disabled title="Protected admin cannot be edited" style="opacity: 0.5;">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="icon-btn" disabled title="Protected admin password cannot be reset" style="opacity: 0.5;">
+          <i class="fas fa-key"></i>
+        </button>
+        <button class="icon-btn" disabled title="Protected admin cannot be deleted" style="opacity: 0.5;">
+          <i class="fas fa-trash"></i>
+        </button>
+      `;
+    } else {
+      actionButtonsHtml = `
+        <button class="icon-btn" onclick="editUser('${escapeHtml(user.Username)}')" title="Edit">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="icon-btn" onclick="showResetModal('${escapeHtml(user.Username)}')" title="Reset Password">
+          <i class="fas fa-key"></i>
+        </button>
+        <button class="icon-btn" onclick="showDeleteModal('${escapeHtml(user.Username)}')" title="Delete" style="color: #ff4444;">
+          <i class="fas fa-trash"></i>
+        </button>
+      `;
+    }
+    
+    let protectedBadge = '';
+    if (isProtected) {
+      protectedBadge = '<span style="color: #0f7a4a; font-weight: bold; font-size: 0.8rem; background: #e9f7f2; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">🔒 Protected</span>';
+    }
+    
+    tr.innerHTML = `
+      <td>${escapeHtml(user.Username || '')}${protectedBadge}</td>
+      <td>${escapeHtml(user.FullName || '')}</td>
+      <td><span style="padding: 4px 10px; border-radius: 12px; background: ${user.Role === 'Admin' ? '#e9f7f2' : '#f0f0f0'}; color: ${user.Role === 'Admin' ? '#0f7a4a' : '#666'}; display: inline-block;">${user.Role || 'Staff'}</span></td>
+      <td>${escapeHtml(user.AssignedBarangay || '')}</td>
+      <td class="actions-cell">${actionButtonsHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ============ UPDATE STATS ============ */
+function updateStats() {
+  const total = ALL_USERS.length;
+  const admins = ALL_USERS.filter(u => u.Role === 'Admin').length;
+  const staff = ALL_USERS.filter(u => u.Role === 'Staff').length;
+  
+  const statTotal = document.getElementById('statTotal');
+  const statAdmins = document.getElementById('statAdmins');
+  const statStaff = document.getElementById('statStaff');
+  
+  if (statTotal) statTotal.textContent = total;
+  if (statAdmins) statAdmins.textContent = admins;
+  if (statStaff) statStaff.textContent = staff;
+}
+
+/* ============ ROLE TOGGLE ============ */
+function setupRoleToggle() {
+  const toggleButtons = document.querySelectorAll('#roleToggle .toggle-btn');
+  
+  toggleButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      toggleButtons.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      
+      const role = this.getAttribute('data-role');
+      CURRENT_ROLE_FILTER = role;
+      
+      const searchFilter = document.getElementById('filterUser').value;
+      renderUsers(searchFilter, role);
+    });
+  });
+}
+
+/* ============ USER OPERATIONS ============ */
+function openUserModal(mode = 'add', username = null) {
+  EDIT_TARGET = username;
+  
+  const modal = document.getElementById('userModal');
+  const title = document.getElementById('modalTitle');
+  
+  if (!modal) return;
+  
+  document.getElementById('userForm').reset();
+  const passwordHint = document.getElementById('passwordHint');
+  if (passwordHint) passwordHint.innerHTML = '';
+  
+  if (mode === 'edit' && username) {
+    if (title) title.innerHTML = '<i class="fas fa-user-edit"></i> Edit User';
+    const user = ALL_USERS.find(u => u.Username === username);
+    if (user) {
+      document.getElementById('user_username').value = user.Username;
+      document.getElementById('user_fullname').value = user.FullName || '';
+      document.getElementById('user_role').value = user.Role || 'Staff';
+      document.getElementById('user_barangay').value = user.AssignedBarangay || '';
+      document.getElementById('user_username').disabled = true;
+      document.getElementById('user_password').required = false;
+      document.getElementById('user_password').placeholder = "Leave blank to keep current password";
+      const passwordRequired = document.getElementById('passwordRequired');
+      if (passwordRequired) passwordRequired.style.display = 'none';
+    }
+  } else {
+    if (title) title.innerHTML = '<i class="fas fa-user-plus"></i> Add New User';
+    document.getElementById('user_username').disabled = false;
+    document.getElementById('user_password').required = true;
+    document.getElementById('user_password').placeholder = "Enter new password";
+    document.getElementById('user_password').value = '';
+    const passwordRequired = document.getElementById('passwordRequired');
+    if (passwordRequired) passwordRequired.style.display = 'inline';
+  }
+  
+  modal.style.display = 'flex';
+}
+
+async function editUser(username) {
+  const user = ALL_USERS.find(u => u.Username === username);
+  
+  if (user && isProtectedAdmin(user)) {
+    await showAlert('The main admin account (username: admin) is protected.', 'Protected Account', 'warning');
+    return;
+  }
+  
+  openUserModal('edit', username);
+}
+
+async function saveUser() {
+  const username = document.getElementById('user_username').value.trim();
+  const fullname = document.getElementById('user_fullname').value.trim();
+  const role = document.getElementById('user_role').value;
+  const barangay = document.getElementById('user_barangay').value;
+  const password = document.getElementById('user_password').value.trim();
+  
+  const currentUser = localStorage.getItem("username") || "System";
+  
+  if (!username) {
+    await showAlert('Username is required', 'Validation Error', 'error');
+    return;
+  }
+  
+  if (!EDIT_TARGET && !password) {
+    await showAlert('Password is required for new users', 'Validation Error', 'error');
+    return;
+  }
+  
+  if (password) {
+    const strength = checkPasswordStrength(password);
+    if (strength.score < 3) {
+      await showAlert('Password is too weak! Use at least 8 characters with uppercase, lowercase, numbers, and special characters.', 'Weak Password', 'error');
+      return;
+    }
+  }
+  
+  const saveBtn = document.getElementById('saveUserBtn');
+  const originalText = saveBtn ? saveBtn.innerHTML : 'Save';
+  if (saveBtn) {
+    saveBtn.innerHTML = EDIT_TARGET ? '<i class="fas fa-spinner fa-spin"></i> Updating...' : '<i class="fas fa-spinner fa-spin"></i> Creating...';
+    saveBtn.disabled = true;
+  }
+  
+  try {
+    if (EDIT_TARGET) {
+      // Update existing user
+      const updateData = {
+        full_name: fullname,
+        role: role,
+        assigned_barangay: barangay
+      };
+      
+      if (password) {
+        updateData.password_hash = await sha256Hash(password);
+        updateData.must_change_password = true;
+      }
+      
+      const { error } = await supabaseClient
+        .from('users')
+        .update(updateData)
+        .eq('username', EDIT_TARGET);
+      
+      if (error) throw error;
+      
+      // Log audit
+      await supabaseClient.from('audit_logs').insert([{
+        action: 'Update User',
+        actor: currentUser,
+        details: `Updated user "${username}"`
+      }]);
+      
+    } else {
+      // Create new user
+      const passwordHash = await sha256Hash(password);
+      
+      const { error } = await supabaseClient
+        .from('users')
+        .insert([{
+          username: username,
+          full_name: fullname,
+          role: role,
+          assigned_barangay: barangay,
+          password_hash: passwordHash,
+          must_change_password: true,
+          is_active: true
+        }]);
+      
+      if (error) throw error;
+      
+      // Log audit
+      await supabaseClient.from('audit_logs').insert([{
+        action: 'Create User',
+        actor: currentUser,
+        details: `Created user "${username}" with role "${role}"`
+      }]);
+    }
+    
+    closeUserModal();
+    
+    const successModal = document.getElementById('userSavedSuccessModal');
+    const titleEl = document.getElementById('userSavedTitle');
+    const messageEl = document.getElementById('userSavedMessage');
+    
+    if (EDIT_TARGET) {
+      if (titleEl) titleEl.textContent = 'User Updated Successfully!';
+      if (messageEl) messageEl.textContent = `User "${username}" has been successfully updated.`;
+    } else {
+      if (titleEl) titleEl.textContent = 'User Created Successfully!';
+      if (messageEl) messageEl.textContent = `User "${username}" has been successfully added to the system.`;
+    }
+    
+    if (successModal) successModal.style.display = 'flex';
+    loadUsers();
+    
+  } catch(err) {
+    console.error('Save user error:', err);
+    await showAlert('Error saving user: ' + err.message, 'Error', 'error');
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = originalText;
+    }
+  }
+}
+
+function closeUserModal() {
+  const modal = document.getElementById('userModal');
+  if (modal) modal.style.display = 'none';
+  EDIT_TARGET = null;
+}
+
+/* ============ RESET PASSWORD ============ */
+async function showResetModal(username) {
+  const user = ALL_USERS.find(u => u.Username === username);
+  
+  if (user && isProtectedAdmin(user)) {
+    await showAlert('The main admin account (username: admin) password cannot be reset.', 'Protected Account', 'warning');
+    return;
+  }
+  
+  const confirmed = await showConfirm(
+    `Are you sure you want to reset the password for user "${username}"?\n\nThe password will be set to: password123\n\nUser will be required to change password on next login.`,
+    'Reset Password'
+  );
+  
+  if (confirmed) {
+    RESET_TARGET_USER = username;
+    await resetPassword();
+  }
+}
+
+async function resetPassword() {
+  if (!RESET_TARGET_USER) return;
+  
+  const username = RESET_TARGET_USER;
+  const currentUser = localStorage.getItem("username") || "System";
+  const defaultPasswordHash = await sha256Hash('password123');
+  
+  const resetBtn = document.getElementById('confirmReset');
+  const originalText = resetBtn ? resetBtn.innerHTML : 'Reset';
+  if (resetBtn) {
+    resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
+    resetBtn.disabled = true;
+  }
+  
+  try {
+    const { error } = await supabaseClient
+      .from('users')
+      .update({
+        password_hash: defaultPasswordHash,
+        must_change_password: true
+      })
+      .eq('username', username);
+    
+    if (error) throw error;
+    
+    // Log audit
+    await supabaseClient.from('audit_logs').insert([{
+      action: 'Reset Password',
+      actor: currentUser,
+      details: `Reset password for user "${username}"`
+    }]);
+    
+    closeResetModal();
+    const successModal = document.getElementById('resetSuccessModal');
+    if (successModal) successModal.style.display = 'flex';
+    
+  } catch(err) {
+    console.error('Reset error:', err);
+    await showAlert('Error resetting password: ' + err.message, 'Error', 'error');
+  } finally {
+    if (resetBtn) {
+      resetBtn.disabled = false;
+      resetBtn.innerHTML = originalText;
+    }
+  }
+}
+
+function closeResetModal() {
+  const modal = document.getElementById('resetModal');
+  if (modal) modal.style.display = 'none';
+  RESET_TARGET_USER = null;
+}
+
+/* ============ DELETE USER ============ */
+async function showDeleteModal(username) {
+  const user = ALL_USERS.find(u => u.Username === username);
+  
+  if (user && isProtectedAdmin(user)) {
+    await showAlert('The main admin account (username: admin) is protected and cannot be deleted.', 'Protected Account', 'warning');
+    return;
+  }
+  
+  const confirmed = await showConfirm(
+    `Are you sure you want to delete user "${username}"?\n\nThis action cannot be undone.`,
+    'Delete User'
+  );
+  
+  if (confirmed) {
+    DELETE_TARGET_USER = username;
+    await deleteUser();
+  }
+}
+
+async function deleteUser() {
+  if (!DELETE_TARGET_USER) return;
+  
+  const username = DELETE_TARGET_USER;
+  const currentUser = localStorage.getItem("username") || "System";
+  
+  const deleteBtn = document.getElementById('confirmDelete');
+  const originalText = deleteBtn ? deleteBtn.innerHTML : 'Delete';
+  if (deleteBtn) {
+    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+    deleteBtn.disabled = true;
+  }
+  
+  try {
+    const { error } = await supabaseClient
+      .from('users')
+      .delete()
+      .eq('username', username);
+    
+    if (error) throw error;
+    
+    // Log audit
+    await supabaseClient.from('audit_logs').insert([{
+      action: 'Delete User',
+      actor: currentUser,
+      details: `Deleted user "${username}"`
+    }]);
+    
+    closeDeleteModal();
+    const successModal = document.getElementById('deleteSuccessModal');
+    if (successModal) successModal.style.display = 'flex';
+    loadUsers();
+    
+  } catch(err) {
+    console.error('Delete error:', err);
+    await showAlert('Error deleting user: ' + err.message, 'Error', 'error');
+  } finally {
+    if (deleteBtn) {
+      deleteBtn.disabled = false;
+      deleteBtn.innerHTML = originalText;
+    }
+  }
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById('deleteModal');
+  if (modal) modal.style.display = 'none';
+  DELETE_TARGET_USER = null;
+}
+
+/* ============ LOAD USER ACTIVITY ============ */
+async function loadUserActivity() {
+  try {
+    const { data: users, error } = await supabaseClient
+      .from('users')
+      .select('username, full_name, role, last_login, is_active')
+      .order('username');
+    
+    if (error) throw error;
+    
+    const tbody = document.getElementById('activityBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    if (!users || users.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">No activity data available<\/td><\/tr>`;
+      return;
+    }
+    
+    let onlineCount = 0;
+    let todayCount = 0;
+    const today = new Date().toDateString();
+    
+    users.forEach(user => {
+      const tr = document.createElement('tr');
+      const isOnline = user.is_active === true;
+      const statusText = isOnline ? 'Online' : 'Offline';
+      const statusClass = isOnline ? 'status-online' : 'status-offline';
+      
+      if (isOnline) onlineCount++;
+      
+      const lastLogin = user.last_login ? new Date(user.last_login).toLocaleString() : 'Never';
+      const lastActivity = user.last_login ? new Date(user.last_login).toLocaleString() : 'Never';
+      
+      if (user.last_login && new Date(user.last_login).toDateString() === today) todayCount++;
+      
+      tr.innerHTML = `
+        <td><strong>${escapeHtml(user.username)}<\/strong><\/td>
+        <td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td>
+        <td><small>${lastLogin}<\/small><\/td>
+        <td><small>${lastActivity}<\/small><\/td>
+        <td>${isOnline ? 'Active' : 'Inactive'}<\/td>
+        <td>${isOnline ? 'Current session' : 'N/A'}<\/td>
+      `;
+      tbody.appendChild(tr);
+    });
+    
+    const statOnline = document.getElementById('statOnline');
+    const statToday = document.getElementById('statToday');
+    const statTotalUsers = document.getElementById('statTotalUsers');
+    
+    if (statOnline) statOnline.textContent = onlineCount;
+    if (statToday) statToday.textContent = todayCount;
+    if (statTotalUsers) statTotalUsers.textContent = users.length;
+    
+  } catch(err) {
+    console.error('Error loading activity:', err);
+  }
+}
+
+/* ============ LOAD AUDIT LOGS ============ */
+async function loadAuditLogs() {
+  try {
+    const { data: logs, error } = await supabaseClient
+      .from('audit_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    
+    if (error) throw error;
+    
+    AUDIT_LOGS_DATA = { logs: logs || [] };
+    displayAuditLogs('all');
+  } catch(err) {
+    console.error('Error loading logs:', err);
+  }
+}
+
+function displayAuditLogs(category = 'all') {
+  const tbody = document.getElementById('logsBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  
+  if (!AUDIT_LOGS_DATA || !AUDIT_LOGS_DATA.logs || AUDIT_LOGS_DATA.logs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No logs available<\/td><\/tr>`;
+    return;
+  }
+  
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  let filteredLogs = AUDIT_LOGS_DATA.logs;
+  
+  if (category === 'today') {
+    filteredLogs = AUDIT_LOGS_DATA.logs.filter(log => {
+      const logDate = new Date(log.created_at);
+      return logDate >= today;
+    });
+  } else if (category === 'yesterday') {
+    filteredLogs = AUDIT_LOGS_DATA.logs.filter(log => {
+      const logDate = new Date(log.created_at);
+      return logDate >= yesterday && logDate < today;
+    });
+  } else if (category === 'older') {
+    filteredLogs = AUDIT_LOGS_DATA.logs.filter(log => {
+      const logDate = new Date(log.created_at);
+      return logDate < yesterday;
+    });
+  }
+  
+  if (filteredLogs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No logs found<\/td><\/tr>`;
+    return;
+  }
+  
+  filteredLogs.forEach(log => {
+    const tr = document.createElement('tr');
+    const timestamp = log.created_at ? new Date(log.created_at).toLocaleString() : '';
+    
+    tr.innerHTML = `
+      <td><small>${escapeHtml(timestamp)}<\/small><\/td>
+      <td><span style="padding: 2px 8px; border-radius: 12px; background: #e9f7f2; font-size: 0.8rem;">${escapeHtml(log.action || '')}<\/span><\/td>
+      <td>${escapeHtml(log.actor || '')}<\/td>
+      <td>${escapeHtml(log.target_table || '')}<\/td>
+      <td style="text-align: left;"><small>${escapeHtml(log.details || '')}<\/small><\/td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ============ TAB FUNCTIONALITY ============ */
+function setupTabs() {
+  const mainTabBtns = document.querySelectorAll('.tab-btn');
+  const mainTabContents = document.querySelectorAll('.tab-content');
+  
+  mainTabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      mainTabBtns.forEach(b => b.classList.remove('active'));
+      mainTabContents.forEach(c => c.classList.remove('active'));
+      
+      this.classList.add('active');
+      const tabId = this.getAttribute('data-tab');
+      const tabContent = document.getElementById(`${tabId}Tab`);
+      if (tabContent) tabContent.classList.add('active');
+      
+      if (tabId === 'activity') {
+        loadUserActivity();
+      } else {
+        loadAuditLogs();
+      }
+    });
+  });
+  
+  const subTabBtns = document.querySelectorAll('#auditTab .tab-btn-small');
+  subTabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      subTabBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      const category = this.getAttribute('data-category');
+      displayAuditLogs(category);
+    });
+  });
+}
+
+function closeLogsModal() {
+  const modal = document.getElementById('logsModal');
+  if (modal) modal.style.display = 'none';
+}
+
+/* ============ SIDEBAR TOGGLE ============ */
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const pageContainer = document.querySelector('.page-container');
+  
+  if (!sidebar || !sidebarToggle) return;
+  
+  const icon = sidebarToggle.querySelector('i');
+  sidebar.classList.toggle('collapsed');
+  
+  if (sidebar.classList.contains('collapsed')) {
+    if (icon) icon.className = 'fas fa-chevron-right';
+    sidebarToggle.title = "Expand sidebar";
+    const menuTexts = sidebar.querySelectorAll('.menu-text');
+    menuTexts.forEach(text => text.style.display = 'none');
+  } else {
+    if (icon) icon.className = 'fas fa-bars';
+    sidebarToggle.title = "Collapse sidebar";
+    const menuTexts = sidebar.querySelectorAll('.menu-text');
+    menuTexts.forEach(text => text.style.display = '');
+  }
+}
+
+/* ============ SEARCH FUNCTIONALITY ============ */
+function setupSearch() {
+  const filterUser = document.getElementById('filterUser');
+  if (filterUser) {
+    filterUser.addEventListener('input', (e) => {
+      renderUsers(e.target.value, CURRENT_ROLE_FILTER);
+    });
+  }
+  
+  const searchActivity = document.getElementById('searchActivity');
+  if (searchActivity) {
+    searchActivity.addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('#activityBody tr');
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+      });
+    });
+  }
+  
+  const searchAudit = document.getElementById('searchAudit');
+  if (searchAudit) {
+    searchAudit.addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('#logsBody tr');
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+      });
+    });
+  }
+}
+
+/* ============ PASSWORD STRENGTH SETUP ============ */
+function setupPasswordStrength() {
+  const passwordInput = document.getElementById('user_password');
+  const passwordHint = document.getElementById('passwordHint');
+  
+  if (passwordInput && passwordHint) {
+    passwordInput.addEventListener('input', function() {
+      const password = this.value;
+      const strength = checkPasswordStrength(password);
+      
+      if (password === '') {
+        passwordHint.innerHTML = '';
+      } else {
+        passwordHint.innerHTML = `<i class="fas fa-shield-alt"></i> ${strength.message}`;
+        passwordHint.className = `form-hint password-strength ${strength.className}`;
+      }
+    });
+  }
+}
+
+/* ============ EYE ICON TOGGLE ============ */
+function setupPasswordToggle() {
+  const toggleBtn = document.getElementById('toggleModalPassword');
+  const passwordInput = document.getElementById('user_password');
+  
+  if (toggleBtn && passwordInput) {
+    toggleBtn.addEventListener('click', function() {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      
+      const icon = this.querySelector('i');
+      if (icon) {
+        if (type === 'text') {
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        } else {
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        }
+      }
+    });
+  }
+}
+
+/* ============ REFRESH LOGS ============ */
+function refreshLogs() {
+  const activeTab = document.querySelector('.tab-btn.active');
+  if (activeTab) {
+    const tabId = activeTab.getAttribute('data-tab');
+    if (tabId === 'activity') {
+      loadUserActivity();
+    } else {
+      loadAuditLogs();
+    }
+  }
+}
+
+/* ============ DOM CONTENT LOADED ============ */
+window.addEventListener('DOMContentLoaded', async () => {
+    const loggedIn = localStorage.getItem('loggedIn') === 'true';
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    const userRole = localStorage.getItem('userRole');
+    const isAdmin = userRole && userRole.toLowerCase() === 'admin';
+    
+    if (isGuest || !isAdmin) {
+        window.location.replace('dashboard.html');
+        return;
+    }
+    
+    if (!loggedIn) {
+        window.location.href = 'index.html?session=expired';
+        return;
+    }
+    
+    // Set user info
+    const userName = localStorage.getItem("staffName") || localStorage.getItem("username") || "User";
+    const userNameElement = document.getElementById("userName");
+    if (userNameElement) userNameElement.innerText = userName;
+    
+    const adminItems = document.querySelectorAll(".admin-only");
+    adminItems.forEach(item => {
+      if (isAdmin) {
+        item.classList.add("admin-visible");
+        item.style.display = "block";
+      } else {
+        item.classList.remove("admin-visible");
+        item.style.display = "none";
+      }
+    });
+    
+    const mobileUsersNav = document.getElementById('mobileUsersNav');
+    if (mobileUsersNav) {
+      mobileUsersNav.style.display = isAdmin ? "flex" : "none";
+    }
+    
+    // Initialize
+    loadUsers();
+    setupRoleToggle();
+    setupTabs();
+    setupSearch();
+    setupPasswordStrength();
+    setupPasswordToggle();
+    
+    // Event listeners
+    const openAddUser = document.getElementById('openAddUser');
+    if (openAddUser) openAddUser.addEventListener('click', () => openUserModal('add'));
+    
+    const viewLogsBtn = document.getElementById('viewLogsBtn');
+    if (viewLogsBtn) {
+      viewLogsBtn.addEventListener('click', function() {
+        const logsModal = document.getElementById('logsModal');
+        if (logsModal) logsModal.style.display = 'flex';
+        loadUserActivity();
+        loadAuditLogs();
+      });
+    }
+    
+    const saveUserBtn = document.getElementById('saveUserBtn');
+    if (saveUserBtn) saveUserBtn.addEventListener('click', saveUser);
+    
+    const cancelModal = document.getElementById('cancelModal');
+    if (cancelModal) cancelModal.addEventListener('click', closeUserModal);
+    
+    const closeModal = document.getElementById('closeModal');
+    if (closeModal) closeModal.addEventListener('click', closeUserModal);
+    
+    const closeLogsModalBtn = document.getElementById('closeLogsModalBtn');
+    if (closeLogsModalBtn) closeLogsModalBtn.addEventListener('click', closeLogsModal);
+    
+    const refreshLogsBtn = document.getElementById('refreshLogsBtn');
+    if (refreshLogsBtn) refreshLogsBtn.addEventListener('click', refreshLogs);
+    
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
+    
+    const cancelReset = document.getElementById('cancelReset');
+    if (cancelReset) cancelReset.addEventListener('click', closeResetModal);
+    
+    const confirmReset = document.getElementById('confirmReset');
+    if (confirmReset) confirmReset.addEventListener('click', resetPassword);
+    
+    const cancelDelete = document.getElementById('cancelDelete');
+    if (cancelDelete) cancelDelete.addEventListener('click', closeDeleteModal);
+    
+    const confirmDelete = document.getElementById('confirmDelete');
+    if (confirmDelete) confirmDelete.addEventListener('click', deleteUser);
+    
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.replace('index.html');
+      });
+    }
+    
+    // Success Modal Handlers
+    const closeUserSavedSuccess = document.getElementById('closeUserSavedSuccess');
+    if (closeUserSavedSuccess) {
+      closeUserSavedSuccess.addEventListener('click', () => {
+        document.getElementById('userSavedSuccessModal').style.display = 'none';
+      });
+    }
+    
+    const closeResetSuccess = document.getElementById('closeResetSuccess');
+    if (closeResetSuccess) {
+      closeResetSuccess.addEventListener('click', () => {
+        document.getElementById('resetSuccessModal').style.display = 'none';
+      });
+    }
+    
+    const closeDeleteSuccess = document.getElementById('closeDeleteSuccess');
+    if (closeDeleteSuccess) {
+      closeDeleteSuccess.addEventListener('click', () => {
+        document.getElementById('deleteSuccessModal').style.display = 'none';
+      });
+    }
+    
+    // Close modals on overlay click
+    const modals = ['userModal', 'logsModal', 'resetModal', 'deleteModal', 'userSavedSuccessModal', 'resetSuccessModal', 'deleteSuccessModal', 'customAlertModal', 'customConfirmModal'];
+    modals.forEach(modalId => {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.style.display = 'none';
+        });
+      }
+    });
+    
+    // Auto-refresh every 30 seconds
+    setInterval(loadUsers, 30000);
+});
+</script>
+
+</body>
+</html>
