@@ -3,11 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<!-- security headers -->
 <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; connect-src *;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    
     <title>Login — Purok Kaligtasan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -28,33 +26,31 @@
             --radius-sm: 8px;
         }
         .guest-login-btn {
-    width: 100%;
-    padding: 12px;
-    background: transparent;
-    color: var(--primary-green);
-    border: 2px solid var(--primary-green);
-    border-radius: var(--radius-sm);
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-}
-
-.guest-login-btn:hover {
-    background: var(--light-green);
-    transform: translateY(-2px);
-}
-
-.guest-login-btn:active {
-    transform: translateY(0);
-}
-
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: var(--primary-green);
+            border: 2px solid var(--primary-green);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .guest-login-btn:hover {
+            background: var(--light-green);
+            transform: translateY(-2px);
+        }
+        .guest-login-btn:active {
+            transform: translateY(0);
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -75,7 +71,6 @@
             -webkit-text-size-adjust: 100%;
         }
 
-        /* Background decorative elements - made smaller */
         .bg-pattern {
             position: absolute;
             width: 100%;
@@ -83,69 +78,40 @@
             overflow: hidden;
             z-index: -1;
         }
-
         .bg-circle {
             position: absolute;
             border-radius: 50%;
             background: rgba(15, 122, 74, 0.05);
         }
+        .circle-1 { width: 200px; height: 200px; top: -100px; right: -100px; }
+        .circle-2 { width: 150px; height: 150px; bottom: -75px; left: -75px; background: rgba(255, 122, 0, 0.05); }
+        .circle-3 { width: 100px; height: 100px; top: 50%; left: 10%; background: rgba(52, 183, 143, 0.05); }
 
-        .circle-1 {
-            width: 200px;
-            height: 200px;
-            top: -100px;
-            right: -100px;
-        }
-
-        .circle-2 {
-            width: 150px;
-            height: 150px;
-            bottom: -75px;
-            left: -75px;
-            background: rgba(255, 122, 0, 0.05);
-        }
-
-        .circle-3 {
-            width: 100px;
-            height: 100px;
-            top: 50%;
-            left: 10%;
-            background: rgba(52, 183, 143, 0.05);
-        }
-
-        /* Login container - made smaller */
         .login-container {
             width: 100%;
-            max-width: 380px; /* Reduced from 440px */
+            max-width: 380px;
             background: var(--white);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             overflow: hidden;
             animation: fadeIn 0.6s ease-out;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Header section - made more compact */
         .login-header {
             background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
-            padding: 24px 20px; /* Reduced padding */
+            padding: 24px 20px;
             text-align: center;
             color: white;
             position: relative;
         }
-
-        .logo-container {
-            position: relative;
-        }
-
         .logo-circle {
-            width: 100px; /* Reduced from 100px */
-            height: 100px; /* Reduced from 100px */
-            margin: 0 auto 12px; /* Reduced */
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 12px;
             background: rgba(255, 255, 255, 0.15);
             border-radius: 50%;
             display: flex;
@@ -154,94 +120,68 @@
             border: 3px solid rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(5px);
         }
-
-        .logo-circle img {
-width: 90px;
-    height: 90px;
-}
-
-        .header-title {
-            font-size: 1.5rem; /* Reduced from 1.8rem */
-            font-weight: 700;
-            margin-bottom: 4px; /* Reduced */
-            letter-spacing: 0.5px;
-        }
-
-        .header-subtitle {
-            font-size: 0.9rem; /* Reduced from 1rem */
-            opacity: 0.9;
-            font-weight: 500;
-        }
-
-        /* Badge - made smaller */
+        .logo-circle img { width: 90px; height: 90px; }
+        .header-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px; }
+        .header-subtitle { font-size: 0.9rem; opacity: 0.9; font-weight: 500; }
         .badge {
             position: absolute;
-            top: 15px; /* Adjusted */
-            right: 15px; /* Adjusted */
+            top: 15px;
+            right: 15px;
             background: var(--accent-orange);
             color: white;
-            padding: 5px 10px; /* Reduced */
+            padding: 5px 10px;
             border-radius: 20px;
-            font-size: 0.7rem; /* Reduced from 0.75rem */
+            font-size: 0.7rem;
             font-weight: 600;
             letter-spacing: 0.5px;
         }
 
-        /* Form section - made more compact */
         .login-form-container {
-            padding: 20px 24px; /* Reduced from 36px 32px */
+            padding: 20px 24px;
         }
-
         .form-title {
             color: var(--text-dark);
-            font-size: 1.3rem; /* Reduced from 1.5rem */
-            margin-bottom: 6px; /* Reduced */
+            font-size: 1.3rem;
+            margin-bottom: 6px;
             font-weight: 650;
         }
-
         .form-subtitle {
             color: var(--text-light);
-            font-size: 0.85rem; /* Reduced from 0.95rem */
-            margin-bottom: 9px; /* Reduced from 28px */
+            font-size: 0.85rem;
+            margin-bottom: 9px;
         }
-
-        /* Form styling - compact */
         .form-group {
-            margin-bottom: 16px; /* Reduced from 20px */
+            margin-bottom: 16px;
             position: relative;
         }
-
         .form-label {
             display: block;
-            margin-bottom: 6px; /* Reduced from 8px */
+            margin-bottom: 6px;
             color: var(--text-dark);
             font-weight: 500;
-            font-size: 0.9rem; /* Reduced from 0.95rem */
+            font-size: 0.9rem;
         }
-
         .input-with-icon {
             position: relative;
             display: block;
             width: 100%;
         }
-
         .input-icon {
             position: absolute;
-            left: 14px; /* Reduced from 16px */
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-light);
-            font-size: 1rem; /* Reduced from 1.1rem */
+            font-size: 1rem;
             pointer-events: none;
             z-index: 1;
         }
-
         .form-input {
             width: 100%;
-            padding: 14px 40px 14px 42px; /* Right padding for eye button */
+            padding: 14px 40px 14px 42px;
             border: 2px solid var(--medium-gray);
             border-radius: var(--radius-sm);
-            font-size: 16px; /* IMPORTANT: Set to 16px to prevent iOS zoom */
+            font-size: 16px;
             color: var(--text-dark);
             background: var(--white);
             transition: all 0.3s ease;
@@ -252,162 +192,64 @@ width: 90px;
             position: relative;
             z-index: 0;
         }
-
-        /* Prevent iOS zoom on input focus */
         @media screen and (max-width: 768px) {
-            .form-input {
-                font-size: 16px !important; /* Force 16px on mobile */
-                transform: scale(1); /* Prevent scaling */
-                transform-origin: left center;
-            }
-            
-            .form-input:focus {
-                font-size: 16px !important;
-            }
+            .form-input { font-size: 16px !important; transform: scale(1); transform-origin: left center; }
+            .form-input:focus { font-size: 16px !important; }
         }
-
         .form-input:focus {
             outline: none;
             border-color: var(--primary-green);
             box-shadow: 0 0 0 3px rgba(15, 122, 74, 0.1);
             transform: scale(1);
         }
+        .form-input::placeholder { color: #a0a8a4; }
 
-        .form-input::placeholder {
-            color: #a0a8a4;
-        }
-
-        /* Error message - for single session restriction */
-        #loginError {
-            display: none;
-            background: rgba(239, 68, 68, 0.1);
-            padding: 12px 16px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 16px; /* Reduced */
-            color: #dc2626;
-            font-size: 0.85rem; /* Reduced from 0.9rem */
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Already logged in error styling */
-        .already-logged-in-error {
-            padding: 12px; /* Reduced */
-            background: #fff3e0;
-            border-left: 4px solid #ff9800;
-            border-radius: 6px; /* Reduced from 8px */
-            margin-bottom: 12px; /* Reduced */
-        }
-
-        .force-logout-btn, .cancel-btn {
-            padding: 6px 12px; /* Reduced */
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem; /* Smaller font */
-            transition: all 0.2s;
-            font-weight: 500;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .force-logout-btn {
-            background: #ff9800;
-            color: white;
-        }
-
-        .force-logout-btn:hover {
-            background: #f57c00;
-            transform: translateY(-1px);
-        }
-
-        .cancel-btn {
-            background: #f0f0f0;
-            color: #666;
-        }
-
-        .cancel-btn:hover {
-            background: #e0e0e0;
-        }
-
-        /* Status text */
-        #statusText {
-            color: var(--text-light);
-            font-size: 0.85rem; /* Reduced from 0.9rem */
-            margin-bottom: 16px; /* Reduced from 20px */
-            padding: 5px 8px; /* Reduced */
-            border-radius: var(--radius-sm);
-            line-height: 1.4;
-        }
-
-        /* Login button - smaller */
         .login-btn {
             width: 100%;
-            padding: 14px; /* Reduced from 16px */
+            padding: 14px;
             background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
             color: white;
             border: none;
             border-radius: var(--radius-sm);
-            font-size: 1rem; /* Reduced from 1.05rem */
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px; /* Reduced from 10px */
+            gap: 8px;
             margin-top: 8px;
             -webkit-tap-highlight-color: rgba(15, 122, 74, 0.3);
             touch-action: manipulation;
             position: relative;
             box-sizing: border-box;
         }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(15, 122, 74, 0.25); }
+        .login-btn:active { transform: translateY(0); }
+        .login-btn i { font-size: 1rem; }
 
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(15, 122, 74, 0.25);
-        }
-
-        .login-btn:active {
-            transform: translateY(0);
-        }
-
-        .login-btn i {
-            font-size: 1rem; /* Reduced from 1.1rem */
-        }
-
-        /* Footer - smaller */
         .login-footer {
-            margin-top: 20px; /* Reduced from 24px */
-            padding-top: 16px; /* Reduced from 20px */
+            margin-top: 20px;
+            padding-top: 16px;
             border-top: 1px solid var(--medium-gray);
             text-align: center;
             color: var(--text-light);
-            font-size: 0.8rem; /* Reduced from 0.85rem */
+            font-size: 0.8rem;
         }
+        .footer-note { margin-top: 6px; font-size: 0.75rem; opacity: 0.8; }
 
-        .footer-note {
-            margin-top: 6px; /* Reduced from 8px */
-            font-size: 0.75rem; /* Reduced from 0.8rem */
-            opacity: 0.8;
-        }
-
-        /* Password toggle - FIXED to prevent resize */
         .password-toggle {
             position: absolute;
-            right: 12px; /* Reduced from 14px */
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             color: var(--text-light);
             cursor: pointer;
-            font-size: 1rem; /* Reduced from 1.1rem */
-            padding: 6px; /* Reduced from 8px */
+            font-size: 1rem;
+            padding: 6px;
             -webkit-tap-highlight-color: transparent;
             width: 30px;
             height: 30px;
@@ -417,122 +259,52 @@ width: 90px;
             z-index: 2;
             box-sizing: border-box;
         }
+        .password-toggle i { pointer-events: none; }
 
-        .password-toggle i {
-            pointer-events: none;
-        }
-
-        /* Loading state */
-        .btn-loading .btn-text {
-            visibility: hidden;
-        }
-
+        .btn-loading .btn-text { visibility: hidden; }
         .btn-loading::after {
             content: "";
             position: absolute;
-            width: 18px; /* Reduced from 20px */
-            height: 18px; /* Reduced from 20px */
-            border: 2px solid rgba(255, 255, 255, 0.3); /* Reduced from 3px */
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-top-color: white;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Responsive */
         @media (max-width: 480px) {
-            .login-container {
-                max-width: 100%;
-                margin: 0 15px;
-            }
-            
-            .login-header {
-                padding: 20px 16px; /* Further reduced for mobile */
-            }
-            
-            .login-form-container {
-                padding: 24px 16px; /* Further reduced for mobile */
-            }
-            
-            .header-title {
-                font-size: 1.3rem; /* Smaller for mobile */
-            }
-            
-            .circle-1, .circle-2, .circle-3 {
-                display: none;
-            }
-            
-            .form-input {
-                padding: 14px 38px 14px 40px; /* Adjust for smaller screens */
-            }
+            .login-container { max-width: 100%; margin: 0 15px; }
+            .login-header { padding: 20px 16px; }
+            .login-form-container { padding: 24px 16px; }
+            .header-title { font-size: 1.3rem; }
+            .circle-1, .circle-2, .circle-3 { display: none; }
+            .form-input { padding: 14px 38px 14px 40px; }
         }
-
-        /* iOS Safari specific fix */
         @supports (-webkit-touch-callout: none) {
-            body {
-                min-height: -webkit-fill-available;
-            }
-            
-            .form-input {
-                font-size: 16px !important; /* Force 16px on iOS */
-                line-height: 1.5;
-            }
-            
-            .login-container {
-                max-height: -webkit-fill-available;
-            }
+            body { min-height: -webkit-fill-available; }
+            .form-input { font-size: 16px !important; line-height: 1.5; }
+            .login-container { max-height: -webkit-fill-available; }
         }
-
-        /* Mobile landscape fix */
         @media (max-height: 500px) and (orientation: landscape) {
-            body {
-                align-items: flex-start;
-                padding: 10px;
-            }
-            
-            .login-container {
-                margin: 10px auto;
-                max-width: 90%;
-            }
-            
-            .login-header {
-                padding: 15px 16px;
-            }
-            
-            .login-form-container {
-                padding: 20px 16px;
-            }
+            body { align-items: flex-start; padding: 10px; }
+            .login-container { margin: 10px auto; max-width: 90%; }
+            .login-header { padding: 15px 16px; }
+            .login-form-container { padding: 20px 16px; }
         }
-
-        /* Tablet portrait */
         @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
-            .login-container {
-                max-width: 400px; /* Slightly larger for tablets */
-            }
+            .login-container { max-width: 400px; }
         }
-
-        /* Prevent form zoom on iOS */
         @media screen and (max-width: 767px) {
-            input, select, textarea {
-                font-size: 16px !important;
-            }
+            input, select, textarea { font-size: 16px !important; }
         }
-
-        /* Disable auto-zoom on iOS */
         @media screen and (-webkit-min-device-pixel-ratio:0) { 
-            select,
-            textarea,
-            input {
-                font-size: 16px !important;
-            }
+            select, textarea, input { font-size: 16px !important; }
         }
     </style>
 </head>
 <body>
-    <!-- Background pattern -->
     <div class="bg-pattern">
         <div class="bg-circle circle-1"></div>
         <div class="bg-circle circle-2"></div>
@@ -541,7 +313,6 @@ width: 90px;
 
     <!-- Login container -->
     <div class="login-container">
-        <!-- Header section -->
         <div class="login-header">
             <div class="badge">SECURE LOGIN</div>
             <div class="logo-container">
@@ -553,131 +324,677 @@ width: 90px;
             </div>
         </div>
 
-        <!-- Form section -->
         <div class="login-form-container">
             <h2 class="form-title">Welcome Back</h2>
             <p class="form-subtitle">Please enter your credentials to access the system</p>
 
-            <!-- Error message -->
             <div id="loginError" style="display:none;"></div>
-
-            <!-- Status message -->
             <p id="statusText"></p>
 
-            <!-- Login form -->
             <form id="loginForm" autocomplete="on">
-                <!-- Username field -->
                 <div class="form-group">
                     <label for="username" class="form-label">Username</label>
                     <div class="input-with-icon">
                         <i class="input-icon fas fa-user"></i>
-                        <input type="text" 
-                               id="username" 
-                               class="form-input" 
-                               placeholder="Enter your username" 
-                               required
-                               autocomplete="username"
-                               autocapitalize="none"
-                               autocorrect="off"
-                               spellcheck="false">
+                        <input type="text" id="username" class="form-input" placeholder="Enter your username" required
+                               autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
                     </div>
                 </div>
 
-                <!-- Password field -->
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
                     <div class="input-with-icon">
                         <i class="input-icon fas fa-lock"></i>
-                        <input type="password" 
-                               id="password" 
-                               class="form-input" 
-                               placeholder="Enter your password" 
-                               required
-                               autocomplete="current-password"
-                               autocapitalize="none"
-                               autocorrect="off"
-                               spellcheck="false"
-                               enterkeyhint="go">
+                        <input type="password" id="password" class="form-input" placeholder="Enter your password" required
+                               autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go">
                         <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Login button -->
-                <button type="submit" class="login-btn" id="loginButton">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span class="btn-text">Login to System</span>
-                </button>
+<button type="submit" class="login-btn" id="loginButton">
+    <i class="fas fa-sign-in-alt"></i>
+    <span class="btn-text">Login to System</span>
+</button>
                 <div style="margin-top: 15px; text-align: center;">
-    <button type="button" id="guestLoginBtn" class="guest-login-btn">
-        <i class="fas fa-user-guest"></i>
-        <span>Continue as Guest</span>
-    </button>
-    <p style="margin-top: 8px; font-size: 0.75rem; color: var(--text-light);">
-        Guest users have view-only access to dashboard
-    </p>
-</div>
+                    <button type="button" id="guestLoginBtn" class="guest-login-btn">
+                        <i class="fas fa-user-guest"></i>
+                        <span>Continue as Guest</span>
+                    </button>
+                    <p style="margin-top: 8px; font-size: 0.75rem; color: var(--text-light);">
+                        Guest users have view-only access to dashboard
+                    </p>
+                </div>
             </form>
 
-            <!-- Footer -->
             <div class="login-footer">
                 <p><i class="fas fa-shield-alt" style="margin-right: 6px;"></i> Authorized Personnel Only</p>
                 <p class="footer-note">Unauthorized access is strictly prohibited</p>
             </div>
         </div>
     </div>
-    <script src="js/index.js"></script>
-        <!-- Offline detection script -->
-    <script>
 
-document.addEventListener('DOMContentLoaded', function() {
-    const loggedIn = localStorage.getItem('loggedIn');
-    const loginTime = localStorage.getItem('loginTime');
-    const sessionId = sessionStorage.getItem('sessionId');
+    <!-- MODAL 1: Force Logout Request (Device A - Already Logged In) -->
+    <div id="forceLogoutModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
+        <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+            <div style="padding: 20px 20px 12px 20px; text-align: center;">
+                <div style="margin-bottom: 8px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+                </div>
+                <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">Force Logout Request</h3>
+                <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;">Someone is trying to log in to your account from another device.</p>
+                <p style="margin: 0; color: #1e293b; font-size: 0.8rem; font-weight: 500;">Do you want to allow force logout?</p>
+                <div style="margin-top: 8px; font-size: 0.7rem; color: #ff7a00;" id="requestTimer">This request will expire in 30 seconds</div>
+            </div>
+            <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+                <button id="denyForceLogoutBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                    <i class="fas fa-times"></i> Deny
+                </button>
+                <button id="allowForceLogoutBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                    <i class="fas fa-check"></i> Allow
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Waiting for Approval (Device B) -->
+    <div id="waitingModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
+        <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+            <div style="padding: 20px 20px 12px 20px; text-align: center;">
+                <div style="margin-bottom: 8px;">
+                    <i class="fas fa-clock" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+                </div>
+                <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">Waiting for Approval</h3>
+                <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;">This account is already logged in on another device.</p>
+                <p style="margin: 0; color: #1e293b; font-size: 0.8rem; font-weight: 500;">Requesting force logout approval from the other device...</p>
+                <div style="margin-top: 8px; font-size: 0.7rem; color: #ff7a00;" id="waitingTimer">Waiting for response (30 seconds)</div>
+            </div>
+            <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+                <button id="cancelWaitBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Force Logout Denied -->
+    <div id="deniedModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
+        <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+            <div style="padding: 20px 20px 12px 20px; text-align: center;">
+                <div style="margin-bottom: 8px;">
+                    <i class="fas fa-ban" style="font-size: 1.6rem; color: #dc2626; opacity: 0.7;"></i>
+                </div>
+                <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">Force Logout Denied</h3>
+                <p style="margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;">The other device denied the force logout request. Please try again later or contact the current user.</p>
+            </div>
+            <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+                <button id="closeDeniedBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                    <i class="fas fa-check"></i> OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Confirmation Modal (replaces confirm) -->
+    <div id="confirmModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
+        <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+            <div style="padding: 20px 20px 12px 20px; text-align: center;">
+                <div style="margin-bottom: 8px;">
+                    <i class="fas fa-question-circle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+                </div>
+                <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;" id="confirmTitle">Confirm Action</h3>
+                <p style="margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;" id="confirmMessage">Are you sure?</p>
+            </div>
+            <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+                <button id="confirmNoBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                    <i class="fas fa-times"></i> No
+                </button>
+                <button id="confirmYesBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                    <i class="fas fa-check"></i> Yes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: Info/Error Modal (replaces alert) -->
+    <div id="infoModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
+        <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+            <div style="padding: 20px 20px 12px 20px; text-align: center;">
+                <div style="margin-bottom: 8px;" id="infoIcon">
+                    <i class="fas fa-info-circle" style="font-size: 1.6rem; color: #0f7a4a; opacity: 0.7;"></i>
+                </div>
+                <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;" id="infoTitle">Notice</h3>
+                <p style="margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;" id="infoMessage"></p>
+            </div>
+            <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+                <button id="infoOkBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                    <i class="fas fa-check"></i> OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: Session Recovery (Browser closed without logout) -->
+    <div id="sessionRecoveryModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
+        <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+            <div style="padding: 20px 20px 12px 20px; text-align: center;">
+                <div style="margin-bottom: 8px;">
+                    <i class="fas fa-window-close" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+                </div>
+                <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">Previous Session Detected</h3>
+                <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;">
+                    You closed the browser without logging out. We are cleaning up your previous session to ensure security.
+                </p>
+                <div style="margin-top: 12px; background: #f0fdf4; padding: 8px; border-radius: 8px;">
+                    <div style="font-size: 0.7rem; color: var(--primary-green); font-weight: 500;">Please wait</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-green);" id="cooldownTimer">60</div>
+                    <div style="font-size: 0.7rem; color: var(--text-light);">seconds before retry</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+                <button id="recoveryOkBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a; opacity: 0.5; pointer-events: none;" disabled>
+                    <i class="fas fa-hourglass-half"></i> Wait...
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/force-logout.js"></script>
+<script>
+// ============ INDEX.HTML - OPTIMIZED FOR 70 CONCURRENT LOGINS ============
+const SUPABASE_URL = 'https://opibntxwagnjazpbtxrv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UwyTZU3BYj41z0D7beu9Hg_pIZcLeWN';
+let supabaseClient;
+
+// ============ QUEUE SYSTEM (For 70 concurrent users) ============
+class LoginQueue {
+    constructor(maxConcurrent = 50) {
+        this.queue = [];
+        this.active = 0;
+        this.maxConcurrent = maxConcurrent;
+        this.notificationEl = null;
+    }
     
-    if (loggedIn === 'true' && loginTime && sessionId) {
-        // Check if session expired locally
-        const sessionAge = Date.now() - parseInt(loginTime);
-        const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+    enqueue(fn) {
+        return new Promise((resolve, reject) => {
+            this.queue.push({ fn, resolve, reject });
+            this.showPosition();
+            this.process();
+        });
+    }
+    
+    async process() {
+        if (this.active >= this.maxConcurrent || !this.queue.length) return;
+        this.active++;
+        const item = this.queue.shift();
+        this.showPosition();
+        try {
+            const result = await item.fn();
+            item.resolve(result);
+        } catch (err) {
+            item.reject(err);
+        } finally {
+            this.active--;
+            this.process();
+        }
+    }
+    
+    showPosition() {
+        if (this.queue.length) {
+            if (!this.notificationEl) {
+                this.notificationEl = document.createElement('div');
+                this.notificationEl.className = 'queue-notify';
+                document.body.appendChild(this.notificationEl);
+            }
+            this.notificationEl.innerHTML = `<i class="fas fa-clock"></i> Position ${this.queue.length} - Please wait...`;
+            this.notificationEl.style.display = 'block';
+        } else if (this.notificationEl) {
+            this.notificationEl.style.display = 'none';
+        }
+    }
+}
+
+const loginQueue = new LoginQueue(50);
+
+// ============ MODAL MANAGER ============
+const ModalManager = {
+    showInfo: function(title, message, type = 'info') {
+        const modal = document.getElementById('infoModal');
+        const iconEl = document.getElementById('infoIcon');
+        const titleEl = document.getElementById('infoTitle');
+        const msgEl = document.getElementById('infoMessage');
+        const iconConfig = {
+            info: { icon: 'fa-info-circle', color: '#0f7a4a' },
+            error: { icon: 'fa-exclamation-circle', color: '#dc2626' },
+            success: { icon: 'fa-check-circle', color: '#0f7a4a' },
+            warning: { icon: 'fa-exclamation-triangle', color: '#ff7a00' }
+        };
+        const config = iconConfig[type] || iconConfig.info;
+        iconEl.innerHTML = `<i class="fas ${config.icon}" style="font-size: 1.6rem; color: ${config.color}; opacity: 0.7;"></i>`;
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        modal.style.display = 'flex';
+    },
+    showConfirm: function(title, message, onConfirm, onCancel) {
+        const modal = document.getElementById('confirmModal');
+        const titleEl = document.getElementById('confirmTitle');
+        const msgEl = document.getElementById('confirmMessage');
+        const yesBtn = document.getElementById('confirmYesBtn');
+        const noBtn = document.getElementById('confirmNoBtn');
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        const handleYes = () => {
+            modal.style.display = 'none';
+            yesBtn.removeEventListener('click', handleYes);
+            noBtn.removeEventListener('click', handleNo);
+            if (onConfirm) onConfirm();
+        };
+        const handleNo = () => {
+            modal.style.display = 'none';
+            yesBtn.removeEventListener('click', handleYes);
+            noBtn.removeEventListener('click', handleNo);
+            if (onCancel) onCancel();
+        };
+        yesBtn.addEventListener('click', handleYes);
+        noBtn.addEventListener('click', handleNo);
+        modal.style.display = 'flex';
+    },
+    hideInfo: function() {
+        document.getElementById('infoModal').style.display = 'none';
+    }
+};
+
+// ============ OPTIMIZED INIT ============
+async function init() {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+    
+    // Keep connection warm for 70 concurrent users
+    setInterval(async () => {
+        try {
+            await supabaseClient.from('users').select('count', { count: 'exact', head: true });
+        } catch(e) {}
+    }, 25000);
+}
+
+// ============ OPTIMIZED PASSWORD HASHING ============
+async function hashPassword(password) {
+    const msgBuffer = new TextEncoder().encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ============ OPTIMIZED CREATE SESSION ============
+async function createSession(userId, sessionId) {
+    // Deactivate existing sessions first
+    await supabaseClient
+        .from('user_sessions')
+        .update({ is_active: false })
+        .eq('user_id', userId);
+    
+    const { error } = await supabaseClient.from('user_sessions').insert({
+        user_id: userId,
+        session_id: sessionId,
+        is_active: true,
+        logged_in_at: new Date().toISOString(),
+        last_activity: new Date().toISOString()
+    });
+    
+    if (error) {
+        console.error('Error creating session:', error);
+        return false;
+    }
+    return true;
+}
+
+// ============ OPTIMIZED SESSION CHECK (with cache for 70 concurrent) ============
+let sessionCache = { userId: null, hasActive: false, sessionId: null, timestamp: 0 };
+
+async function checkActiveSession(userId) {
+    // Cache for 500ms to handle concurrent requests
+    if (sessionCache.userId === userId && Date.now() - sessionCache.timestamp < 500) {
+        return { hasActiveSession: sessionCache.hasActive, sessionId: sessionCache.sessionId };
+    }
+    
+    const { data } = await supabaseClient
+        .from('user_sessions')
+        .select('session_id')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .maybeSingle();
+    
+    const hasActive = data !== null;
+    
+    sessionCache = {
+        userId: userId,
+        hasActive: hasActive,
+        sessionId: data?.session_id,
+        timestamp: Date.now()
+    };
+    
+    return { hasActiveSession: hasActive, sessionId: data?.session_id };
+}
+
+// ============ FORCE LOGOUT REQUEST ============
+async function createForceLogoutRequest(userId, targetSessionId) {
+    const requestId = crypto.randomUUID();
+    const { data, error } = await supabaseClient
+        .from('force_logout_requests')
+        .insert({
+            user_id: userId,
+            request_session_id: requestId,
+            target_session_id: targetSessionId,
+            status: 'pending',
+            expires_at: new Date(Date.now() + 30000).toISOString()
+        })
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}
+
+function showWaitingModal() {
+    const modal = document.getElementById('waitingModal');
+    const timer = document.getElementById('waitingTimer');
+    let timeLeft = 30;
+    modal.style.display = 'flex';
+    const interval = setInterval(() => {
+        timeLeft--;
+        timer.textContent = `Waiting (${timeLeft}s)`;
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            modal.style.display = 'none';
+        }
+    }, 1000);
+    return interval;
+}
+
+function hideWaitingModal() {
+    document.getElementById('waitingModal').style.display = 'none';
+}
+
+function showDeniedModal() {
+    document.getElementById('deniedModal').style.display = 'flex';
+}
+
+// ============ OPTIMIZED PERFORM LOGIN ============
+async function performLogin(user, roleToStore) {
+    const sessionId = crypto.randomUUID();
+    
+    try {
+        const sessionCreated = await createSession(user.id, sessionId);
         
-        if (sessionAge < SESSION_TIMEOUT) {
-            // FIRST ensure user role is properly set
-            const userRole = localStorage.getItem('userRole');
-            if (!userRole || userRole === 'null' || userRole === 'undefined') {
-                // Clear and force fresh login
-                localStorage.clear();
-                sessionStorage.clear();
-                console.log("User role not found, requiring fresh login");
+        if (!sessionCreated) {
+            console.error('Session creation failed');
+            ModalManager.showInfo('Login Failed', 'Unable to create session. Please try again.', 'error');
+            return false;
+        }
+        
+        localStorage.clear();
+        localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('userId', user.id);
+        localStorage.setItem('username', user.username);
+        localStorage.setItem('staffName', user.full_name || user.username);
+        localStorage.setItem('userRole', roleToStore);
+        localStorage.setItem('assignedBarangay', user.assigned_barangay || '');
+        localStorage.setItem('loginTime', Date.now().toString());
+        localStorage.setItem('sessionId', sessionId);
+        
+        sessionStorage.setItem('session_active', 'true');
+        
+        if (user.must_change_password === true) {
+            sessionStorage.setItem('mustChangePassword', 'true');
+            sessionStorage.setItem('tempUsername', user.username);
+            window.location.href = 'change-password.html';
+        } else {
+            window.location.href = 'main.html';
+        }
+        return true;
+    } catch (err) {
+        console.error('Login error:', err);
+        ModalManager.showInfo('Login Failed', 'Unable to login. Please try again.', 'error');
+        return false;
+    }
+}
+
+// ============ FORCE LOGOUT FLOW ============
+async function requestForceLogout(user, roleToStore, existingSessionId, loginBtn, originalText) {
+    ModalManager.showConfirm(
+        'Active Session Detected',
+        'This account is already logged in on another device.\n\nWould you like to request force logout? The other device has 30 seconds to respond.',
+        async () => {
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Requesting...';
+            try {
+                const request = await createForceLogoutRequest(user.id, existingSessionId);
+                const timerInterval = showWaitingModal();
+                
+                let realtimeChannel = null;
+                let timeoutHandler = null;
+                
+                realtimeChannel = supabaseClient
+                    .channel(`force_logout_response_${request.request_session_id}`)
+                    .on('postgres_changes', {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'force_logout_requests',
+                        filter: `request_session_id=eq.${request.request_session_id}`
+                    }, async (payload) => {
+                        if (payload.new.status === 'approved') {
+                            if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
+                            clearInterval(timerInterval);
+                            clearTimeout(timeoutHandler);
+                            hideWaitingModal();
+                            await performLogin(user, roleToStore);
+                        } else if (payload.new.status === 'denied') {
+                            if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
+                            clearInterval(timerInterval);
+                            clearTimeout(timeoutHandler);
+                            hideWaitingModal();
+                            showDeniedModal();
+                            loginBtn.disabled = false;
+                            loginBtn.innerHTML = originalText;
+                        }
+                    })
+                    .subscribe();
+                
+                timeoutHandler = setTimeout(() => {
+                    if (document.getElementById('waitingModal').style.display === 'flex') {
+                        if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
+                        clearInterval(timerInterval);
+                        hideWaitingModal();
+                        ModalManager.showInfo('Timed Out', 'Force logout request timed out.', 'error');
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = originalText;
+                    }
+                }, 31000);
+            } catch (err) {
+                hideWaitingModal();
+                ModalManager.showInfo('Request Failed', 'Unable to send force logout request.', 'error');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalText;
+            }
+        },
+        () => {
+            ModalManager.showInfo('Cancelled', 'Login cancelled.', 'info');
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = originalText;
+        }
+    );
+}
+
+// ============ MAIN LOGIN HANDLER ============
+async function handleLogin(event) {
+    event.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const loginBtn = document.getElementById('loginButton');
+    const originalText = loginBtn.innerHTML;
+    
+    if (!username || !password) {
+        ModalManager.showInfo('Missing Information', 'Please enter both username and password.', 'warning');
+        return;
+    }
+    
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Queuing...';
+    
+    try {
+        await loginQueue.enqueue(async () => {
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+            
+            const hashedPassword = await hashPassword(password);
+            const { data: users, error } = await supabaseClient
+                .from('users')
+                .select('id, username, full_name, role, assigned_barangay, password_hash, must_change_password, is_active')
+                .eq('username', username)
+                .eq('is_active', true);
+            
+            if (error || !users || users.length === 0) {
+                throw new Error('Invalid username or password');
+            }
+            
+            const user = users[0];
+            if (user.password_hash !== hashedPassword) {
+                throw new Error('Invalid username or password');
+            }
+            
+            const roleToStore = (user.role || '').toLowerCase() === 'admin' ? 'admin' : 'staff';
+            
+            // CHECK: Browser closure detection
+            const hadSessionBefore = localStorage.getItem('sessionId') !== null;
+            const wasSessionActive = sessionStorage.getItem('session_active') === 'true';
+            sessionStorage.removeItem('session_active');
+            
+            if (hadSessionBefore && wasSessionActive === false) {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalText;
+                
+                await supabaseClient
+                    .from('user_sessions')
+                    .update({ is_active: false })
+                    .eq('user_id', user.id)
+                    .eq('is_active', true);
+                
+                const modal = document.getElementById('sessionRecoveryModal');
+                const timerEl = document.getElementById('cooldownTimer');
+                const okBtn = document.getElementById('recoveryOkBtn');
+                let countdown = 60;
+                timerEl.textContent = countdown;
+                modal.style.display = 'flex';
+                const interval = setInterval(() => {
+                    countdown--;
+                    timerEl.textContent = countdown;
+                    if (countdown <= 0) {
+                        clearInterval(interval);
+                        okBtn.disabled = false;
+                        okBtn.style.opacity = '1';
+                        okBtn.style.pointerEvents = 'auto';
+                        okBtn.innerHTML = '<i class="fas fa-check"></i> Login Now';
+                        okBtn.onclick = async () => {
+                            modal.style.display = 'none';
+                            loginBtn.disabled = true;
+                            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+                            await performLogin(user, roleToStore);
+                        };
+                    }
+                }, 1000);
                 return;
             }
             
-            console.log("Already logged in, redirecting to main page...");
-            window.location.href = 'main.html';
-        } else {
-            // Clear expired session
-            localStorage.clear();
-            sessionStorage.clear();
-        }
+            // Check for existing active session (another device)
+            const { hasActiveSession, sessionId: existingSessionId } = await checkActiveSession(user.id);
+            
+            if (hasActiveSession) {
+                await requestForceLogout(user, roleToStore, existingSessionId, loginBtn, originalText);
+            } else {
+                await performLogin(user, roleToStore);
+            }
+        });
+    } catch (err) {
+        ModalManager.showInfo('Login Failed', err.message || 'An error occurred.', 'error');
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = originalText;
     }
+}
+
+function guestLogin() {
+    console.log("🔍 Guest login started");
+    
+    // Clear any existing data first
+    localStorage.clear();
+    
+    // Set guest credentials
+    localStorage.setItem('loggedIn', 'true');
+    localStorage.setItem('isGuest', 'true');
+    localStorage.setItem('username', 'guest');
+    localStorage.setItem('staffName', 'Guest User');
+    localStorage.setItem('userRole', 'guest');
+    localStorage.setItem('loginTime', Date.now().toString());
+    
+    // Verify the data was saved
+    console.log("✅ Guest data saved:");
+    console.log("  - loggedIn:", localStorage.getItem('loggedIn'));
+    console.log("  - isGuest:", localStorage.getItem('isGuest'));
+    console.log("  - userRole:", localStorage.getItem('userRole'));
+    
+    // Try to redirect to dashboard
+    console.log("🔄 Attempting to redirect to dashboard.html");
+    
+    // Method 1: Direct redirect
+    window.location.href = 'dashboard.html';
+    
+    // Method 2 (fallback if above doesn't work - uncomment if needed):
+    // setTimeout(function() {
+    //     if (window.location.pathname.indexOf('dashboard.html') === -1) {
+    //         console.log("⚠️ Redirect failed, trying alternative");
+    //         window.location.replace('dashboard.html');
+    //     }
+    // }, 100);
+}
+function setupPasswordToggle() {
+    const toggleBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    if (toggleBtn && passwordInput) {
+        toggleBtn.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    await init();
+    setupPasswordToggle();
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('guestLoginBtn').addEventListener('click', guestLogin);
+    document.getElementById('cancelWaitBtn').onclick = () => hideWaitingModal();
+    document.getElementById('closeDeniedBtn').onclick = () => {
+        document.getElementById('deniedModal').style.display = 'none';
+    };
+    document.getElementById('infoOkBtn').onclick = () => {
+        document.getElementById('infoModal').style.display = 'none';
+    };
 });
-    // Simple offline detection
-    window.addEventListener('online', () => {
-        document.getElementById('offlineAlert').style.display = 'none';
-        const liveAlert = document.getElementById('liveAlert');
-        if (liveAlert) liveAlert.textContent = 'Connection restored';
-    });
-
-    window.addEventListener('offline', () => {
-        document.getElementById('offlineAlert').style.display = 'block';
-        const liveAlert = document.getElementById('liveAlert');
-        if (liveAlert) liveAlert.textContent = 'You are now offline';
-    });
-
-    // Check initial state
-    if (!navigator.onLine) {
-        document.getElementById('offlineAlert').style.display = 'block';
-    }
-    </script>
+</script>
 </body>
 </html>
