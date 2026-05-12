@@ -6,10 +6,17 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+    <!-- PREVENT CACHING -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 <title>Dashboard — Purok Kaligtasan</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="css/uniform-styles.css">
 <link rel="stylesheet" href="css/header-styles.css">
+<link rel="stylesheet" href="css/dasboard-style.css">
+<script src="js/force-logout.js"></script>
+<script src="js/session-check.js"></script>
 <style>
    :root{
     --bg:#f6f8f7;
@@ -728,7 +735,7 @@
    /* Page Container */
 .page-container{
     max-width:1200px;  /* ← CHANGED to 1200px */
-    margin:20px auto;
+    margin: auto;
     padding:12px;
     display:grid;
     grid-template-columns:260px 1fr;
@@ -1263,15 +1270,31 @@ body.guest-user .mobile-nav-item.mobile-nav-dashboard {
 </div>
     <div id="disc">This dashboard presents a comprehensive summary of all household records in the Purok Kaligtasan database. It provides real-time insights into population demographics, health status, social services, and calamity impact assessment for effective planning and emergency response.</div>
 
-    <!-- Top Cards -->
-    <div class="breakdown-section1">
-      <h3><i class="fas fa-database"></i> Alitagtag Data Overview</h3>
+<!-- Top Cards -->
+<div class="breakdown-section1">
+  <h3><i class="fas fa-database"></i> Alitagtag Data Overview</h3>
+</div>
+<div class="dashboard-cards">
+  <div class="card">
+    <h3>Total Household Heads</h3>
+    <div id="totalHeads" class="card-value">0</div>
+  </div>
+  <div class="card">
+    <h3>Total Household Members</h3>
+    <div id="totalMembers" class="card-value">0</div>
+  </div>
+  <div class="card" id="lastUpdatedCard" style="padding: 12px;">
+    <h3 style="margin: 0 0 10px 0; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+      <i class="fas fa-history" style="font-size: 0.75rem;"></i> Recent Activity
+    </h3>
+    <div id="recentActivities" style="max-height: 160px; overflow-y: auto;">
+      <div style="padding: 8px; text-align: center; color: #9ca3af; font-size: 11px;">Loading activities...</div>
     </div>
-    <div class="dashboard-cards">
-      <div class="card"><h3>Total Household Heads</h3><div id="totalHeads" class="card-value">0</div></div>
-      <div class="card"><h3>Total Household Members</h3><div id="totalMembers" class="card-value">0</div></div>
-      <div class="card" id="lastUpdatedCard"><h3>Last Updated</h3><div id="lastUpdated" class="card-value">---</div><div class="mini" id="lastUpdatedDetails">No recent updates</div></div>
+    <div class="mini" style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 9px; color: #9ca3af;">
+      <i class="fas fa-sync-alt"></i> Last 5 activities
     </div>
+  </div>
+</div>
 
     <!-- Basic Population Overview Card -->
     <div class="card population-overview-card">
@@ -1279,7 +1302,6 @@ body.guest-user .mobile-nav-item.mobile-nav-dashboard {
       
       <!-- Household Distribution Chart (MOVED HERE) -->
       <div class="chart-container" style="margin: 0 0 20px 0; padding: 15px;">
-        <h3><i class="fas fa-chart-bar"></i> Household Distribution</h3>
         <canvas id="barangayChart" height="140" style="max-height: 280px;"></canvas>
       </div>
 
@@ -1496,604 +1518,669 @@ body.guest-user .mobile-nav-item.mobile-nav-dashboard {
         </a>
     </div>
 </nav>
-
 <div id="loading"><div class="loading-content"><div class="loading-spinner"></div><div>Loading dashboard data…</div></div></div>
 
+<!-- Confirmation Modal for Logout -->
+<div id="confirmModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10001; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-question-circle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;" id="confirmTitle">Confirm Action</h3>
+            <p style="margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;" id="confirmMessage">Are you sure you want to logout?</p>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="confirmNoBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> No
+            </button>
+            <button id="confirmYesBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Yes
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Animation keyframes - Add to existing style or here
+    if (!document.querySelector('#modalAnimationStyle')) {
+        const style = document.createElement('style');
+        style.id = 'modalAnimationStyle';
+        style.textContent = `
+            @keyframes modalSlideUp {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// ============ CONFIGURATION ============
-const API_URL = "https://script.google.com/macros/s/AKfycbytvSPndcz2Ou0Kz_XOUw6Ztlwx55ml2TsaEZFTdLYVCCVfOMwdRohgq_cOPPeluQMTCw/exec";
-const ALLOWED_ACTIONS = ['Update Household', 'Create Record', 'Delete Household', 'Force Refresh'];
+    // Skip force logout for guest users
+    if (localStorage.getItem('isGuest') === 'true') {
+        console.log('Guest user - preventing force-logout.js from running');
+        const script = document.getElementById('forceLogoutScript');
+        if (script) script.remove();
+    }
+</script>
+<script>
+// ============ GUEST CHECK - MUST BE FIRST ============
+console.log("🔍 Checking session...");
+const isGuest = localStorage.getItem('isGuest') === 'true';
+const loggedIn = localStorage.getItem('loggedIn') === 'true';
+const userRole = localStorage.getItem('userRole');
+
+console.log("Session check:", { isGuest, loggedIn, userRole });
+console.log("Full localStorage:", localStorage);
+
+// IMPORTANT: Allow guest users to proceed WITHOUT any redirect
+if (isGuest) {
+    console.log("👤 Guest user detected - allowing access to dashboard");
+    document.body.classList.add('guest-mode');
+    document.body.classList.add('guest-user');
+    
+    // Ensure guest-specific settings
+    if (!userRole || userRole !== 'guest') {
+        localStorage.setItem('userRole', 'guest');
+    }
+    
+    // DO NOT redirect - stay on dashboard
+} else if (loggedIn) {
+    console.log("✅ Regular logged in user - allowing access");
+    // Regular user - proceed normally
+} else {
+    console.log("❌ No valid session, redirecting to login");
+    window.location.href = 'index.html';
+    throw new Error("Redirecting to login");
+}
+
+// Prevent any accidental redirects
+window.onbeforeunload = null;
+// ============ SUPABASE CONFIGURATION ============
+const SUPABASE_URL = 'https://opibntxwagnjazpbtxrv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UwyTZU3BYj41z0D7beu9Hg_pIZcLeWN';
+
+let supabaseClient;
+if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+    console.error('Supabase not loaded');
+}
 
 let chart = null;
 let refreshInterval = null;
-let sessionMonitorInterval = null;
 
-function getField(obj, name) {
-  if(!obj) return "";
-  const want = String(name).toLowerCase().trim();
-  for(const k of Object.keys(obj)){
-    if(String(k).toLowerCase().trim() === want) return obj[k];
-  }
-  return "";
+// ============ HELPER FUNCTIONS ============
+function formatTimestamp(date) {
+    if (!date) date = new Date();
+    const m = date.getMonth() + 1;
+    const d = date.getDate();
+    const y = date.getFullYear();
+    let hh = date.getHours();
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    const ss = String(date.getSeconds()).padStart(2, '0');
+    const ampm = hh >= 12 ? 'PM' : 'AM';
+    hh = hh % 12 || 12;
+    return `${m}/${d}/${y} ${String(hh).padStart(2, '0')}:${mm}:${ss} ${ampm}`;
 }
 
-function formatTS(date) {
-  if(!date) date = new Date();
-  const m = date.getMonth()+1;
-  const d = date.getDate();
-  const y = date.getFullYear();
-  let hh = date.getHours();
-  const mm = String(date.getMinutes()).padStart(2,'0');
-  const ss = String(date.getSeconds()).padStart(2,'0');
-  const ampm = hh>=12 ? 'PM' : 'AM';
-  hh = hh%12; hh = hh? hh:12;
-  return `${m}/${d}/${y} ${String(hh).padStart(2,'0')}:${mm}:${ss} ${ampm}`;
+function showLoading(show) {
+    const loading = document.getElementById("loading");
+    if (loading) loading.style.display = show ? "flex" : "none";
 }
 
-async function fetchRecords() { 
-    console.log("=== DEBUG: fetchRecords START ===");
-    const url = `${API_URL}?action=getRecords&nocache=${Date.now()}`;
-    console.log("Fetching URL:", url);
+function destroyChart() {
+    if (chart) {
+        try { chart.destroy(); } catch(e) {}
+        chart = null;
+    }
+}
+
+// ============ FETCH DATA FROM SUPABASE ============
+async function fetchDashboardData() {
+    if (!supabaseClient) {
+        console.error('Supabase client not initialized');
+        return null;
+    }
     
     try {
-        const res = await fetch(url);
-        console.log("Response status:", res.status);
-        console.log("Response OK:", res.ok);
+        console.log("Fetching dashboard data from Supabase...");
         
-        const data = await res.json();
-        console.log("Response success:", data.success);
-        console.log("Response has rows:", !!data.rows);
-        console.log("Rows count:", data.rows ? data.rows.length : 0);
+        // Fetch all required data in parallel
+        const [households, persons, livestock, govAssistance, displacementReasons, assemblyAreas, calamityDocs, calamityImpacts] = await Promise.all([
+            supabaseClient.from('households').select('*'),
+            supabaseClient.from('persons').select('*'),
+            supabaseClient.from('livestock').select('*'),
+            supabaseClient.from('gov_assistance').select('*'),
+            supabaseClient.from('displacement_reasons').select('*'),
+            supabaseClient.from('assembly_areas').select('*'),
+            supabaseClient.from('calamity_documents').select('*'),
+            supabaseClient.from('calamity_impacts').select('*')
+        ]);
         
-        if (data.rows && data.rows.length > 0) {
-            console.log("Sample row (first 10 fields):");
-            const sample = data.rows[0];
-            const sampleKeys = Object.keys(sample).slice(0, 10);
-            sampleKeys.forEach(key => {
-                console.log(`  ${key}:`, sample[key]);
-            });
-        }
+        if (households.error) throw households.error;
         
-        console.log("=== DEBUG: fetchRecords END ===");
-        return data;
-    } catch(err) {
-        console.error("Fetch error:", err);
-        return { success: false, rows: [] };
+        console.log(`Fetched ${households.data?.length || 0} households, ${persons.data?.length || 0} persons`);
+        
+        return {
+            households: households.data || [],
+            persons: persons.data || [],
+            livestock: livestock.data || [],
+            govAssistance: govAssistance.data || [],
+            displacementReasons: displacementReasons.data || [],
+            assemblyAreas: assemblyAreas.data || [],
+            calamityDocs: calamityDocs.data || [],
+            calamityImpacts: calamityImpacts.data || []
+        };
+        
+    } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+        return null;
     }
 }
-function debugProcessData() {
-    console.log("=== DEBUG: Checking processed data structures ===");
+
+// ============ PROCESS DASHBOARD DATA ============
+async function loadDashboard(showLoader = true) {
+    if (showLoader) showLoading(true);
     
-    // Check what's in localStorage cache
-    const cached = localStorage.getItem('dashboardDataCache');
-    if (cached) {
-        const data = JSON.parse(cached);
-        console.log("Cached data success:", data.success);
-        console.log("Cached data rows count:", data.rows?.length);
-        if (data.rows && data.rows.length > 0) {
-            console.log("First cached row:", data.rows[0]);
+    try {
+        const data = await fetchDashboardData();
+        if (!data || !data.households || data.households.length === 0) {
+            console.warn('No data received from Supabase');
+            if (showLoader) showLoading(false);
+            return;
         }
-    } else {
-        console.log("No cached data found");
+        
+        processDashboardData(data);
+
+        await updateRecentActivities();
+        
+        // Update last refreshed time
+        const lastUpdatedSpan = document.getElementById('lastUpdated');
+        if (lastUpdatedSpan) lastUpdatedSpan.innerText = formatTimestamp(new Date());
+        
+        const lastUpdatedDetails = document.getElementById('lastUpdatedDetails');
+        if (lastUpdatedDetails) lastUpdatedDetails.innerHTML = '<i class="fas fa-sync-alt"></i> Data auto-refreshes every 30 seconds';
+        
+    } catch (err) {
+        console.error('Load dashboard error', err);
+        const totalHeads = document.getElementById('totalHeads');
+        if (totalHeads) totalHeads.innerText = '0';
+        const totalMembers = document.getElementById('totalMembers');
+        if (totalMembers) totalMembers.innerText = '0';
     }
     
-    // Check if elements exist
-    const elements = [
-        'totalHeads', 'totalMembers', 'demographicsStats', 'geographicStats',
-        'healthSpecialStats', 'householdSocialStats', 'healthNutritionStats',
-        'disabilityTypeStats', 'calamityImpactStats', 'educationStats',
-        'employmentStats', 'fishrStats', 'ofwCountriesStats', 'livestockStats',
-        'tblSummary', 'tblSupport', 'tblHealthSpecialStatus', 'tblHouseholdSocialStatus',
-        'tblHealthNutrition', 'tblDisabilityType', 'tblAge', 'tblSitio',
-        'tblLivestock', 'tblBarangayEducation', 'tblBarangayEmployment',
-        'tblBarangayFishR', 'tblBarangayOFW'
-    ];
+    if (showLoader) showLoading(false);
+}
+
+// ============ AUDIT LOG FUNCTIONS ============
+
+// Fetch recent activities from audit_logs
+async function fetchRecentActivities(limit = 5) {
+    if (!supabaseClient) return [];
     
-    console.log("\nElement existence check:");
-    elements.forEach(el => {
-        const element = document.getElementById(el);
-        console.log(`${el}: ${element ? 'EXISTS' : 'MISSING'}`);
+    try {
+        const { data, error } = await supabaseClient
+            .from('audit_logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(limit);
+        
+        if (error) {
+            console.error('Error fetching audit logs:', error);
+            return [];
+        }
+        return data || [];
+    } catch (err) {
+        console.error('Failed to fetch activities:', err);
+        return [];
+    }
+}
+
+function formatActivityMessage(log) {
+    const date = new Date(log.created_at);
+    const formattedDateTime = date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
     });
     
-    console.log("\n=== DEBUG COMPLETE ===");
-}
-function destroyChart() { 
-  if(chart){ 
-    try{ chart.destroy(); }catch(e){} 
-    chart = null; 
-  } 
-}
-
-function showLoading(yes) { 
-  document.getElementById("loading").style.display = yes ? "flex" : "none"; 
-}
-
-// ============ ACTIVITY LOGGING ============
-async function loadActivityLog() {
-  try {
-    const response = await fetch(`${API_URL}?action=dashboardLogs&nocache=${Date.now()}`);
-    const data = await response.json();
-    if (data.success && data.logs && data.logs.length > 0) {
-      const latestLog = data.logs[0];
-      if (ALLOWED_ACTIONS.includes(latestLog.Action)) {
-        const timestamp = new Date(latestLog.Timestamp);
-        document.getElementById('lastUpdated').innerText = formatTS(timestamp);
-        document.getElementById('lastUpdatedDetails').innerHTML = `<div style="font-size: 11px;"><strong>Action:</strong> ${latestLog.Action}<br><strong>Actor:</strong> ${latestLog.Actor}<br><strong>Details:</strong> ${latestLog.Details}</div>`;
-      }
-    }
-  } catch(err) { console.error('Error loading activity log:', err); }
-}
-
-// ============ DASHBOARD DATA PROCESSING ============
-async function loadDashboard(showLoader = false) {
-    const hasCache = localStorage.getItem('dashboardDataCache');
-    if (showLoader && !hasCache) showLoading(true);
-    try {
-        const data = await fetchRecords();
-        if(!data.success) throw new Error('Failed fetch');
-        const rows = data.rows || [];
-        localStorage.setItem('dashboardDataCache', JSON.stringify(data));
-        processDashboardData(data);
-    } catch(err) { console.error('Load dashboard error', err); }
-    if (showLoader && !hasCache) showLoading(false);
-}
-
-function loadCachedDashboardData() {
-    try {
-        const cached = localStorage.getItem('dashboardDataCache');
-        if (cached) {
-            const data = JSON.parse(cached);
-            if (data.rows && data.rows.length > 0) {
-                processDashboardData(data);
-                return true;
-            }
-        }
-    } catch (err) { console.error('Error loading cached data:', err); }
-    return false;
-}
-
-function processDashboardData(data) {
-    console.log("=== processDashboardData START ===");
-    const rows = data.rows || [];
-    console.log("Rows to process:", rows.length);
+    let actionText = '';
+    let actionColor = '';
     
-    if (rows.length === 0) {
-        document.getElementById('totalHeads').innerText = '0';
-        document.getElementById('totalMembers').innerText = '0';
+    switch(log.action) {
+        case 'CREATE':
+            actionText = 'Create';
+            actionColor = '#10b981'; // Green
+            break;
+        case 'UPDATE':
+            actionText = 'Update';
+            actionColor = '#f59e0b'; // Yellow/Orange
+            break;
+        case 'DELETE':
+            actionText = 'Delete';
+            actionColor = '#ef4444'; // Red
+            break;
+        default:
+            actionText = log.action || 'Action';
+            actionColor = '#6b7280';
+    }
+    
+    const target = log.entity_type || 'record';
+    const displayName = log.actor || log.user_name || 'Unknown';
+    const shortName = displayName.length > 15 ? displayName.substring(0, 12) + '...' : displayName;
+    
+    return `
+        <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #eee;">
+            <span style="font-size: 11px; min-width: 48px; color: ${actionColor}; font-weight: 500;">${actionText}</span>
+            <span style="font-size: 11px; color: #374151; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${escapeHtml(shortName)} ${target}
+            </span>
+            <span style="font-size: 9px; color: #999; white-space: nowrap;">${formattedDateTime}</span>
+        </div>
+    `;
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// Update the recent activities card
+async function updateRecentActivities() {
+    const container = document.getElementById('recentActivities');
+    if (!container) return;
+    
+    const activities = await fetchRecentActivities(5);
+    
+    if (!activities || activities.length === 0) {
+        container.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: #9ca3af;">
+                <i class="fas fa-info-circle"></i> No recent activities yet.<br>
+                <span style="font-size: 11px;">Create or update records to see activity here.</span>
+            </div>
+        `;
         return;
     }
     
-    let totalHeads = 0, totalMembers = 0;
+    container.innerHTML = activities.map(log => formatActivityMessage(log)).join('');
+}
+
+function processDashboardData(data) {
+    const { households, persons, livestock, govAssistance, calamityImpacts } = data;
+    
+    // Create lookup maps for O(1) access
+    const personsByHousehold = {};
+    persons.forEach(p => {
+        if (!personsByHousehold[p.household_id]) personsByHousehold[p.household_id] = [];
+        personsByHousehold[p.household_id].push(p);
+    });
+    
+    const livestockByHousehold = {};
+    livestock.forEach(l => {
+        if (!livestockByHousehold[l.household_id]) livestockByHousehold[l.household_id] = [];
+        livestockByHousehold[l.household_id].push(l);
+    });
+    
+    const govByHousehold = {};
+    govAssistance.forEach(g => {
+        if (!govByHousehold[g.household_id]) govByHousehold[g.household_id] = [];
+        govByHousehold[g.household_id].push(g);
+    });
+    
+    const calamityByHousehold = {};
+    calamityImpacts.forEach(c => {
+        calamityByHousehold[c.household_id] = c;
+    });
+    
+    let totalHeads = 0;
+    let totalMembers = 0;
     let personsWithCoords = 0;
     let personsWithoutCoords = 0;
     const barangayMap = {};
     
-    // Initialize statistics
+    // Statistics
     const demographicsStats = { male: 0, female: 0, lgbt: 0 };
     const healthSpecialStats = { pwd: 0 };
     const householdSocialStats = { soloParenting: 0 };
     const healthNutritionStats = { pregnant: 0, lactating: 0, commonSickness: 0, severeIllness: 0 };
     const disabilityTypeTotals = {};
     const calamityImpactStats = { structuralDamage: 0, householdInjury: 0, habitability: 0, lossOfLivelihood: 0 };
-    
     const overallEducation = { noFormalEducation: 0, elementaryLevel: 0, elementaryGraduate: 0, juniorHighSchoolLevel: 0, juniorHighSchoolGraduate: 0, seniorHighSchoolLevel: 0, seniorHighSchoolGraduate: 0, alsGraduate: 0, spedGraduate: 0, vocationalGraduate: 0, collegeLevel: 0, collegeGraduate: 0 };
     const overallEmployment = { employed: 0, unemployed: 0 };
     const fishrStats = { fishrRegistered: 0, rbisRegistered: 0, bothRegistered: 0, notRegistered: 0 };
-    
-    const jobCategories = { adminAssistant: 0, officeClerk: 0, secretary: 0, projectManager: 0, operationsManager: 0, hrStaff: 0, accountManager: 0, accountingStaff: 0, bookkeeper: 0, payrollOfficer: 0, auditor: 0, itSupport: 0, webDeveloper: 0, softwareDeveloper: 0, dataAnalyst: 0, systemAdministrator: 0, nurse: 0, medicalTechnologist: 0, caregiver: 0, pharmacist: 0, teacher: 0, tutor: 0, schoolAdministrator: 0, csr: 0, salesAssociate: 0, cashier: 0, storeSupervisor: 0, electrician: 0, plumber: 0, welder: 0, constructionWorker: 0, driver: 0, logisticsStaff: 0, rider: 0, cook: 0, waiter: 0, barista: 0, housekeepingStaff: 0, securityGuard: 0, barangayStaff: 0, policeOfficer: 0, fireOfficer: 0, graphicDesigner: 0, videoEditor: 0, contentWriter: 0, socialMediaManager: 0 };
-    
     const ofwCountries = { saudiArabia: 0, uae: 0, qatar: 0, kuwait: 0, bahrain: 0, oman: 0, hongKong: 0, singapore: 0, japan: 0, taiwan: 0, malaysia: 0, australia: 0, newZealand: 0, italy: 0, uk: 0, germany: 0, cyprus: 0, canada: 0, usa: 0, libya: 0 };
     const livestockStats = { dog: 0, cat: 0, pig: 0, cow: 0, carabao: 0, chicken: 0 };
-
-    rows.forEach(r => {
-        const isHead = String(getField(r, 'Name of Household Member/s') || '').trim() === '';
-        const barangay = String(getField(r, 'Barangay') || 'Unknown').trim() || 'Unknown';
-        const gender = String(getField(r, 'Gender') || '').trim().toLowerCase();
+    
+    // Job categories
+    const jobCategories = {
+        adminAssistant: 0, officeClerk: 0, secretary: 0, projectManager: 0, operationsManager: 0, hrStaff: 0, accountManager: 0,
+        accountingStaff: 0, bookkeeper: 0, payrollOfficer: 0, auditor: 0, itSupport: 0, webDeveloper: 0, softwareDeveloper: 0,
+        dataAnalyst: 0, systemAdministrator: 0, nurse: 0, medicalTechnologist: 0, caregiver: 0, pharmacist: 0, teacher: 0,
+        tutor: 0, schoolAdministrator: 0, csr: 0, salesAssociate: 0, cashier: 0, storeSupervisor: 0, electrician: 0,
+        plumber: 0, welder: 0, constructionWorker: 0, driver: 0, logisticsStaff: 0, rider: 0, cook: 0, waiter: 0,
+        barista: 0, housekeepingStaff: 0, securityGuard: 0, barangayStaff: 0, policeOfficer: 0, fireOfficer: 0,
+        graphicDesigner: 0, videoEditor: 0, contentWriter: 0, socialMediaManager: 0
+    };
+    
+    // Process each household
+    for (const household of households) {
+        const barangay = household.barangay || 'Unknown';
+        const householdPersons = personsByHousehold[household.id] || [];
+        const headPerson = householdPersons.find(p => p.person_type === 'HEAD');
+        const members = householdPersons.filter(p => p.person_type === 'MEMBER');
+        const householdLivestock = livestockByHousehold[household.id] || [];
+        const householdGov = govByHousehold[household.id] || [];
+        const householdCalamity = calamityByHousehold[household.id] || {};
         
-        // Check both Coordinates and Coordinate fields for ALL persons
-        const coord = String(getField(r, 'Coordinates') || getField(r, 'Coordinate') || '').trim();
-        
-        if(!barangayMap[barangay]) {
+        // Initialize barangay in map
+        if (!barangayMap[barangay]) {
             barangayMap[barangay] = {
-                heads:0, members:0, male:0, female:0, lgbt:0, personsWithCoords:0, personsWithoutCoords:0,
-                pwds:0, soloParenting:0,
-                commonSickness:0, severeIllness:0, pregnant:0, lactating:0,
-                disabilityTypes: { physical:0, visual:0, hearing:0, speech:0, intellectual:0, psychosocial:0, learning:0, multiple:0 },
-                ageBuckets: { '0-5':0, '6-17':0, '18-59':0, '60+':0 }, 
-                sitio: { I:0, II:0, III:0, IV:0, V:0, VI:0, VII:0 },
-                support: { "TUPAD":0, "Local 4Ps":0, "National 4Ps":0, "Local Social Pension":0, "National Social Pension":0, "Solo Parent Assistance":0, "Relief Goods":0, "Cash Subsidy":0 },
-                education: { noFormalEducation:0, elementaryLevel:0, elementaryGraduate:0, juniorHighSchoolLevel:0, juniorHighSchoolGraduate:0, seniorHighSchoolLevel:0, seniorHighSchoolGraduate:0, alsGraduate:0, spedGraduate:0, vocationalGraduate:0, collegeLevel:0, collegeGraduate:0 },
-                employment: { employed:0, unemployed:0 },
-                fishr: { fishrRegistered:0, rbisRegistered:0, bothRegistered:0, notRegistered:0 },
-                ofw: { saudiArabia:0, uae:0, qatar:0, kuwait:0, bahrain:0, oman:0, hongKong:0, singapore:0, japan:0, taiwan:0, malaysia:0, australia:0, newZealand:0, italy:0, uk:0, germany:0, cyprus:0, canada:0, usa:0, libya:0 },
-                livestock: { dog:0, cat:0, pig:0, cow:0, carabao:0, chicken:0 }
+                heads: 0, members: 0, male: 0, female: 0, lgbt: 0,
+                personsWithCoords: 0, personsWithoutCoords: 0, pwds: 0, soloParenting: 0,
+                commonSickness: 0, severeIllness: 0, pregnant: 0, lactating: 0,
+                disabilityTypes: { physical: 0, visual: 0, hearing: 0, speech: 0, intellectual: 0, psychosocial: 0, learning: 0, multiple: 0 },
+                ageBuckets: { '0-5': 0, '6-17': 0, '18-59': 0, '60+': 0 },
+                sitio: { I: 0, II: 0, III: 0, IV: 0, V: 0, VI: 0, VII: 0 },
+                support: { "TUPAD": 0, "Local 4Ps": 0, "National 4Ps": 0, "Local Social Pension": 0, "National Social Pension": 0, "Solo Parent Assistance": 0, "Relief Goods": 0, "Cash Subsidy": 0 },
+                education: { noFormalEducation: 0, elementaryLevel: 0, elementaryGraduate: 0, juniorHighSchoolLevel: 0, juniorHighSchoolGraduate: 0, seniorHighSchoolLevel: 0, seniorHighSchoolGraduate: 0, alsGraduate: 0, spedGraduate: 0, vocationalGraduate: 0, collegeLevel: 0, collegeGraduate: 0 },
+                employment: { employed: 0, unemployed: 0 },
+                fishr: { fishrRegistered: 0, rbisRegistered: 0, bothRegistered: 0, notRegistered: 0 },
+                ofw: { saudiArabia: 0, uae: 0, qatar: 0, kuwait: 0, bahrain: 0, oman: 0, hongKong: 0, singapore: 0, japan: 0, taiwan: 0, malaysia: 0, australia: 0, newZealand: 0, italy: 0, uk: 0, germany: 0, cyprus: 0, canada: 0, usa: 0, libya: 0 },
+                livestock: { dog: 0, cat: 0, pig: 0, cow: 0, carabao: 0, chicken: 0 }
             };
         }
+        
         const b = barangayMap[barangay];
-
-        if(isHead) { totalHeads++; b.heads++; } 
-        else { totalMembers++; b.members++; }
-
-        // Gender and LGBTQ+ counting (Gender field now contains LGBTQ+ options)
-if(gender === 'male') { 
-    b.male++; 
-    demographicsStats.male++; 
-}
-else if(gender === 'female') { 
-    b.female++; 
-    demographicsStats.female++; 
-}
-// Check for LGBTQ+ values in Gender field
-else if(gender.includes('lgbt') || gender.includes('gay') || gender.includes('lesbian') || 
-        gender.includes('bisexual') || gender.includes('transgender') || gender.includes('queer') ||
-        gender === 'lgbtq+' || gender === 'lgbt') { 
-    demographicsStats.lgbt++; 
-    b.lgbt++;
-}
-// If gender has other value, log it for debugging
-else if(gender && gender !== '') {
-    console.log(`Other gender value: "${gender}"`);
-}
-
-        // Geographic/Spatial Data - Count ALL persons
-        const hasCoord = coord && coord !== '' && coord !== 'N/A' && coord !== 'none' && !coord.toLowerCase().includes('no') && 
-                        (coord.match(/[-]?\d+\.?\d*[,\s]*[-]?\d+\.?\d*/) || coord.includes(',') || coord.includes('.'));
-        if(hasCoord) { 
-            personsWithCoords++; 
-            b.personsWithCoords++; 
-        } else { 
-            personsWithoutCoords++;
-            b.personsWithoutCoords++;
-        }
-
-        // PWD
-        const pwdField = String(getField(r, 'Persons with Disability (PWD)') || '').toLowerCase().trim();
-        const isPWD = pwdField === 'yes' || pwdField === 'true' || pwdField === '1';
-        if(isPWD) { 
-            b.pwds++; 
-            healthSpecialStats.pwd++;
-            const disabilityType = String(getField(r, 'Type of Disability') || '').toLowerCase();
-            if(disabilityType.includes('physical')) { b.disabilityTypes.physical++; disabilityTypeTotals['Physical Disability'] = (disabilityTypeTotals['Physical Disability'] || 0) + 1; }
-            else if(disabilityType.includes('visual')) { b.disabilityTypes.visual++; disabilityTypeTotals['Visual Disability'] = (disabilityTypeTotals['Visual Disability'] || 0) + 1; }
-            else if(disabilityType.includes('hearing')) { b.disabilityTypes.hearing++; disabilityTypeTotals['Hearing Disability'] = (disabilityTypeTotals['Hearing Disability'] || 0) + 1; }
-            else if(disabilityType.includes('speech')) { b.disabilityTypes.speech++; disabilityTypeTotals['Speech Impairment'] = (disabilityTypeTotals['Speech Impairment'] || 0) + 1; }
-            else if(disabilityType.includes('intellectual')) { b.disabilityTypes.intellectual++; disabilityTypeTotals['Intellectual Disability'] = (disabilityTypeTotals['Intellectual Disability'] || 0) + 1; }
-            else if(disabilityType.includes('psychosocial')) { b.disabilityTypes.psychosocial++; disabilityTypeTotals['Psychosocial Disability'] = (disabilityTypeTotals['Psychosocial Disability'] || 0) + 1; }
-            else if(disabilityType.includes('learning')) { b.disabilityTypes.learning++; disabilityTypeTotals['Learning Disability'] = (disabilityTypeTotals['Learning Disability'] || 0) + 1; }
-            else if(disabilityType.includes('multiple')) { b.disabilityTypes.multiple++; disabilityTypeTotals['Multiple Disabilities'] = (disabilityTypeTotals['Multiple Disabilities'] || 0) + 1; }
-        }
-
-        // Solo Parenting
-        const soloParenting = String(getField(r, 'Solo Parenting') || '').toLowerCase().trim();
-        if(soloParenting === 'yes' || soloParenting === 'y' || soloParenting === 'true') {
-            householdSocialStats.soloParenting++;
-            b.soloParenting++;
-        }
-
-        // Pregnant
-        const pregnant = String(getField(r, 'Pregnant') || '').toLowerCase().trim();
-        if(pregnant === 'yes' || pregnant === 'y' || pregnant === 'true') {
-            healthNutritionStats.pregnant++;
-            b.pregnant++;
-        }
-
-        // Lactating
-        const lactating = String(getField(r, 'Lactating') || '').toLowerCase().trim();
-        if(lactating === 'yes' || lactating === 'y' || lactating === 'true') {
-            healthNutritionStats.lactating++;
-            b.lactating++;
-        }
-
-        // Status for Common Sickness and Severe Illness
-        const statusValue = String(getField(r, 'Status') || '').toLowerCase();
-        const commonSicknessList = ['cough and colds', 'fever', 'headache', 'diarrhea', 'stomach ache', 'hyperacidity', 'skin disease', 'urinary tract infection', 'uti'];
-        const severeIllnessList = ['hypertension', 'heart disease', 'stroke', 'diabetes', 'cancer', 'tuberculosis', 'tb', 'chronic kidney disease', 'severe asthma', 'copd'];
-        const isCommonSickness = commonSicknessList.some(s => statusValue.includes(s));
-        const isSevereIllness = severeIllnessList.some(s => statusValue.includes(s));
-        if(isCommonSickness) { healthNutritionStats.commonSickness++; b.commonSickness++; }
-        if(isSevereIllness) { healthNutritionStats.severeIllness++; b.severeIllness++; }
-
-        // Post-Calamity Impact
-        const structuralDamage = String(getField(r, 'Structural Damage') || '').toLowerCase().trim();
-        if(structuralDamage === 'yes' || structuralDamage === 'y' || structuralDamage === 'true') calamityImpactStats.structuralDamage++;
-        const householdInjury = String(getField(r, 'Household Injury') || '').toLowerCase().trim();
-        if(householdInjury === 'yes' || householdInjury === 'y' || householdInjury === 'true') calamityImpactStats.householdInjury++;
-        const habitability = String(getField(r, 'Habitability') || '').toLowerCase().trim();
-        if(habitability === 'yes' || habitability === 'y' || habitability === 'true') calamityImpactStats.habitability++;
-        const lossOfLivelihood = String(getField(r, 'Loss of Livelihood') || '').toLowerCase().trim();
-        if(lossOfLivelihood === 'yes' || lossOfLivelihood === 'y' || lossOfLivelihood === 'true') calamityImpactStats.lossOfLivelihood++;
-
-        // Sitio/Purok - Fixed parsing
-        const sitioRaw = String(getField(r, 'Sitio / Purok') || '').trim();
-        let sitioKey = '';
-        if(sitioRaw){
-            // Match Purok I, Purok II, etc.
-            const match = sitioRaw.match(/Purok\s*(\d+|[IVX]+)/i);
-            if(match) {
-                let num = match[1];
-                if(num === 'I' || num === '1') sitioKey = 'I';
-                else if(num === 'II' || num === '2') sitioKey = 'II';
-                else if(num === 'III' || num === '3') sitioKey = 'III';
-                else if(num === 'IV' || num === '4') sitioKey = 'IV';
-                else if(num === 'V' || num === '5') sitioKey = 'V';
-                else if(num === 'VI' || num === '6') sitioKey = 'VI';
-                else if(num === 'VII' || num === '7') sitioKey = 'VII';
-            }
-        }
-        if(sitioKey && b.sitio[sitioKey] !== undefined) {
-            b.sitio[sitioKey] = (b.sitio[sitioKey] || 0) + 1;
-        }
-
-        // Livestock - Only for heads
-        if(isHead) {
-            const animals = ['Dog', 'Cat', 'Pig', 'Cow', 'Carabao', 'Chicken'];
-            animals.forEach(animal => {
-                const checkboxVal = String(getField(r, animal) || '').toLowerCase().trim();
-                const qtyVal = String(getField(r, animal + ' Qty.') || '').trim();
-                
-                let hasAnimal = false;
-                let quantity = 0;
-                
-                if(checkboxVal === 'yes' || checkboxVal === 'y' || checkboxVal === 'true') {
-                    hasAnimal = true;
-                    quantity = parseInt(qtyVal) || 1;
-                } else if(qtyVal && !isNaN(parseInt(qtyVal)) && parseInt(qtyVal) > 0) {
-                    hasAnimal = true;
-                    quantity = parseInt(qtyVal);
-                }
-                
-                if(hasAnimal && quantity > 0) {
-                    b.livestock[animal.toLowerCase()] += quantity;
-                    livestockStats[animal.toLowerCase()] += quantity;
-                }
-            });
-        }
-
-        // Government support
-        ['TUPAD','Local 4Ps','National 4Ps','Local Social Pension','National Social Pension','Solo Parent Assistance','Relief Goods','Cash Subsidy'].forEach(k => {
-            if(String(getField(r,k)||'').toLowerCase().trim() === 'yes') b.support[k] = (b.support[k]||0) + 1;
-        });
-
-        // Age buckets - Parse age string
-        const ageField = String(getField(r, 'Age') || '').trim();
-        let ageYears = null;
         
-        if(ageField) {
-            const yearMatch = ageField.match(/(\d+)\s*year/);
-            if(yearMatch) {
-                ageYears = parseInt(yearMatch[1]);
-            } else {
-                const monthMatch = ageField.match(/(\d+)\s*month/);
-                if(monthMatch) {
-                    ageYears = parseInt(monthMatch[1]) / 12;
-                } else {
-                    const dayMatch = ageField.match(/(\d+)\s*day/);
-                    if(dayMatch) {
-                        ageYears = parseInt(dayMatch[1]) / 365;
-                    } else {
-                        const numMatch = ageField.match(/(\d+)/);
-                        if(numMatch) ageYears = parseInt(numMatch[1]);
-                    }
-                }
-            }
-        }
+        // Count heads and members
+        totalHeads++;
+        b.heads++;
+        totalMembers += members.length;
+        b.members += members.length;
         
-        if(ageYears !== null && !isNaN(ageYears)) {
-            let ageBucket = '';
-            if(ageYears < 1) ageBucket = '0-5';
-            else if(ageYears <= 17) ageBucket = '6-17';
-            else if(ageYears <= 59) ageBucket = '18-59';
-            else ageBucket = '60+';
+        // Process all persons (head + members)
+        const allPersons = [headPerson, ...members].filter(p => p);
+        
+        for (const person of allPersons) {
+            // Gender
+            const gender = (person.gender || '').toLowerCase();
+            if (gender === 'male') {
+                b.male++;
+                demographicsStats.male++;
+            } else if (gender === 'female') {
+                b.female++;
+                demographicsStats.female++;
+            } else if (gender && gender !== '') {
+                b.lgbt++;
+                demographicsStats.lgbt++;
+            }
             
-            b.ageBuckets[ageBucket] = (b.ageBuckets[ageBucket] || 0) + 1;
+            // Coordinates (from household)
+            const hasCoord = household.coordinate_lat && household.coordinate_lng;
+            if (hasCoord) {
+                personsWithCoords++;
+                b.personsWithCoords++;
+            } else {
+                personsWithoutCoords++;
+                b.personsWithoutCoords++;
+            }
+            
+            // PWD
+            if (person.is_pwd) {
+                b.pwds++;
+                healthSpecialStats.pwd++;
+                const disabilityType = (person.disability_type || '').toLowerCase();
+                if (disabilityType.includes('physical')) { b.disabilityTypes.physical++; disabilityTypeTotals['Physical Disability'] = (disabilityTypeTotals['Physical Disability'] || 0) + 1; }
+                else if (disabilityType.includes('visual')) { b.disabilityTypes.visual++; disabilityTypeTotals['Visual Disability'] = (disabilityTypeTotals['Visual Disability'] || 0) + 1; }
+                else if (disabilityType.includes('hearing')) { b.disabilityTypes.hearing++; disabilityTypeTotals['Hearing Disability'] = (disabilityTypeTotals['Hearing Disability'] || 0) + 1; }
+                else if (disabilityType.includes('speech')) { b.disabilityTypes.speech++; disabilityTypeTotals['Speech Impairment'] = (disabilityTypeTotals['Speech Impairment'] || 0) + 1; }
+                else if (disabilityType.includes('intellectual')) { b.disabilityTypes.intellectual++; disabilityTypeTotals['Intellectual Disability'] = (disabilityTypeTotals['Intellectual Disability'] || 0) + 1; }
+                else if (disabilityType.includes('psychosocial')) { b.disabilityTypes.psychosocial++; disabilityTypeTotals['Psychosocial Disability'] = (disabilityTypeTotals['Psychosocial Disability'] || 0) + 1; }
+                else if (disabilityType.includes('learning')) { b.disabilityTypes.learning++; disabilityTypeTotals['Learning Disability'] = (disabilityTypeTotals['Learning Disability'] || 0) + 1; }
+                else if (disabilityType.includes('multiple')) { b.disabilityTypes.multiple++; disabilityTypeTotals['Multiple Disabilities'] = (disabilityTypeTotals['Multiple Disabilities'] || 0) + 1; }
+            }
+            
+            // Solo Parenting
+            if (person.solo_parenting === true || person.solo_parenting === 'Yes') {
+                householdSocialStats.soloParenting++;
+                b.soloParenting++;
+            }
+            
+            // Pregnant
+            if (person.pregnant === true || person.pregnant === 'Yes') {
+                healthNutritionStats.pregnant++;
+                b.pregnant++;
+            }
+            
+            // Lactating
+            if (person.lactating === true || person.lactating === 'Yes') {
+                healthNutritionStats.lactating++;
+                b.lactating++;
+            }
+            
+            // Status (Health)
+            const statusValue = (person.status || '').toLowerCase();
+            const commonSicknessList = ['cough and colds', 'fever', 'headache', 'diarrhea', 'stomach ache', 'hyperacidity', 'skin disease', 'urinary tract infection', 'uti'];
+            const severeIllnessList = ['hypertension', 'heart disease', 'stroke', 'diabetes', 'cancer', 'tuberculosis', 'tb', 'chronic kidney disease', 'severe asthma', 'copd'];
+            if (commonSicknessList.some(s => statusValue.includes(s))) {
+                healthNutritionStats.commonSickness++;
+                b.commonSickness++;
+            }
+            if (severeIllnessList.some(s => statusValue.includes(s))) {
+                healthNutritionStats.severeIllness++;
+                b.severeIllness++;
+            }
+            
+            // Age calculation
+            let ageYears = null;
+            const ageField = person.age || '';
+            if (ageField) {
+                const yearMatch = ageField.match(/(\d+)/);
+                if (yearMatch) ageYears = parseInt(yearMatch[1]);
+            }
+            if (ageYears !== null && !isNaN(ageYears)) {
+                let ageBucket = '';
+                if (ageYears < 6) ageBucket = '0-5';
+                else if (ageYears <= 17) ageBucket = '6-17';
+                else if (ageYears <= 59) ageBucket = '18-59';
+                else ageBucket = '60+';
+                b.ageBuckets[ageBucket] = (b.ageBuckets[ageBucket] || 0) + 1;
+            }
+            
+            // Educational Attainment
+            const educationField = (person.educational_attainment || '').toLowerCase();
+            if (educationField) {
+                if (educationField.includes('no formal')) { overallEducation.noFormalEducation++; b.education.noFormalEducation++; }
+                else if (educationField.includes('elementary level')) { overallEducation.elementaryLevel++; b.education.elementaryLevel++; }
+                else if (educationField.includes('elementary graduate')) { overallEducation.elementaryGraduate++; b.education.elementaryGraduate++; }
+                else if (educationField.includes('junior high school level') || educationField.includes('junior high level')) { overallEducation.juniorHighSchoolLevel++; b.education.juniorHighSchoolLevel++; }
+                else if (educationField.includes('junior high school graduate') || educationField.includes('junior high graduate')) { overallEducation.juniorHighSchoolGraduate++; b.education.juniorHighSchoolGraduate++; }
+                else if (educationField.includes('senior high school level') || educationField.includes('senior high level')) { overallEducation.seniorHighSchoolLevel++; b.education.seniorHighSchoolLevel++; }
+                else if (educationField.includes('senior high school graduate') || educationField.includes('senior high graduate')) { overallEducation.seniorHighSchoolGraduate++; b.education.seniorHighSchoolGraduate++; }
+                else if (educationField.includes('alternative learning system') || educationField.includes('als graduate')) { overallEducation.alsGraduate++; b.education.alsGraduate++; }
+                else if (educationField.includes('special education') || educationField.includes('sped graduate')) { overallEducation.spedGraduate++; b.education.spedGraduate++; }
+                else if (educationField.includes('vocational') || educationField.includes('technical graduate')) { overallEducation.vocationalGraduate++; b.education.vocationalGraduate++; }
+                else if (educationField.includes('college level')) { overallEducation.collegeLevel++; b.education.collegeLevel++; }
+                else if (educationField.includes('college graduate')) { overallEducation.collegeGraduate++; b.education.collegeGraduate++; }
+            }
+            
+            // Employment Status
+            const employmentField = (person.employment_status || '').toLowerCase();
+            if (employmentField === 'employed') {
+                overallEmployment.employed++;
+                b.employment.employed++;
+            } else if (employmentField === 'unemployed' || employmentField === '') {
+                overallEmployment.unemployed++;
+                b.employment.unemployed++;
+            }
+            
+            // Job Title
+            const jobField = (person.job_title || '').toLowerCase();
+            if (jobField) {
+                if (jobField.includes('administrative assistant') || jobField.includes('admin assistant')) jobCategories.adminAssistant++;
+                else if (jobField.includes('office clerk')) jobCategories.officeClerk++;
+                else if (jobField.includes('secretary')) jobCategories.secretary++;
+                else if (jobField.includes('project manager')) jobCategories.projectManager++;
+                else if (jobField.includes('operations manager')) jobCategories.operationsManager++;
+                else if (jobField.includes('hr staff')) jobCategories.hrStaff++;
+                else if (jobField.includes('account manager')) jobCategories.accountManager++;
+                else if (jobField.includes('accounting staff')) jobCategories.accountingStaff++;
+                else if (jobField.includes('bookkeeper')) jobCategories.bookkeeper++;
+                else if (jobField.includes('payroll officer')) jobCategories.payrollOfficer++;
+                else if (jobField.includes('auditor')) jobCategories.auditor++;
+                else if (jobField.includes('it support')) jobCategories.itSupport++;
+                else if (jobField.includes('web developer')) jobCategories.webDeveloper++;
+                else if (jobField.includes('software developer')) jobCategories.softwareDeveloper++;
+                else if (jobField.includes('data analyst')) jobCategories.dataAnalyst++;
+                else if (jobField.includes('system administrator')) jobCategories.systemAdministrator++;
+                else if (jobField.includes('nurse')) jobCategories.nurse++;
+                else if (jobField.includes('medical technologist')) jobCategories.medicalTechnologist++;
+                else if (jobField.includes('caregiver')) jobCategories.caregiver++;
+                else if (jobField.includes('pharmacist')) jobCategories.pharmacist++;
+                else if (jobField.includes('teacher')) jobCategories.teacher++;
+                else if (jobField.includes('tutor')) jobCategories.tutor++;
+                else if (jobField.includes('school administrator')) jobCategories.schoolAdministrator++;
+                else if (jobField.includes('customer service') || jobField.includes('csr')) jobCategories.csr++;
+                else if (jobField.includes('sales associate')) jobCategories.salesAssociate++;
+                else if (jobField.includes('cashier')) jobCategories.cashier++;
+                else if (jobField.includes('store supervisor')) jobCategories.storeSupervisor++;
+                else if (jobField.includes('electrician')) jobCategories.electrician++;
+                else if (jobField.includes('plumber')) jobCategories.plumber++;
+                else if (jobField.includes('welder')) jobCategories.welder++;
+                else if (jobField.includes('construction worker')) jobCategories.constructionWorker++;
+                else if (jobField.includes('driver')) jobCategories.driver++;
+                else if (jobField.includes('logistics staff')) jobCategories.logisticsStaff++;
+                else if (jobField.includes('rider')) jobCategories.rider++;
+                else if (jobField.includes('cook') || jobField.includes('chef')) jobCategories.cook++;
+                else if (jobField.includes('waiter')) jobCategories.waiter++;
+                else if (jobField.includes('barista')) jobCategories.barista++;
+                else if (jobField.includes('housekeeping')) jobCategories.housekeepingStaff++;
+                else if (jobField.includes('security guard')) jobCategories.securityGuard++;
+                else if (jobField.includes('barangay staff')) jobCategories.barangayStaff++;
+                else if (jobField.includes('police officer')) jobCategories.policeOfficer++;
+                else if (jobField.includes('fire officer')) jobCategories.fireOfficer++;
+                else if (jobField.includes('graphic designer')) jobCategories.graphicDesigner++;
+                else if (jobField.includes('video editor')) jobCategories.videoEditor++;
+                else if (jobField.includes('content writer')) jobCategories.contentWriter++;
+                else if (jobField.includes('social media manager')) jobCategories.socialMediaManager++;
+            }
+            
+            // FishR & RSBSA Registration
+            const fishrField = (person.fishr_registration || '').toLowerCase();
+            if (fishrField.includes('&') || (fishrField.includes('fishr') && fishrField.includes('rsbsa'))) {
+                fishrStats.bothRegistered++;
+                b.fishr.bothRegistered++;
+            } else if (fishrField.includes('fishr')) {
+                fishrStats.fishrRegistered++;
+                b.fishr.fishrRegistered++;
+            } else if (fishrField.includes('rsbsa')) {
+                fishrStats.rbisRegistered++;
+                b.fishr.rbisRegistered++;
+            } else {
+                fishrStats.notRegistered++;
+                b.fishr.notRegistered++;
+            }
+            
+            // OFW Country
+            if (person.is_ofw) {
+                const countryField = (person.ofw_country || '').toLowerCase();
+                if (countryField.includes('saudi')) { ofwCountries.saudiArabia++; b.ofw.saudiArabia++; }
+                else if (countryField.includes('uae')) { ofwCountries.uae++; b.ofw.uae++; }
+                else if (countryField.includes('qatar')) { ofwCountries.qatar++; b.ofw.qatar++; }
+                else if (countryField.includes('kuwait')) { ofwCountries.kuwait++; b.ofw.kuwait++; }
+                else if (countryField.includes('bahrain')) { ofwCountries.bahrain++; b.ofw.bahrain++; }
+                else if (countryField.includes('oman')) { ofwCountries.oman++; b.ofw.oman++; }
+                else if (countryField.includes('hong kong')) { ofwCountries.hongKong++; b.ofw.hongKong++; }
+                else if (countryField.includes('singapore')) { ofwCountries.singapore++; b.ofw.singapore++; }
+                else if (countryField.includes('japan')) { ofwCountries.japan++; b.ofw.japan++; }
+                else if (countryField.includes('taiwan')) { ofwCountries.taiwan++; b.ofw.taiwan++; }
+                else if (countryField.includes('malaysia')) { ofwCountries.malaysia++; b.ofw.malaysia++; }
+                else if (countryField.includes('australia')) { ofwCountries.australia++; b.ofw.australia++; }
+                else if (countryField.includes('new zealand')) { ofwCountries.newZealand++; b.ofw.newZealand++; }
+                else if (countryField.includes('italy')) { ofwCountries.italy++; b.ofw.italy++; }
+                else if (countryField.includes('uk')) { ofwCountries.uk++; b.ofw.uk++; }
+                else if (countryField.includes('germany')) { ofwCountries.germany++; b.ofw.germany++; }
+                else if (countryField.includes('cyprus')) { ofwCountries.cyprus++; b.ofw.cyprus++; }
+                else if (countryField.includes('canada')) { ofwCountries.canada++; b.ofw.canada++; }
+                else if (countryField.includes('usa')) { ofwCountries.usa++; b.ofw.usa++; }
+                else if (countryField.includes('libya')) { ofwCountries.libya++; b.ofw.libya++; }
+            }
         }
         
-        // Educational Attainment
-        const educationField = String(getField(r, 'Educational Attainment') || '').trim();
-        if(educationField) {
-            const eduLower = educationField.toLowerCase();
-            if(eduLower.includes('no formal') || eduLower === 'none') { 
-                overallEducation.noFormalEducation++; 
-                b.education.noFormalEducation++; 
-            }
-            else if(eduLower.includes('elementary level') || eduLower === 'elementary undergraduate') { 
-                overallEducation.elementaryLevel++; 
-                b.education.elementaryLevel++; 
-            }
-            else if(eduLower.includes('elementary graduate') || eduLower === 'elementary') { 
-                overallEducation.elementaryGraduate++; 
-                b.education.elementaryGraduate++; 
-            }
-            else if(eduLower.includes('junior high school level') || eduLower.includes('junior high level')) { 
-                overallEducation.juniorHighSchoolLevel++; 
-                b.education.juniorHighSchoolLevel++; 
-            }
-            else if(eduLower.includes('junior high school graduate') || eduLower.includes('junior high graduate')) { 
-                overallEducation.juniorHighSchoolGraduate++; 
-                b.education.juniorHighSchoolGraduate++; 
-            }
-            else if(eduLower.includes('senior high school level') || eduLower.includes('senior high level')) { 
-                overallEducation.seniorHighSchoolLevel++; 
-                b.education.seniorHighSchoolLevel++; 
-            }
-            else if(eduLower.includes('senior high school graduate') || eduLower.includes('senior high graduate')) { 
-                overallEducation.seniorHighSchoolGraduate++; 
-                b.education.seniorHighSchoolGraduate++; 
-            }
-            else if(eduLower.includes('alternative learning system') || eduLower.includes('als graduate')) { 
-                overallEducation.alsGraduate++; 
-                b.education.alsGraduate++; 
-            }
-            else if(eduLower.includes('special education') || eduLower.includes('sped graduate')) { 
-                overallEducation.spedGraduate++; 
-                b.education.spedGraduate++; 
-            }
-            else if(eduLower.includes('vocational') || eduLower.includes('technical graduate')) { 
-                overallEducation.vocationalGraduate++; 
-                b.education.vocationalGraduate++; 
-            }
-            else if(eduLower.includes('college level') || eduLower === 'college undergraduate') { 
-                overallEducation.collegeLevel++; 
-                b.education.collegeLevel++; 
-            }
-            else if(eduLower.includes('college graduate') || eduLower === 'college grad') { 
-                overallEducation.collegeGraduate++; 
-                b.education.collegeGraduate++; 
+        // Livestock (household level)
+        for (const animal of householdLivestock) {
+            const animalType = (animal.animal_type || '').toLowerCase();
+            const quantity = animal.quantity || 1;
+            if (animalType === 'dog') { b.livestock.dog += quantity; livestockStats.dog += quantity; }
+            else if (animalType === 'cat') { b.livestock.cat += quantity; livestockStats.cat += quantity; }
+            else if (animalType === 'pig') { b.livestock.pig += quantity; livestockStats.pig += quantity; }
+            else if (animalType === 'cow') { b.livestock.cow += quantity; livestockStats.cow += quantity; }
+            else if (animalType === 'carabao') { b.livestock.carabao += quantity; livestockStats.carabao += quantity; }
+            else if (animalType === 'chicken') { b.livestock.chicken += quantity; livestockStats.chicken += quantity; }
+        }
+        
+        // Government Support
+        for (const gov of householdGov) {
+            const assistanceType = gov.assistance_type || '';
+            if (b.support[assistanceType] !== undefined) {
+                b.support[assistanceType]++;
             }
         }
         
-// Employment Status - Count ALL persons with proper unemployment detection
-const employmentFieldRaw = getField(r, 'Employment');
-const employmentField = String(employmentFieldRaw || '').toLowerCase().trim();
-
-console.log(`Processing ${isHead ? 'HEAD' : 'MEMBER'} - Employment: "${employmentField}"`);
-
-// Determine employment status
-let isEmployed = false;
-let isUnemployed = false;
-
-if (employmentField === 'employed' || employmentField === 'yes' || employmentField === 'working' || employmentField === '1') {
-    isEmployed = true;
-    console.log(`  -> Marked as EMPLOYED`);
-} 
-else if (employmentField === 'unemployed' || employmentField === 'no' || employmentField === 'not working' || employmentField === '0' || employmentField === '') {
-    // Empty string or "no" or "unemployed" means unemployed
-    isUnemployed = true;
-    console.log(`  -> Marked as UNEMPLOYED`);
-}
-else if (employmentField && !isEmployed && !isUnemployed) {
-    // Has value but not recognized - treat as unemployed for members
-    if (!isHead) {
-        isUnemployed = true;
-        console.log(`  -> Member with unrecognized value "${employmentField}" -> UNEMPLOYED`);
-    } else {
-        console.log(`  -> Head with unrecognized value "${employmentField}" - not counted`);
+        // Post-Calamity Impacts
+        if (householdCalamity.structural_damage === 'Yes') calamityImpactStats.structuralDamage++;
+        if (householdCalamity.household_injury === 'Yes') calamityImpactStats.householdInjury++;
+        if (householdCalamity.habitability === 'Yes') calamityImpactStats.habitability++;
+        if (householdCalamity.loss_of_livelihood === 'Yes') calamityImpactStats.lossOfLivelihood++;
+        
+        // Sitio/Purok (from household) - COUNT PERSONS (HEAD + MEMBERS)
+        const sitioRaw = (household.sitio_purok || '').trim();
+        let sitioKey = '';
+        
+        if (sitioRaw) {
+            // Case-insensitive match for Purok, Sitio, or just numbers
+            let match = sitioRaw.match(/(?:Purok|Sitio|purok|sitio)\s*(\d+|[IVX]+)/);
+            if (!match) {
+                match = sitioRaw.match(/(\d+|[IVX]+)$/);
+            }
+            
+            if (match) {
+                let num = match[1].toUpperCase();
+                
+                // Map numbers 1-7 to Roman numerals
+                if (num === 'I' || num === '1') sitioKey = 'I';
+                else if (num === 'II' || num === '2') sitioKey = 'II';
+                else if (num === 'III' || num === '3') sitioKey = 'III';
+                else if (num === 'IV' || num === '4') sitioKey = 'IV';
+                else if (num === 'V' || num === '5') sitioKey = 'V';
+                else if (num === 'VI' || num === '6') sitioKey = 'VI';
+                else if (num === 'VII' || num === '7') sitioKey = 'VII';
+            }
+        }
+        
+        // Count PERSONS (1 head + all members) for this Purok
+        if (sitioKey && b.sitio[sitioKey] !== undefined) {
+            const totalPersons = 1 + (members.length);  // Head + members
+            b.sitio[sitioKey] = (b.sitio[sitioKey] || 0) + totalPersons;
+        }
     }
-}
-
-if (isEmployed) {
-    overallEmployment.employed++;
-    b.employment.employed++;
-} else if (isUnemployed) {
-    overallEmployment.unemployed++;
-    b.employment.unemployed++;
-}
-
-console.log(`  Running totals - Employed: ${overallEmployment.employed}, Unemployed: ${overallEmployment.unemployed}`);
-        
-        // Job Title
-        const jobField = String(getField(r, 'Job Title') || getField(r, 'Job Title/Description') || getField(r, 'Job') || '').trim();
-        if(jobField) {
-            const jobLower = jobField.toLowerCase();
-            if(jobLower.includes('administrative assistant') || jobLower.includes('admin assistant')) jobCategories.adminAssistant++;
-            else if(jobLower.includes('office clerk')) jobCategories.officeClerk++;
-            else if(jobLower.includes('secretary')) jobCategories.secretary++;
-            else if(jobLower.includes('project manager')) jobCategories.projectManager++;
-            else if(jobLower.includes('operations manager')) jobCategories.operationsManager++;
-            else if(jobLower.includes('hr staff')) jobCategories.hrStaff++;
-            else if(jobLower.includes('account manager')) jobCategories.accountManager++;
-            else if(jobLower.includes('accounting staff')) jobCategories.accountingStaff++;
-            else if(jobLower.includes('bookkeeper')) jobCategories.bookkeeper++;
-            else if(jobLower.includes('payroll officer')) jobCategories.payrollOfficer++;
-            else if(jobLower.includes('auditor')) jobCategories.auditor++;
-            else if(jobLower.includes('it support') || jobLower === 'it') jobCategories.itSupport++;
-            else if(jobLower.includes('web developer')) jobCategories.webDeveloper++;
-            else if(jobLower.includes('software developer')) jobCategories.softwareDeveloper++;
-            else if(jobLower.includes('data analyst')) jobCategories.dataAnalyst++;
-            else if(jobLower.includes('system administrator')) jobCategories.systemAdministrator++;
-            else if(jobLower.includes('nurse')) jobCategories.nurse++;
-            else if(jobLower.includes('medical technologist')) jobCategories.medicalTechnologist++;
-            else if(jobLower.includes('caregiver')) jobCategories.caregiver++;
-            else if(jobLower.includes('pharmacist')) jobCategories.pharmacist++;
-            else if(jobLower.includes('teacher')) jobCategories.teacher++;
-            else if(jobLower.includes('tutor')) jobCategories.tutor++;
-            else if(jobLower.includes('school administrator')) jobCategories.schoolAdministrator++;
-            else if(jobLower.includes('customer service') || jobLower.includes('csr')) jobCategories.csr++;
-            else if(jobLower.includes('sales associate')) jobCategories.salesAssociate++;
-            else if(jobLower.includes('cashier')) jobCategories.cashier++;
-            else if(jobLower.includes('store supervisor')) jobCategories.storeSupervisor++;
-            else if(jobLower.includes('electrician')) jobCategories.electrician++;
-            else if(jobLower.includes('plumber')) jobCategories.plumber++;
-            else if(jobLower.includes('welder')) jobCategories.welder++;
-            else if(jobLower.includes('construction worker')) jobCategories.constructionWorker++;
-            else if(jobLower.includes('driver')) jobCategories.driver++;
-            else if(jobLower.includes('logistics staff')) jobCategories.logisticsStaff++;
-            else if(jobLower.includes('rider')) jobCategories.rider++;
-            else if(jobLower.includes('cook') || jobLower.includes('chef')) jobCategories.cook++;
-            else if(jobLower.includes('waiter')) jobCategories.waiter++;
-            else if(jobLower.includes('barista')) jobCategories.barista++;
-            else if(jobLower.includes('housekeeping')) jobCategories.housekeepingStaff++;
-            else if(jobLower.includes('security guard')) jobCategories.securityGuard++;
-            else if(jobLower.includes('barangay staff')) jobCategories.barangayStaff++;
-            else if(jobLower.includes('police officer')) jobCategories.policeOfficer++;
-            else if(jobLower.includes('fire officer')) jobCategories.fireOfficer++;
-            else if(jobLower.includes('graphic designer')) jobCategories.graphicDesigner++;
-            else if(jobLower.includes('video editor')) jobCategories.videoEditor++;
-            else if(jobLower.includes('content writer')) jobCategories.contentWriter++;
-            else if(jobLower.includes('social media manager')) jobCategories.socialMediaManager++;
-        }
-        
-        // FishR & RSBSA - FIXED: Check for "&" symbol first to identify Both
-        const fishrValue = String(getField(r, 'FishR & RSBSA') || '').trim();
-        const fishrField = fishrValue.toLowerCase();
-        
-        // IMPORTANT: Check for "Both" FIRST (look for & symbol or both keywords)
-        if (fishrValue.includes('&') || (fishrField.includes('fishr') && fishrField.includes('rsbsa'))) {
-            fishrStats.bothRegistered++;
-            b.fishr.bothRegistered++;
-        }
-        // Then check for FishR Registered only (does NOT have & and does NOT have rsbsa)
-        else if (fishrField.includes('fishr') && !fishrValue.includes('&')) {
-            fishrStats.fishrRegistered++;
-            b.fishr.fishrRegistered++;
-        }
-        // Then check for RSBSA Registered only
-        else if (fishrField.includes('rsbsa')) {
-            fishrStats.rbisRegistered++;
-            b.fishr.rbisRegistered++;
-        }
-        else {
-            fishrStats.notRegistered++;
-            b.fishr.notRegistered++;
-        }
-        
-        // OFW Country
-        const ofwField = String(getField(r, 'Overseas Filipino Worker(OFW)') || '').toLowerCase().trim();
-        if(ofwField === 'yes' || ofwField === 'true' || ofwField === '1' || ofwField.includes('ofw')) {
-            const countryField = String(getField(r, 'Country') || '').trim().toLowerCase();
-            if(countryField.includes('saudi')) { ofwCountries.saudiArabia++; b.ofw.saudiArabia++; }
-            else if(countryField.includes('uae')) { ofwCountries.uae++; b.ofw.uae++; }
-            else if(countryField.includes('qatar')) { ofwCountries.qatar++; b.ofw.qatar++; }
-            else if(countryField.includes('kuwait')) { ofwCountries.kuwait++; b.ofw.kuwait++; }
-            else if(countryField.includes('bahrain')) { ofwCountries.bahrain++; b.ofw.bahrain++; }
-            else if(countryField.includes('oman')) { ofwCountries.oman++; b.ofw.oman++; }
-            else if(countryField.includes('hong kong')) { ofwCountries.hongKong++; b.ofw.hongKong++; }
-            else if(countryField.includes('singapore')) { ofwCountries.singapore++; b.ofw.singapore++; }
-            else if(countryField.includes('japan')) { ofwCountries.japan++; b.ofw.japan++; }
-            else if(countryField.includes('taiwan')) { ofwCountries.taiwan++; b.ofw.taiwan++; }
-            else if(countryField.includes('malaysia')) { ofwCountries.malaysia++; b.ofw.malaysia++; }
-            else if(countryField.includes('australia')) { ofwCountries.australia++; b.ofw.australia++; }
-            else if(countryField.includes('new zealand')) { ofwCountries.newZealand++; b.ofw.newZealand++; }
-            else if(countryField.includes('italy')) { ofwCountries.italy++; b.ofw.italy++; }
-            else if(countryField.includes('uk')) { ofwCountries.uk++; b.ofw.uk++; }
-            else if(countryField.includes('germany')) { ofwCountries.germany++; b.ofw.germany++; }
-            else if(countryField.includes('cyprus')) { ofwCountries.cyprus++; b.ofw.cyprus++; }
-            else if(countryField.includes('canada')) { ofwCountries.canada++; b.ofw.canada++; }
-            else if(countryField.includes('usa')) { ofwCountries.usa++; b.ofw.usa++; }
-            else if(countryField.includes('libya')) { ofwCountries.libya++; b.ofw.libya++; }
-        }
-    });
-
-    console.log("Processing complete. Heads:", totalHeads, "Members:", totalMembers);
-    console.log("Persons with coords:", personsWithCoords, "Without coords:", personsWithoutCoords);
-    console.log("Employment totals - Employed:", overallEmployment.employed, "Unemployed:", overallEmployment.unemployed);
-    console.log("Livestock totals:", livestockStats);
-
+    
     // Update top cards
     document.getElementById('totalHeads').innerText = totalHeads;
     document.getElementById('totalMembers').innerText = totalMembers;
-
+    
     // Demographics Section
     const demographicsDiv = document.getElementById('demographicsStats');
     if (demographicsDiv) {
@@ -2184,7 +2271,7 @@ console.log(`  Running totals - Employed: ${overallEmployment.employed}, Unemplo
         const educationLabels = { noFormalEducation: 'No Formal', elementaryLevel: 'Elem Level', elementaryGraduate: 'Elem Grad', juniorHighSchoolLevel: 'JHS Level', juniorHighSchoolGraduate: 'JHS Grad', seniorHighSchoolLevel: 'SHS Level', seniorHighSchoolGraduate: 'SHS Grad', alsGraduate: 'ALS Graduate', spedGraduate: 'SPED Graduate', vocationalGraduate: 'Vocational Grad', collegeLevel: 'College Level', collegeGraduate: 'College Grad' };
         Object.entries(educationLabels).forEach(([key, label]) => {
             const count = overallEducation[key];
-            if(count > 0) {
+            if (count > 0) {
                 const div = document.createElement('div'); div.className = 'category-card'; 
                 div.innerHTML = `<div class="category-label">${label}</div><div class="category-value">${count}</div>`;
                 educationStatsDiv.appendChild(div);
@@ -2235,12 +2322,17 @@ console.log(`  Running totals - Employed: ${overallEmployment.employed}, Unemplo
         if (div) {
             div.innerHTML = '';
             items.forEach(([label, count]) => {
-                if(count > 0) {
+                if (count > 0) {
                     const card = document.createElement('div'); card.className = 'category-card'; 
                     card.innerHTML = `<div class="category-label">${label}</div><div class="category-value">${count}</div>`;
                     div.appendChild(card);
                 }
             });
+            if (div.children.length === 0) {
+                const card = document.createElement('div'); card.className = 'category-card'; 
+                card.innerHTML = `<div class="category-label">No data</div><div class="category-value">0</div>`;
+                div.appendChild(card);
+            }
         }
     }
     
@@ -2251,12 +2343,17 @@ console.log(`  Running totals - Employed: ${overallEmployment.employed}, Unemplo
         const ofwLabels = { saudiArabia: 'Saudi', uae: 'UAE', qatar: 'Qatar', kuwait: 'Kuwait', bahrain: 'Bahrain', oman: 'Oman', hongKong: 'Hong Kong', singapore: 'Singapore', japan: 'Japan', taiwan: 'Taiwan', malaysia: 'Malaysia', australia: 'Australia', newZealand: 'New Zealand', italy: 'Italy', uk: 'UK', germany: 'Germany', cyprus: 'Cyprus', canada: 'Canada', usa: 'USA', libya: 'Libya' };
         Object.entries(ofwLabels).forEach(([key, label]) => {
             const count = ofwCountries[key];
-            if(count > 0) {
+            if (count > 0) {
                 const div = document.createElement('div'); div.className = 'category-card'; 
                 div.innerHTML = `<div class="category-label">${label}</div><div class="category-value">${count}</div>`;
                 ofwDiv.appendChild(div);
             }
         });
+        if (ofwDiv.children.length === 0) {
+            const card = document.createElement('div'); card.className = 'category-card'; 
+            card.innerHTML = `<div class="category-label">No OFW data</div><div class="category-value">0</div>`;
+            ofwDiv.appendChild(card);
+        }
     }
     
     // Domestic Livestock
@@ -2266,19 +2363,19 @@ console.log(`  Running totals - Employed: ${overallEmployment.employed}, Unemplo
         const livestockLabels = { dog: 'Dog', cat: 'Cat', pig: 'Pig', cow: 'Cow', carabao: 'Carabao', chicken: 'Chicken' };
         Object.entries(livestockLabels).forEach(([key, label]) => {
             const count = livestockStats[key];
-            if(count > 0) {
+            if (count > 0) {
                 const div = document.createElement('div'); div.className = 'category-card'; 
                 div.innerHTML = `<div class="category-label">${label}</div><div class="category-value">${count}</div>`;
                 livestockDiv.appendChild(div);
             }
         });
-        if(Object.values(livestockStats).every(v => v === 0)) {
+        if (Object.values(livestockStats).every(v => v === 0)) {
             const div = document.createElement('div'); div.className = 'category-card'; 
             div.innerHTML = `<div class="category-label">No livestock records</div><div class="category-value">0</div>`;
             livestockDiv.appendChild(div);
         }
     }
-
+    
     // ============ CHART ============
     destroyChart();
     const labels = Object.keys(barangayMap).sort();
@@ -2297,7 +2394,7 @@ console.log(`  Running totals - Employed: ${overallEmployment.employed}, Unemplo
                        x: { ticks: { font: { size: 11 } }, grid: { display: false } } }
         }
     });
-
+    
     // ============ TABLE POPULATION ============
     function populateTable(tableId, getRowHtml) {
         const tbody = document.querySelector(tableId);
@@ -2305,45 +2402,48 @@ console.log(`  Running totals - Employed: ${overallEmployment.employed}, Unemplo
             tbody.innerHTML = '';
             labels.forEach(l => {
                 const s = barangayMap[l];
-                const rowHtml = getRowHtml(l, s);
-                if (rowHtml) tbody.insertAdjacentHTML('beforeend', rowHtml);
+                if (s) {
+                    const rowHtml = getRowHtml(l, s);
+                    if (rowHtml) tbody.insertAdjacentHTML('beforeend', rowHtml);
+                }
             });
         }
     }
-
-// 1. Demographics & Location Availability (with LGBTQ+ column)
-populateTable('#tblSummary tbody', (l, s) => `<tr><td>${l}<\/td><td>${s.male||0}<\/td><td>${s.female||0}<\/td><td>${s.lgbt||0}<\/td><td>${s.personsWithCoords||0}<\/td><\/tr>`);
+    
+    // 1. Demographics & Location Availability
+    populateTable('#tblSummary tbody', (l, s) => `<tr><td style="text-align:left">${l}</td><td>${s.male||0}</td><td>${s.female||0}</td><td>${s.lgbt||0}</td><td>${s.personsWithCoords||0}</td></tr>`);
+    
     // 2. Government Support
     const supportKeys = ['TUPAD','Local 4Ps','National 4Ps','Local Social Pension','National Social Pension','Solo Parent Assistance','Relief Goods','Cash Subsidy'];
-    populateTable('#tblSupport tbody', (l, s) => `<tr><td>${l}</td>${supportKeys.map(k => `<td>${s.support[k]||0}</td>`).join('')}</tr>`);
-
+    populateTable('#tblSupport tbody', (l, s) => `<tr><td style="text-align:left">${l}</td>${supportKeys.map(k => `<td>${s.support[k]||0}</td>`).join('')}</tr>`);
+    
     // 3. Health / Special Status per Barangay
     populateTable('#tblHealthSpecialStatus tbody', (l, s) => {
         const totalPersons = (s.heads + s.members);
         const notPWD = totalPersons - (s.pwds || 0);
-        return `<tr><td>${l}</td><td>${s.pwds||0}</td><td>${notPWD}</td></tr>`;
+        return `<tr><td style="text-align:left">${l}</td><td>${s.pwds||0}</td><td>${notPWD}</td></tr>`;
     });
-
+    
     // 4. Household / Social Status per Barangay
-    populateTable('#tblHouseholdSocialStatus tbody', (l, s) => `<tr><td>${l}</td><td>${s.soloParenting||0}</td></tr>`);
-
+    populateTable('#tblHouseholdSocialStatus tbody', (l, s) => `<tr><td style="text-align:left">${l}</td><td>${s.soloParenting||0}</td></tr>`);
+    
     // 5. Health and Nutrition Status per Barangay
-    populateTable('#tblHealthNutrition tbody', (l, s) => `<tr><td>${l}</td><td>${s.pregnant||0}</td><td>${s.lactating||0}</td><td>${s.commonSickness||0}</td><td>${s.severeIllness||0}</td></tr>`);
-
+    populateTable('#tblHealthNutrition tbody', (l, s) => `<tr><td style="text-align:left">${l}</td><td>${s.pregnant||0}</td><td>${s.lactating||0}</td><td>${s.commonSickness||0}</td><td>${s.severeIllness||0}</td></tr>`);
+    
     // 6. Type of Disability per Barangay
-    populateTable('#tblDisabilityType tbody', (l, s) => `<tr><td>${l}</td><td>${s.disabilityTypes.physical||0}</td><td>${s.disabilityTypes.visual||0}</td><td>${s.disabilityTypes.hearing||0}</td><td>${s.disabilityTypes.speech||0}</td><td>${s.disabilityTypes.intellectual||0}</td><td>${s.disabilityTypes.psychosocial||0}</td><td>${s.disabilityTypes.learning||0}</td><td>${s.disabilityTypes.multiple||0}</td></tr>`);
-
+    populateTable('#tblDisabilityType tbody', (l, s) => `<tr><td style="text-align:left">${l}</td><td>${s.disabilityTypes.physical||0}</td><td>${s.disabilityTypes.visual||0}</td><td>${s.disabilityTypes.hearing||0}</td><td>${s.disabilityTypes.speech||0}</td><td>${s.disabilityTypes.intellectual||0}</td><td>${s.disabilityTypes.psychosocial||0}</td><td>${s.disabilityTypes.learning||0}</td><td>${s.disabilityTypes.multiple||0}</td></tr>`);
+    
     // 7. Age buckets
     const ageKeys = ['0-5','6-17','18-59','60+'];
-    populateTable('#tblAge tbody', (l, s) => `<tr><td>${l}</td>${ageKeys.map(k => `<td>${s.ageBuckets[k]||0}</td>`).join('')}</tr>`);
-
+    populateTable('#tblAge tbody', (l, s) => `<tr><td style="text-align:left">${l}</td>${ageKeys.map(k => `<td>${s.ageBuckets[k]||0}</td>`).join('')}</tr>`);
+    
     // 8. Sitio/Purok
     const sitios = ['I','II','III','IV','V','VI','VII'];
-    populateTable('#tblSitio tbody', (l, s) => `<tr><td>${l}</td>${sitios.map(pk => `<td>${s.sitio[pk]||0}</td>`).join('')}</tr>`);
-
+    populateTable('#tblSitio tbody', (l, s) => `<tr><td style="text-align:left">${l}</td>${sitios.map(pk => `<td>${s.sitio[pk]||0}</td>`).join('')}</tr>`);
+    
     // 9. Livestock
     const animals = ['dog', 'cat', 'pig', 'cow', 'carabao', 'chicken'];
-    populateTable('#tblLivestock tbody', (l, s) => `<tr><td>${l}</td>${animals.map(a => `<td>${s.livestock[a]||0}</td>`).join('')}</tr>`);
+    populateTable('#tblLivestock tbody', (l, s) => `<tr><td style="text-align:left">${l}</td>${animals.map(a => `<td>${s.livestock[a]||0}</td>`).join('')}</tr>`);
     
     // 10. Educational Attainment by Barangay
     populateTable('#tblBarangayEducation tbody', (l, s) => {
@@ -2355,159 +2455,205 @@ populateTable('#tblSummary tbody', (l, s) => `<tr><td>${l}<\/td><td>${s.male||0}
             s.education.spedGraduate || 0, s.education.vocationalGraduate || 0,
             s.education.collegeLevel || 0, s.education.collegeGraduate || 0
         ];
-        return `<tr><td>${l}</td>${cells.map(c => `<td>${c}</td>`).join('')}</tr>`;
+        return `<tr><td style="text-align:left">${l}</td>${cells.map(c => `<td>${c}</td>`).join('')}</tr>`;
     });
     
     // 11. Employment by Barangay
-    populateTable('#tblBarangayEmployment tbody', (l, s) => `<tr><td>${l}</td><td>${s.employment.employed || 0}</td><td>${s.employment.unemployed || 0}</td></tr>`);
+    populateTable('#tblBarangayEmployment tbody', (l, s) => `<tr><td style="text-align:left">${l}</td><td>${s.employment.employed || 0}</td><td>${s.employment.unemployed || 0}</td></tr>`);
     
     // 12. FishR & RSBSA by Barangay
-    populateTable('#tblBarangayFishR tbody', (l, s) => `<tr><td>${l}</td><td>${s.fishr.fishrRegistered || 0}</td><td>${s.fishr.rbisRegistered || 0}</td><td>${s.fishr.bothRegistered || 0}</td><td>${s.fishr.notRegistered || 0}</td></tr>`);
+    populateTable('#tblBarangayFishR tbody', (l, s) => `<tr><td style="text-align:left">${l}</td><td>${s.fishr.fishrRegistered || 0}</td><td>${s.fishr.rbisRegistered || 0}</td><td>${s.fishr.bothRegistered || 0}</td><td>${s.fishr.notRegistered || 0}</td></tr>`);
     
     // 13. OFW Countries by Barangay
     const ofwKeys = ['saudiArabia', 'uae', 'qatar', 'kuwait', 'bahrain', 'oman', 'hongKong', 'singapore', 'japan', 'taiwan', 'malaysia', 'australia', 'newZealand', 'italy', 'uk', 'germany', 'cyprus', 'canada', 'usa', 'libya'];
-    populateTable('#tblBarangayOFW tbody', (l, s) => `<tr><td>${l}</td>${ofwKeys.map(k => `<td>${s.ofw[k]||0}</td>`).join('')}</tr>`);
+    populateTable('#tblBarangayOFW tbody', (l, s) => `<tr><td style="text-align:left">${l}</td>${ofwKeys.map(k => `<td>${s.ofw[k]||0}</td>`).join('')}</tr>`);
     
     console.log("✅ Dashboard rendering complete!");
 }
 
-// ============ INITIALIZATION ============
-window.addEventListener('DOMContentLoaded', async () => {
-    console.log("Dashboard initializing...");
+// ============ REFRESH FUNCTION ============
+async function refreshDashboard() {
+    const refreshBtn = document.getElementById('manual-refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.classList.add('refreshing');
+        refreshBtn.disabled = true;
+    }
     
-// Check if user is logged in
-const loggedIn = localStorage.getItem('loggedIn') === 'true';
-const isGuest = localStorage.getItem('isGuest') === 'true';
-
-// HIDE MOBILE NAV ITEMS FOR GUEST USERS
-if (isGuest) {
-    // Add class to body for CSS targeting
-    document.body.classList.add('guest-mode');
+    await loadDashboard(true);
     
-    // Also hide via direct DOM manipulation
-    const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
-    mobileNavItems.forEach(item => {
-        const href = item.getAttribute('href');
-        if (href && href !== 'dashboard.html') {
-            item.style.display = 'none';
-            item.style.visibility = 'hidden';
-        }
-    });
-    
-    const dashboardNav = document.querySelector('.mobile-nav-item[href="dashboard.html"]');
-    if (dashboardNav) {
-        dashboardNav.style.flex = '1';
-        dashboardNav.style.width = '100%';
-        dashboardNav.style.maxWidth = '100%';
+    if (refreshBtn) {
+        setTimeout(() => {
+            refreshBtn.classList.remove('refreshing');
+            refreshBtn.disabled = false;
+        }, 500);
     }
 }
+
+// ============ USER AUTHENTICATION AND DISPLAY ============
+function checkLoginAndDisplayUser() {
+    const isGuest = localStorage.getItem('isGuest') === 'true';
     
-    // Redirect guests away from dashboard? Actually dashboard is allowed for guests
-    // Guests can view dashboard but with restrictions
-    if (!loggedIn && !isGuest) {
+    console.log("checkLoginAndDisplayUser - isGuest:", isGuest);
+    
+    // For guest users, just display guest info and return true
+    if (isGuest) {
+        const userFullnameElement = document.getElementById('userFullname');
+        if (userFullnameElement) userFullnameElement.innerText = "Guest User";
+        
+        const userRoleElement = document.getElementById('userRole');
+        if (userRoleElement) userRoleElement.innerText = "Guest (View Only)";
+        
+        const userNameElement = document.getElementById('userName');
+        if (userNameElement) userNameElement.innerHTML = `<i class="fas fa-user-circle"></i> Guest User`;
+        
+        // Hide admin items for guest
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        return true;
+    }
+    
+    const loggedIn = localStorage.getItem('loggedIn') === 'true';
+    
+    if (!loggedIn) {
         window.location.href = 'index.html?session=expired';
-        return;
+        return false;
     }
     
-    // Set user info - FIXED: Show "Guest User" for guests, staff name for staff
-    const staffName = localStorage.getItem("staffName");
-    const username = localStorage.getItem("username");
-    const isGuestUser = localStorage.getItem('isGuest') === 'true';
+    const staffName = localStorage.getItem('staffName');
+    const username = localStorage.getItem('username');
+    const userRole = localStorage.getItem('userRole');
     
-    // Determine display name
-    let displayName = "User";
-    let displayRole = "";
+    let displayName = staffName || username || "User";
+    let displayRole = userRole || "Staff";
     
-    if (isGuestUser) {
-        displayName = "Guest User";
-        displayRole = "Guest (View Only)";
-        console.log("Guest user detected - showing 'Guest User'");
-    } else if (staffName && staffName.trim() !== "") {
-        displayName = staffName;
-        displayRole = localStorage.getItem("userRole") || "Staff";
-        console.log("Staff user detected - showing:", staffName);
-    } else if (username) {
-        displayName = username;
-        displayRole = localStorage.getItem("userRole") || "Staff";
-    }
+    const userFullnameElement = document.getElementById('userFullname');
+    if (userFullnameElement) userFullnameElement.innerText = displayName;
     
-    // Update user fullname element
-    const userFullnameElement = document.getElementById("userFullname");
-    if (userFullnameElement) {
-        userFullnameElement.innerText = displayName;
-    }
+    const userRoleElement = document.getElementById('userRole');
+    if (userRoleElement) userRoleElement.innerText = displayRole;
     
-    // Update user role element
-    const userRoleElement = document.getElementById("userRole");
-    if (userRoleElement) {
-        userRoleElement.innerText = displayRole;
-    }
+    const userNameElement = document.getElementById('userName');
+    if (userNameElement) userNameElement.innerHTML = `<i class="fas fa-user-circle"></i> ${displayName}`;
     
-    // Also update any userName element if it exists (for compatibility)
-    const userNameElement = document.getElementById("userName");
-    if (userNameElement) {
-        userNameElement.innerText = displayName;
-    }
-    
-    // Check admin status - FIXED: Use "Admin" not "admin"
-    const userRole = localStorage.getItem("userRole");
     const isAdmin = userRole && userRole.toLowerCase() === 'admin';
-    
-    const adminItems = document.querySelectorAll(".admin-only");
-    adminItems.forEach(item => {
+    document.querySelectorAll('.admin-only').forEach(el => {
         if (isAdmin) {
-            item.classList.add("admin-visible");
+            el.classList.add('admin-visible');
+            el.style.display = 'block';
         } else {
-            item.classList.remove("admin-visible");
+            el.classList.remove('admin-visible');
+            el.style.display = 'none';
         }
     });
     
-    // Handle mobile nav for admin
-    const mobileUsersNav = document.getElementById('mobileUsersNav');
-    if (mobileUsersNav) {
-        if (isAdmin) {
-            mobileUsersNav.classList.add('admin-visible');
-        } else {
-            mobileUsersNav.classList.remove('admin-visible');
-        }
+    return true;
+}
+
+function setupUserDropdown() {
+    const userBtn = document.getElementById('userBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    
+    if (userBtn && userDropdown) {
+        userBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        });
+        
+        document.addEventListener('click', function() {
+            userDropdown.classList.remove('active');
+        });
     }
-    
-    // Load dashboard data
-    loadActivityLog();
-    const hasCache = loadCachedDashboardData();
-    await loadDashboard(!hasCache);
-    
-    // Set up data refresh (every 30 seconds) - keep this, separate from session
-    if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(() => loadDashboard(false), 30000);
-    
-    // Logout button - Use global handler from common-session.js
+}
+
+function setupLogoutHandler() {
     const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn && window.handleLogout) {
-        // Remove any existing listeners first
+    if (logoutBtn) {
         const newLogoutBtn = logoutBtn.cloneNode(true);
         logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-        newLogoutBtn.addEventListener('click', window.handleLogout);
+        
+        newLogoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Show confirmation modal
+            const confirmModal = document.getElementById('confirmModal');
+            if (confirmModal) {
+                confirmModal.style.display = 'flex';
+            }
+        });
     }
+}
+
+// Setup confirmation modal buttons
+function setupConfirmModal() {
+    const confirmModal = document.getElementById('confirmModal');
+    if (!confirmModal) return;
     
-    // Sidebar toggle
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    if (sidebarToggle) {
-        sidebarToggle.onclick = () => {
-            document.querySelector('.page-container').classList.toggle('collapsed');
+    const yesBtn = document.getElementById('confirmYesBtn');
+    const noBtn = document.getElementById('confirmNoBtn');
+    
+    if (yesBtn) {
+        yesBtn.onclick = function() {
+            confirmModal.style.display = 'none';
+            // Perform actual logout
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            window.location.replace('index.html?logout=' + Date.now());
         };
     }
     
-    console.log("Dashboard initialized - User type:", isGuestUser ? "Guest" : "Staff");
+    if (noBtn) {
+        noBtn.onclick = function() {
+            confirmModal.style.display = 'none';
+        };
+    }
+}
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const pageContainer = document.querySelector('.page-container');
+    if (sidebar && pageContainer) {
+        pageContainer.classList.toggle('collapsed');
+    }
+}
+function handleLogout() {
+    // Clear everything
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Optional: Clear any cookies if used
+    document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    
+    // Redirect to login with cache-busting parameter
+    window.location.replace('index.html?logout=' + Date.now());
+}
+// ============ INITIALIZATION ============
+document.addEventListener('DOMContentLoaded', async function() {
+    if (!checkLoginAndDisplayUser()) return;
+    
+    setupUserDropdown();
+    setupLogoutHandler();
+    setupConfirmModal();
+    
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) {
+        sidebarToggle.onclick = toggleSidebar;
+    }
+    
+    const refreshBtn = document.getElementById('manual-refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.onclick = refreshDashboard;
+    }
+    
+    await loadDashboard(true);
+    
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => loadDashboard(false), 30000);
 });
 </script>
-<script src="js/guest-redirect.js"></script>
-<script src="js/data-broadcaster.js"></script>
-<script src="js/dashboard-listener.js"></script>
-<script src="js/common-utils.js"></script>
-<script src="js/session-manager.js"></script>
-<script src="js/common-session.js"></script>
-<script src="js/unified-header.js"></script>
-<script src="js/activity-tracking-final.js"></script>
 </body>
 </html>
