@@ -3,11 +3,17 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <!-- PREVENT CACHING -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 <title>User Management — Purok Kaligtasan</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="css/uniform-styles.css">
 <link rel="stylesheet" href="css/header-styles.css">
 <link rel="stylesheet" href="css/user-style.css">
+<script src="js/force-logout.js"></script>
+<script src="js/session-check.js"></script>
 <style>
    :root{
     --bg:#f6f8f7;
@@ -171,7 +177,7 @@ li.admin-only.admin-visible {
 
    .page-container{
     max-width:1200px;
-    margin:20px auto;
+    margin: auto;
     padding:12px;
     display:grid;
     grid-template-columns:260px 1fr;
@@ -1210,39 +1216,67 @@ li.admin-only.admin-visible {
        box-shadow: 0 2px 4px rgba(15,122,74,0.2);
    }
 
-   /* Status badges */
+   /* ============ FIXED STATUS BADGES - SMALL DOT ONLY, NO BACKGROUND ============ */
    .status-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: inline-block;
-    min-width: 70px;
-    text-align: center;
+       display: inline-flex;
+       align-items: center;
+       gap: 4px;
+       font-size: 0.8rem;
+       font-weight: 500;
+       padding: 0;
+       background: transparent !important;
+       border: none !important;
    }
 
    .status-online {
-    background: #e9f7f2;
-    color: #0f7a4a;
-    border: 1px solid #0f7a4a;
+       color: #0f7a4a;
+       background: transparent !important;
+       border: none !important;
+   }
+
+   .status-online::before {
+       content: "●";
+       font-size: 0.65rem;
+       color: #22c55e;
+       margin-right: 3px;
+       display: inline-block;
    }
 
    .status-offline {
-    background: #f0f0f0;
-    color: #666;
-    border: 1px solid #ddd;
+       color: #94a3b8;
+       background: transparent !important;
+       border: none !important;
+   }
+
+   .status-offline::before {
+       content: "○";
+       font-size: 0.65rem;
+       color: #cbd5e1;
+       margin-right: 3px;
+       display: inline-block;
    }
 
    .status-idle {
-    background: #fff8e1;
-    color: #ff9800;
-    border: 1px solid #ff9800;
+       color: #f59e0b;
+       background: transparent !important;
+       border: none !important;
+   }
+
+   .status-idle::before {
+       content: "◔";
+       font-size: 0.65rem;
+       color: #f59e0b;
+       margin-right: 3px;
+       display: inline-block;
    }
    
-   /* Table wrapper fix for glitching */
+   /* ============ FIXED TABLE GLITCHING ============ */
    .users-table-wrap {
        overflow-x: auto;
+       overflow-y: auto;
        -webkit-overflow-scrolling: touch;
+       position: relative;
+       scroll-behavior: smooth;
    }
    
    .users-table {
@@ -1250,26 +1284,51 @@ li.admin-only.admin-visible {
        width: 100%;
    }
    
-   .users-table th, .users-table td {
+   .users-table th, 
+   .users-table td {
        white-space: nowrap;
+       padding: 12px 12px;
    }
    
+   /* Allow description/wrapping columns to wrap */
    #logsTable td:nth-child(5) {
        white-space: normal;
        word-break: break-word;
+       min-width: 200px;
+       max-width: 300px;
    }
-   /* Quick fix - force scrollbar on users table */
-.users-table-wrap {
-    overflow-y: scroll !important;
-    max-height: 500px !important;
-}
+   
+   #activityTable td:nth-child(3),
+   #activityTable td:nth-child(4) {
+       white-space: nowrap;
+   }
+   
+   /* Force scrollbar on users table */
+   .users-table-wrap {
+       overflow-y: auto !important;
+       max-height: 500px !important;
+   }
 
-/* On desktop, make it taller */
-@media (min-width: 1025px) {
-    .users-table-wrap {
-        max-height: calc(100vh - 300px) !important;
-    }
-}
+   /* On desktop, make it taller */
+   @media (min-width: 1025px) {
+       .users-table-wrap {
+           max-height: calc(100vh - 300px) !important;
+       }
+   }
+   
+   /* Highlight search matches */
+   .highlight-match {
+       background-color: #fffe8a;
+       padding: 1px 2px;
+       border-radius: 3px;
+       font-weight: bold;
+   }
+
+   /* Keep original role cell styling */
+   .role-cell span {
+       display: inline-block;
+   }
+   
 </style>
 </head>
 <body>
@@ -1407,7 +1466,7 @@ li.admin-only.admin-visible {
         <tbody id="usersBody">
           <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading users...
         </tbody>
-       </table>
+        </table>
     </div>
 
   </main>
@@ -1763,7 +1822,7 @@ li.admin-only.admin-visible {
             <tbody id="activityBody">
               <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading activity data...
             </tbody>
-           </table>
+            </table>
         </div>
       </div>
       
@@ -1795,29 +1854,94 @@ li.admin-only.admin-visible {
             <tbody id="logsBody">
               <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading logs...
             </tbody>
-                      </tbody>
-          </table>
+           </table>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Confirmation Modal for Logout -->
+<div id="confirmModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10001; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-question-circle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Confirm Action</h3>
+            <p style="margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">Are you sure you want to logout?</p>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="confirmNoBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> No
+            </button>
+            <button id="confirmYesBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Yes
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ============ CONFIG ============ */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbytvSPndcz2Ou0Kz_XOUw6Ztlwx55ml2TsaEZFTdLYVCCVfOMwdRohgq_cOPPeluQMTCw/exec";
-const API_URL = SCRIPT_URL;
+// ============ SUPABASE CONFIGURATION ============
+const SUPABASE_URL = 'https://opibntxwagnjazpbtxrv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UwyTZU3BYj41z0D7beu9Hg_pIZcLeWN';
+
+let supabaseClient;
+if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+    console.error('Supabase not loaded');
+}
 
 /* ============ STATE ============ */
 let ALL_USERS = [];
 let EDIT_TARGET = null;
 let CURRENT_ROLE_FILTER = 'all';
-let AUDIT_LOGS_DATA = null;
+let ACTIVITY_DATA = [];
+let AUDIT_LOGS_DATA = [];
 let DELETE_TARGET_USER = null;
 let RESET_TARGET_USER = null;
+let REFRESH_INTERVAL = null;
+let ACTIVITY_REFRESH_INTERVAL = null;
 
 function isProtectedAdmin(user) {
   return user && user.Username && user.Username.toLowerCase() === 'admin';
+}
+
+/* ============ UPDATE USER ACTIVITY - FIXES THE ONLINE ISSUE ============ */
+async function updateCurrentUserActivity() {
+  const username = localStorage.getItem('username');
+  if (!username) return;
+  
+  try {
+    const now = new Date().toISOString();
+    const { error } = await supabaseClient
+      .from('users')
+      .update({ 
+        last_login: now,
+        last_activity: now,
+        updated_at: now
+      })
+      .eq('username', username);
+    
+    if (error) {
+      console.error('Activity update error:', error);
+    } else {
+      console.log('Activity updated for:', username);
+    }
+  } catch(err) {
+    console.error('Failed to update activity:', err);
+  }
+}
+
+/* ============ HASH PASSWORD ============ */
+async function hashPassword(password) {
+    const msgBuffer = new TextEncoder().encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 /* ============ CUSTOM ALERT MODAL ============ */
@@ -1835,7 +1959,6 @@ function showAlert(message, title = "Notice", type = "warning") {
       return;
     }
     
-    // Set icon based on type
     if (type === "error") {
       iconEl.className = "fas fa-times-circle";
       iconEl.style.color = "#ef4444";
@@ -1866,7 +1989,6 @@ function showAlert(message, title = "Notice", type = "warning") {
     
     closeBtn.addEventListener('click', handleClose);
     
-    // Close on overlay click
     modal.addEventListener('click', function(e) {
       if (e.target === modal) {
         modal.style.display = 'none';
@@ -1914,7 +2036,6 @@ function showConfirm(message, title = "Confirm Action") {
     confirmBtn.addEventListener('click', handleConfirm);
     cancelBtn.addEventListener('click', handleCancel);
     
-    // Close on overlay click (treat as cancel)
     modal.addEventListener('click', function(e) {
       if (e.target === modal) {
         modal.style.display = 'none';
@@ -1957,49 +2078,46 @@ function checkPasswordStrength(password) {
   return { score, message, className };
 }
 
-/* ============ LOAD USERS ============ */
+/* ============ LOAD USERS FROM SUPABASE ============ */
 async function loadUsers() {
+  if (!supabaseClient) {
+    console.error('Supabase client not initialized');
+    return;
+  }
+  
   try {
-    console.log('Loading users from:', SCRIPT_URL + '?action=users');
-    const res = await fetch(`${SCRIPT_URL}?action=users`);
-    const text = await res.text();
+    console.log('Loading users from Supabase...');
+    const { data, error } = await supabaseClient
+      .from('users')
+      .select('username, full_name, role, assigned_barangay, email, is_active, last_login, created_at')
+      .order('created_at', { ascending: false });
     
-    console.log('Raw Response:', text.substring(0, 500));
+    if (error) throw error;
     
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error('JSON parse error:', e);
-      await showAlert("Invalid response from server", "Error", "error");
-      return;
-    }
+    ALL_USERS = (data || []).map(user => {
+      let roleDisplay = 'Staff';
+      if (user.role) {
+        const roleLower = user.role.toLowerCase();
+        if (roleLower === 'admin') {
+          roleDisplay = 'Admin';
+        } else if (roleLower === 'staff') {
+          roleDisplay = 'Staff';
+        }
+      }
+      
+      return {
+        Username: user.username,
+        FullName: user.full_name || '',
+        Role: roleDisplay,
+        AssignedBarangay: user.assigned_barangay || '',
+        Email: user.email || '',
+        IsActive: user.is_active,
+        LastLogin: user.last_login,
+        CreatedAt: user.created_at,
+        RawRole: user.role
+      };
+    });
     
-    console.log('Parsed data:', data);
-    console.log('Success:', data.success);
-    console.log('Users array length:', data.users ? data.users.length : 'No users property');
-    
-    if (!data.success) {
-      await showAlert(data.message || "Failed to load users", "Error", "error");
-      return;
-    }
-    
-    // CRITICAL FIX: Make sure we're getting the users array correctly
-    if (data.users && Array.isArray(data.users)) {
-      ALL_USERS = data.users;
-      console.log('✅ Set ALL_USERS with', ALL_USERS.length, 'users');
-    } else {
-      console.error('Unexpected data structure - no users array found');
-      ALL_USERS = [];
-    }
-    
-    // Log first few users to verify
-    if (ALL_USERS.length > 0) {
-      console.log('First user:', ALL_USERS[0]);
-      console.log('Last user:', ALL_USERS[ALL_USERS.length - 1]);
-    }
-    
-    // Force re-render with ALL users
     renderUsers();
     updateStats();
     
@@ -2015,41 +2133,30 @@ function renderUsers(filter = "", roleFilter = CURRENT_ROLE_FILTER) {
   if (!tbody) return;
   tbody.innerHTML = "";
   
-  console.log('Rendering users. Total ALL_USERS:', ALL_USERS.length);
-  console.log('Current role filter:', roleFilter);
-  console.log('Current search filter:', filter);
+  let filtered = [...ALL_USERS];
   
-  let filtered = ALL_USERS;
-  
-  // Apply role filter
   if (roleFilter !== 'all') {
-    filtered = ALL_USERS.filter(user => {
-      const userRole = (user.Role || '').toLowerCase();
-      const filterRole = roleFilter.toLowerCase();
-      console.log(`User ${user.Username} role: ${userRole} vs filter: ${filterRole} = ${userRole === filterRole}`);
-      return userRole === filterRole;
+    filtered = filtered.filter(user => {
+      const userRole = user.Role || 'Staff';
+      return userRole === roleFilter;
     });
-    console.log(`After role filter (${roleFilter}):`, filtered.length, 'users');
   }
   
-  // Apply search filter
   if (filter) {
     const searchLower = filter.toLowerCase();
     filtered = filtered.filter(user => {
       const searchStr = `${user.Username || ''} ${user.FullName || ''} ${user.Role || ''} ${user.AssignedBarangay || ''}`.toLowerCase();
       return searchStr.includes(searchLower);
     });
-    console.log(`After search filter:`, filtered.length, 'users');
   }
   
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 40px 20px; color: var(--muted); font-style: italic;">
+    tbody.innerHTML = `<td><td colspan="5" style="text-align: center; padding: 40px 20px; color: var(--muted); font-style: italic;">
       No users found. Total users in system: ${ALL_USERS.length}
-    </td></tr>`;
+      </td></tr>`;
     return;
   }
   
-  // Render each user
   filtered.forEach(user => {
     const tr = document.createElement("tr");
     const isProtected = isProtectedAdmin(user);
@@ -2086,24 +2193,38 @@ function renderUsers(filter = "", roleFilter = CURRENT_ROLE_FILTER) {
       protectedBadge = '<span style="color: #0f7a4a; font-weight: bold; font-size: 0.8rem; background: #e9f7f2; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">🔒 Protected</span>';
     }
     
+    let usernameDisplay = user.Username || '';
+    let fullnameDisplay = user.FullName || '';
+    let barangayDisplay = user.AssignedBarangay || '';
+    let roleDisplay = user.Role || 'Staff';
+    
+    if (filter) {
+      const searchRegex = new RegExp(`(${escapeRegex(filter)})`, 'gi');
+      usernameDisplay = usernameDisplay.replace(searchRegex, '<span class="highlight-match">$1</span>');
+      fullnameDisplay = fullnameDisplay.replace(searchRegex, '<span class="highlight-match">$1</span>');
+      barangayDisplay = barangayDisplay.replace(searchRegex, '<span class="highlight-match">$1</span>');
+    }
+    
     tr.innerHTML = `
-      <td>${escapeHtml(user.Username || '')}${protectedBadge}</td>
-      <td>${escapeHtml(user.FullName || '')}</td>
-      <td><span style="padding: 4px 10px; border-radius: 12px; background: ${user.Role === 'Admin' ? '#e9f7f2' : '#f0f0f0'}; color: ${user.Role === 'Admin' ? '#0f7a4a' : '#666'}; display: inline-block;">${user.Role || 'Staff'}</span></td>
-      <td>${escapeHtml(user.AssignedBarangay || '')}</td>
+      <td>${usernameDisplay}${protectedBadge}</td>
+      <td>${fullnameDisplay}</td>
+      <td class="role-cell"><span style="padding: 4px 10px; border-radius: 12px; background: ${user.Role === 'Admin' ? '#e9f7f2' : '#f0f0f0'}; color: ${user.Role === 'Admin' ? '#0f7a4a' : '#666'}; display: inline-block;">${roleDisplay}</span></td>
+      <td>${barangayDisplay}</td>
       <td class="actions-cell">${actionButtonsHtml}</td>
     `;
     tbody.appendChild(tr);
   });
-  
-  console.log(`✅ Rendered ${filtered.length} users in table`);
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /* ============ UPDATE STATS ============ */
 function updateStats() {
   const total = ALL_USERS.length;
-  const admins = ALL_USERS.filter(u => u.Role === 'Admin' || u.Role === 'admin').length;
-  const staff = ALL_USERS.filter(u => u.Role === 'Staff' || u.Role === 'staff').length;
+  const admins = ALL_USERS.filter(u => u.Role === 'Admin').length;
+  const staff = ALL_USERS.filter(u => u.Role === 'Staff').length;
   
   const statTotal = document.getElementById('statTotal');
   const statAdmins = document.getElementById('statAdmins');
@@ -2124,7 +2245,8 @@ function setupRoleToggle() {
   }
   
   toggleButtons.forEach(btn => {
-    if (btn.getAttribute('data-role') === CURRENT_ROLE_FILTER) {
+    const roleValue = btn.getAttribute('data-role');
+    if (roleValue === CURRENT_ROLE_FILTER) {
       btn.classList.add('active');
     } else {
       btn.classList.remove('active');
@@ -2165,7 +2287,8 @@ function openUserModal(mode = 'add', username = null) {
     if (user) {
       document.getElementById('user_username').value = user.Username;
       document.getElementById('user_fullname').value = user.FullName || '';
-      document.getElementById('user_role').value = user.Role || 'Staff';
+      const roleValue = user.Role === 'Admin' ? 'Admin' : 'Staff';
+      document.getElementById('user_role').value = roleValue;
       document.getElementById('user_barangay').value = user.AssignedBarangay || '';
       document.getElementById('user_username').disabled = true;
       document.getElementById('user_password').required = false;
@@ -2204,7 +2327,7 @@ async function saveUser() {
   const barangay = document.getElementById('user_barangay').value;
   const password = document.getElementById('user_password').value.trim();
   
-  const currentUser = localStorage.getItem("username") || localStorage.getItem("staffName") || "System";
+  const currentUser = localStorage.getItem("staffName") || localStorage.getItem("username") || "System";
   
   if (!username) {
     await showAlert('Username is required', 'Validation Error', 'error');
@@ -2216,7 +2339,6 @@ async function saveUser() {
     return;
   }
   
-  // Strong password validation for new users or when password is being changed
   if (password) {
     const strength = checkPasswordStrength(password);
     if (strength.score < 3) {
@@ -2237,54 +2359,73 @@ async function saveUser() {
   }
   
   try {
-    const formData = new FormData();
-    formData.append('action', EDIT_TARGET ? 'updateUser' : 'createUser');
-    formData.append('actor', currentUser);
-    formData.append('Username', username);
-    formData.append('FullName', fullname);
-    formData.append('Role', role);
-    formData.append('AssignedBarangay', barangay);
-    
-    if (password) {
-      formData.append('Password', password);
-    }
+    const dbRole = role === 'Admin' ? 'admin' : 'staff';
     
     if (EDIT_TARGET) {
-      formData.append('target', EDIT_TARGET);
-    }
-    
-    const res = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
-    const text = await res.text();
-    
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      await showAlert("Invalid response from server", "Error", "error");
-      return;
-    }
-    
-    if (data.success) {
-      closeUserModal();
+      const updateData = {
+        full_name: fullname,
+        role: dbRole,
+        assigned_barangay: barangay === 'ALL' ? null : barangay,
+        updated_at: new Date().toISOString()
+      };
       
-      const successModal = document.getElementById('userSavedSuccessModal');
-      const titleEl = document.getElementById('userSavedTitle');
-      const messageEl = document.getElementById('userSavedMessage');
-      
-      if (EDIT_TARGET) {
-        if (titleEl) titleEl.textContent = 'User Updated Successfully!';
-        if (messageEl) messageEl.textContent = `User "${username}" has been successfully updated.`;
-      } else {
-        if (titleEl) titleEl.textContent = 'User Created Successfully!';
-        if (messageEl) messageEl.textContent = `User "${username}" has been successfully added to the system.`;
+      if (password) {
+        const hashedPassword = await hashPassword(password);
+        updateData.password_hash = hashedPassword;
+        updateData.must_change_password = true;
       }
       
-      if (successModal) successModal.style.display = 'flex';
-      loadUsers();
+      const { error } = await supabaseClient
+        .from('users')
+        .update(updateData)
+        .eq('username', EDIT_TARGET);
+      
+      if (error) throw error;
+      
+      await supabaseClient.from('audit_logs').insert([{
+        action: 'Update User',
+        actor: currentUser,
+        target_table: 'users',
+        details: `Updated user: ${username}`
+      }]);
+      
+      await showAlert(`User "${username}" has been successfully updated.`, 'Success', 'success');
+      
     } else {
-      await showAlert(data.message || 'Failed to save user', 'Error', 'error');
+      const hashedPassword = await hashPassword(password);
+      
+      const { error } = await supabaseClient
+        .from('users')
+        .insert([{
+          username: username,
+          full_name: fullname,
+          role: dbRole,
+          assigned_barangay: barangay === 'ALL' ? null : barangay,
+          password_hash: hashedPassword,
+          must_change_password: true,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          last_login: new Date().toISOString()
+        }]);
+      
+      if (error) throw error;
+      
+      await supabaseClient.from('audit_logs').insert([{
+        action: 'Create User',
+        actor: currentUser,
+        target_table: 'users',
+        details: `Created user: ${username}`
+      }]);
+      
+      await showAlert(`User "${username}" has been successfully added.`, 'Success', 'success');
     }
+    
+    closeUserModal();
+    await loadUsers();
+    
   } catch(err) {
+    console.error('Save user error:', err);
     await showAlert('Error saving user: ' + err.message, 'Error', 'error');
   } finally {
     if (saveBtn) {
@@ -2324,7 +2465,7 @@ async function resetPassword() {
   if (!RESET_TARGET_USER) return;
   
   const username = RESET_TARGET_USER;
-  const currentUser = localStorage.getItem("username") || localStorage.getItem("staffName") || "System";
+  const currentUser = localStorage.getItem("staffName") || localStorage.getItem("username") || "System";
   
   const resetBtn = document.getElementById('confirmReset');
   const originalText = resetBtn ? resetBtn.innerHTML : 'Reset';
@@ -2334,30 +2475,32 @@ async function resetPassword() {
   }
   
   try {
-    const formData = new FormData();
-    formData.append('action', 'resetPassword');
-    formData.append('target', username);
-    formData.append('actor', currentUser);
+    const hashedPassword = await hashPassword('password123');
     
-    const res = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
-    const text = await res.text();
+    const { error } = await supabaseClient
+      .from('users')
+      .update({
+        password_hash: hashedPassword,
+        must_change_password: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('username', username);
     
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error('JSON parse error:', text);
-      await showAlert("Invalid response from server", "Error", "error");
-      return;
-    }
+    if (error) throw error;
     
-    if (data.success) {
-      closeResetModal();
-      const successModal = document.getElementById('resetSuccessModal');
-      if (successModal) successModal.style.display = 'flex';
-    } else {
-      await showAlert(data.message || 'Failed to reset password', 'Reset Failed', 'error');
-    }
+    await supabaseClient.from('audit_logs').insert([{
+      action: 'Reset Password',
+      actor: currentUser,
+      target_table: 'users',
+      details: `Reset password for user: ${username}`
+    }]);
+    
+    closeResetModal();
+    const successModal = document.getElementById('resetSuccessModal');
+    if (successModal) successModal.style.display = 'flex';
+    
+    await loadUsers();
+    
   } catch(err) {
     console.error('Reset error:', err);
     await showAlert('Error resetting password: ' + err.message, 'Error', 'error');
@@ -2399,7 +2542,7 @@ async function deleteUser() {
   if (!DELETE_TARGET_USER) return;
   
   const username = DELETE_TARGET_USER;
-  const currentUser = localStorage.getItem("username") || localStorage.getItem("staffName") || "System";
+  const currentUser = localStorage.getItem("staffName") || localStorage.getItem("username") || "System";
   
   const deleteBtn = document.getElementById('confirmDelete');
   const originalText = deleteBtn ? deleteBtn.innerHTML : 'Delete';
@@ -2409,31 +2552,49 @@ async function deleteUser() {
   }
   
   try {
-    const formData = new FormData();
-    formData.append('action', 'deleteUser');
-    formData.append('target', username);
-    formData.append('actor', currentUser);
+    const { data: userToDelete, error: findError } = await supabaseClient
+      .from('users')
+      .select('id, username')
+      .ilike('username', username);
     
-    const res = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
-    const text = await res.text();
-    
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      await showAlert("Invalid response from server", "Error", "error");
+    if (findError) {
+      console.error('Find user error:', findError);
+      await showAlert('Error finding user: ' + findError.message, 'Error', 'error');
+      closeDeleteModal();
       return;
     }
     
-    if (data.success) {
+    if (!userToDelete || userToDelete.length === 0) {
+      await showAlert(`User "${username}" not found in database.`, 'Error', 'error');
       closeDeleteModal();
-      const successModal = document.getElementById('deleteSuccessModal');
-      if (successModal) successModal.style.display = 'flex';
-      loadUsers();
-    } else {
-      await showAlert(data.message || 'Failed to delete user', 'Error', 'error');
+      return;
     }
+    
+    const userRecord = userToDelete[0];
+    
+    const { error: deleteError } = await supabaseClient
+      .from('users')
+      .delete()
+      .eq('id', userRecord.id);
+    
+    if (deleteError) throw deleteError;
+    
+    await supabaseClient.from('audit_logs').insert([{
+      action: 'Delete User',
+      actor: currentUser,
+      target_table: 'users',
+      details: `Deleted user: ${username} (ID: ${userRecord.id})`
+    }]);
+    
+    closeDeleteModal();
+    
+    const successModal = document.getElementById('deleteSuccessModal');
+    if (successModal) successModal.style.display = 'flex';
+    
+    await loadUsers();
+    
   } catch(err) {
+    console.error('Delete error:', err);
     await showAlert('Error deleting user: ' + err.message, 'Error', 'error');
   } finally {
     if (deleteBtn) {
@@ -2449,53 +2610,104 @@ function closeDeleteModal() {
   DELETE_TARGET_USER = null;
 }
 
-/* ============ LOAD USER ACTIVITY ============ */
+/* ============ LOAD USER ACTIVITY - FIXED VERSION ============ */
 async function loadUserActivity() {
+  if (!supabaseClient) return;
+  
   try {
-    const res = await fetch(`${SCRIPT_URL}?action=userActivity`);
-    const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      return;
-    }
+    // First, update current user's activity to mark them as online
+    await updateCurrentUserActivity();
+    
+    // Get users with their last login info
+    const { data: users, error } = await supabaseClient
+      .from('users')
+      .select('username, last_login, created_at, role, full_name')
+      .order('last_login', { ascending: false, nullsLast: true });
+    
+    if (error) throw error;
     
     const tbody = document.getElementById('activityBody');
     if (!tbody) return;
     tbody.innerHTML = '';
     
-    if (!data.success || !data.activities || data.activities.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">No activity data available<\/td><\/tr>`;
+    if (!users || users.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">No activity data available</td></tr>`;
       return;
     }
     
     let onlineCount = 0;
     let todayCount = 0;
     const today = new Date().toDateString();
+    const now = new Date();
+    const currentUsername = localStorage.getItem('username');
     
-    data.activities.forEach(activity => {
+    for (const user of users) {
       const tr = document.createElement('tr');
-      let statusText = activity.IsOnline === 'Online' ? 'Online' : 'Offline';
-      let statusClass = activity.IsOnline === 'Online' ? 'status-online' : 'status-offline';
+      let lastLogin = user.last_login ? new Date(user.last_login) : null;
       
-      if (activity.IsOnline === 'Online') onlineCount++;
+      // If this is the current user and last_login is null/old, update it
+      if (user.username === currentUsername && (!lastLogin || (now - lastLogin) > 60000)) {
+        await updateCurrentUserActivity();
+        lastLogin = new Date();
+      }
       
-      const lastLogin = activity.LastLogin ? new Date(activity.LastLogin).toLocaleString() : 'Never';
-      const lastActivity = activity.LastActivity ? new Date(activity.LastActivity).toLocaleString() : 'Never';
+      const isOnline = lastLogin && (now - lastLogin) < 5 * 60 * 1000;
       
-      if (activity.LastActivity && new Date(activity.LastActivity).toDateString() === today) todayCount++;
+      if (isOnline) onlineCount++;
       
-      tr.innerHTML = `
-        <td><strong>${escapeHtml(activity.Username)}<\/strong><\/td>
-        <td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td>
-        <td><small>${lastLogin}<\/small><\/td>
-        <td><small>${lastActivity}<\/small><\/td>
-        <td>${activity.TimeAgo || 'N/A'}<\/td>
-        <td>${activity.SessionDuration || 'N/A'}<\/td>
-      `;
+      const lastLoginStr = lastLogin ? lastLogin.toLocaleString() : 'Never';
+      
+      if (lastLogin && lastLogin.toDateString() === today) todayCount++;
+      
+      // Determine status text - plain text only, NO emojis
+      let statusText = 'Offline';
+      let statusClass = 'status-offline';
+      if (isOnline) {
+        statusText = 'Online';
+        statusClass = 'status-online';
+      }
+      
+      // Calculate session info
+      let sessionInfo = 'Not logged in';
+      if (lastLogin) {
+        const minutes = Math.floor((now - lastLogin) / 1000 / 60);
+        if (minutes < 60) {
+          sessionInfo = `${minutes} min ago`;
+        } else if (minutes < 1440) {
+          sessionInfo = `${Math.floor(minutes / 60)} hours ago`;
+        } else {
+          sessionInfo = `${Math.floor(minutes / 1440)} days ago`;
+        }
+      }
+      
+      // Create table row with proper structure
+      const usernameCell = document.createElement('td');
+      usernameCell.innerHTML = `<strong>${escapeHtml(user.username)}</strong>${user.username === currentUsername ? ' <span style="color:#0f7a4a;">(You)</span>' : ''}`;
+      tr.appendChild(usernameCell);
+      
+      const statusCell = document.createElement('td');
+      statusCell.className = statusClass;
+      statusCell.textContent = statusText;
+      tr.appendChild(statusCell);
+      
+      const lastLoginCell = document.createElement('td');
+      lastLoginCell.innerHTML = `<small>${lastLoginStr}</small>`;
+      tr.appendChild(lastLoginCell);
+      
+      const lastActivityCell = document.createElement('td');
+      lastActivityCell.innerHTML = `<small>${lastLoginStr}</small>`;
+      tr.appendChild(lastActivityCell);
+      
+      const activeTimeCell = document.createElement('td');
+      activeTimeCell.textContent = isOnline ? 'Active now' : sessionInfo;
+      tr.appendChild(activeTimeCell);
+      
+      const sessionCell = document.createElement('td');
+      sessionCell.textContent = isOnline ? 'Connected' : 'Disconnected';
+      tr.appendChild(sessionCell);
+      
       tbody.appendChild(tr);
-    });
+    }
     
     const statOnline = document.getElementById('statOnline');
     const statToday = document.getElementById('statToday');
@@ -2503,28 +2715,33 @@ async function loadUserActivity() {
     
     if (statOnline) statOnline.textContent = onlineCount;
     if (statToday) statToday.textContent = todayCount;
-    if (statTotalUsers) statTotalUsers.textContent = data.activities.length;
+    if (statTotalUsers) statTotalUsers.textContent = users.length;
+    
+    console.log(`Activity loaded - Online: ${onlineCount}, Active Today: ${todayCount}, Total: ${users.length}`);
     
   } catch(err) {
     console.error('Error loading activity:', err);
+    const tbody = document.getElementById('activityBody');
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Error loading activity data: ${err.message}</td></tr>`;
+    }
   }
 }
 
 /* ============ LOAD AUDIT LOGS ============ */
 async function loadAuditLogs() {
+  if (!supabaseClient) return;
+  
   try {
-    const res = await fetch(`${SCRIPT_URL}?action=logs`);
-    const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      return;
-    }
+    const { data, error } = await supabaseClient
+      .from('audit_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(500);
     
-    if (!data.success) return;
+    if (error) throw error;
     
-    AUDIT_LOGS_DATA = data;
+    AUDIT_LOGS_DATA = data || [];
     displayAuditLogs('all');
   } catch(err) {
     console.error('Error loading logs:', err);
@@ -2536,35 +2753,54 @@ function displayAuditLogs(category = 'all') {
   if (!tbody) return;
   tbody.innerHTML = '';
   
-  if (!AUDIT_LOGS_DATA) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No logs available<\/td><\/tr>`;
+  if (!AUDIT_LOGS_DATA || AUDIT_LOGS_DATA.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No logs available</td></tr>`;
     return;
   }
   
-  const logs = category === 'all' ? AUDIT_LOGS_DATA.logs || [] :
-              category === 'today' ? AUDIT_LOGS_DATA.today || [] :
-              category === 'yesterday' ? AUDIT_LOGS_DATA.yesterday || [] :
-              AUDIT_LOGS_DATA.older || [];
+  const now = new Date();
+  const today = now.toDateString();
+  const yesterday = new Date(now.setDate(now.getDate() - 1)).toDateString();
+  now.setDate(now.getDate() + 1);
+  
+  let logs = AUDIT_LOGS_DATA;
+  
+  if (category === 'today') {
+    logs = AUDIT_LOGS_DATA.filter(log => {
+      const logDate = log.created_at ? new Date(log.created_at).toDateString() : '';
+      return logDate === today;
+    });
+  } else if (category === 'yesterday') {
+    logs = AUDIT_LOGS_DATA.filter(log => {
+      const logDate = log.created_at ? new Date(log.created_at).toDateString() : '';
+      return logDate === yesterday;
+    });
+  } else if (category === 'older') {
+    logs = AUDIT_LOGS_DATA.filter(log => {
+      const logDate = log.created_at ? new Date(log.created_at).toDateString() : '';
+      return logDate !== today && logDate !== yesterday;
+    });
+  }
   
   if (logs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No logs found<\/td><\/tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No logs found</td></tr>`;
     return;
   }
   
   logs.forEach(log => {
     const tr = document.createElement('tr');
-    const timestamp = log.FormattedTimestamp || log.Timestamp || '';
-    const action = log.Action || '';
-    const actor = log.Actor || '';
-    const target = log.TargetSheet || '';
-    const details = log.Details || '';
+    const timestamp = log.created_at ? new Date(log.created_at).toLocaleString() : '';
+    const action = log.action || '';
+    const actor = log.actor || '';
+    const target = log.target_table || '';
+    const details = log.details || '';
     
     tr.innerHTML = `
-      <td><small>${escapeHtml(timestamp)}<\/small><\/td>
-      <td><span style="padding: 2px 8px; border-radius: 12px; background: #e9f7f2; font-size: 0.8rem;">${escapeHtml(action)}<\/span><\/td>
-      <td>${escapeHtml(actor)}<\/td>
-      <td>${escapeHtml(target)}<\/td>
-      <td style="text-align: left;"><small>${escapeHtml(details)}<\/small><\/td>
+      <td><small>${escapeHtml(timestamp)}</small></td>
+      <td><span style="padding: 2px 8px; border-radius: 12px; background: #e9f7f2; font-size: 0.8rem;">${escapeHtml(action)}</span></td>
+      <td>${escapeHtml(actor)}</td>
+      <td>${escapeHtml(target)}</td>
+      <td style="text-align: left;"><small>${escapeHtml(details)}</small></td>
     `;
     tbody.appendChild(tr);
   });
@@ -2587,7 +2823,7 @@ function setupTabs() {
       
       if (tabId === 'activity') {
         loadUserActivity();
-      } else {
+      } else if (tabId === 'audit') {
         loadAuditLogs();
       }
     });
@@ -2607,6 +2843,10 @@ function setupTabs() {
 function closeLogsModal() {
   const modal = document.getElementById('logsModal');
   if (modal) modal.style.display = 'none';
+  if (ACTIVITY_REFRESH_INTERVAL) {
+    clearInterval(ACTIVITY_REFRESH_INTERVAL);
+    ACTIVITY_REFRESH_INTERVAL = null;
+  }
 }
 
 /* ============ SIDEBAR TOGGLE ============ */
@@ -2720,10 +2960,68 @@ function refreshLogs() {
     const tabId = activeTab.getAttribute('data-tab');
     if (tabId === 'activity') {
       loadUserActivity();
-    } else {
+    } else if (tabId === 'audit') {
       loadAuditLogs();
     }
   }
+}
+
+function setupUserDropdown() {
+    const userBtn = document.getElementById('userBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    
+    if (userBtn && userDropdown) {
+        userBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        });
+        
+        document.addEventListener('click', function() {
+            userDropdown.classList.remove('active');
+        });
+    }
+}
+
+function setupLogoutHandler() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        const newLogoutBtn = logoutBtn.cloneNode(true);
+        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+        
+        newLogoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const confirmModal = document.getElementById('confirmModal');
+            if (confirmModal) {
+                confirmModal.style.display = 'flex';
+            }
+        });
+    }
+}
+
+function setupConfirmModal() {
+    const confirmModal = document.getElementById('confirmModal');
+    if (!confirmModal) return;
+    
+    const yesBtn = document.getElementById('confirmYesBtn');
+    const noBtn = document.getElementById('confirmNoBtn');
+    
+    if (yesBtn) {
+        yesBtn.onclick = function() {
+            confirmModal.style.display = 'none';
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            window.location.replace('index.html?logout=' + Date.now());
+        };
+    }
+    
+    if (noBtn) {
+        noBtn.onclick = function() {
+            confirmModal.style.display = 'none';
+        };
+    }
 }
 
 /* ============ DOM CONTENT LOADED ============ */
@@ -2742,14 +3040,30 @@ window.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // Set user info
-    const userName = localStorage.getItem("staffName") || localStorage.getItem("username") || "User";
-    const userNameElement = document.getElementById("userName");
-    if (userNameElement) userNameElement.innerText = userName;
+    // Update current user's activity immediately
+    await updateCurrentUserActivity();
     
-    // Check admin status
+    // Set user info
+    const staffName = localStorage.getItem("staffName");
+    const username = localStorage.getItem("username");
+    let displayName = "User";
+    if (staffName && staffName.trim() !== "") {
+        displayName = staffName;
+    } else if (username && username.trim() !== "") {
+        displayName = username;
+    }
+    
+    const userNameElement = document.getElementById("userName");
+    if (userNameElement) userNameElement.innerText = displayName;
+    
+    const userFullnameElement = document.getElementById('userFullname');
+    if (userFullnameElement) userFullnameElement.innerText = displayName;
+    
     const userRole = localStorage.getItem("userRole");
     const isAdmin = userRole && userRole.toLowerCase() === 'admin';
+    
+    const userRoleElement = document.getElementById('userRole');
+    if (userRoleElement) userRoleElement.innerText = isAdmin ? 'Admin' : 'Staff';
     
     const adminItems = document.querySelectorAll(".admin-only");
     adminItems.forEach(item => {
@@ -2762,18 +3076,16 @@ window.addEventListener('DOMContentLoaded', async () => {
       }
     });
     
-    const mobileUsersNav = document.getElementById('mobileUsersNav');
-    if (mobileUsersNav) {
-      mobileUsersNav.style.display = isAdmin ? "flex" : "none";
-    }
-    
     // Initialize
-    loadUsers();
+    await loadUsers();
     setupRoleToggle();
     setupTabs();
     setupSearch();
     setupPasswordStrength();
     setupPasswordToggle();
+    setupUserDropdown();
+    setupLogoutHandler();
+    setupConfirmModal();
     
     // Event listeners
     const openAddUser = document.getElementById('openAddUser');
@@ -2781,11 +3093,20 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     const viewLogsBtn = document.getElementById('viewLogsBtn');
     if (viewLogsBtn) {
-      viewLogsBtn.addEventListener('click', function() {
+      viewLogsBtn.addEventListener('click', async function() {
         const logsModal = document.getElementById('logsModal');
         if (logsModal) logsModal.style.display = 'flex';
-        loadUserActivity();
-        loadAuditLogs();
+        await loadUserActivity();
+        await loadAuditLogs();
+        
+        // Auto-refresh activity every 10 seconds while modal is open
+        if (ACTIVITY_REFRESH_INTERVAL) clearInterval(ACTIVITY_REFRESH_INTERVAL);
+        ACTIVITY_REFRESH_INTERVAL = setInterval(() => {
+          const activeTab = document.querySelector('.tab-btn.active');
+          if (activeTab && activeTab.getAttribute('data-tab') === 'activity') {
+            loadUserActivity();
+          }
+        }, 10000);
       });
     }
     
@@ -2852,15 +3173,27 @@ window.addEventListener('DOMContentLoaded', async () => {
       }
     });
     
-    // Auto-refresh every 30 seconds
-    setInterval(loadUsers, 30000);
+    // Auto-refresh users every 30 seconds
+    REFRESH_INTERVAL = setInterval(() => {
+      loadUsers();
+    }, 30000);
+    
+    // Update activity every 2 minutes while on page
+    setInterval(() => {
+      updateCurrentUserActivity();
+    }, 120000);
+    
+    // Update activity when page is about to close
+    window.addEventListener('beforeunload', () => {
+      updateCurrentUserActivity();
+    });
 });
+
+// Make functions globally available
+window.editUser = editUser;
+window.showResetModal = showResetModal;
+window.showDeleteModal = showDeleteModal;
+window.escapeHtml = escapeHtml;
 </script>
-<script src="js/guest-redirect.js"></script>
-<script src="js/common-utils.js"></script>
-<script src="js/session-manager.js"></script>
-<script src="js/common-session.js"></script>
-<script src="js/activity-tracking-final.js"></script>
-<script src="js/unified-header.js"></script>
 </body>
 </html>
