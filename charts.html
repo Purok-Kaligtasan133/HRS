@@ -1,10 +1,16 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <!-- PREVENT CACHING -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 <title>Charts & Analytics — Purok Kaligtasan</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="css/uniform-styles.css">
 <link rel="stylesheet" href="css/header-styles.css">
 <link rel="stylesheet" href="css/charts-style.css">
+<script src="js/force-logout.js"></script>
+<script src="js/session-check.js"></script>
 <style>
    :root{
     --bg:#f6f8f7;
@@ -150,7 +156,7 @@ li.admin-only.admin-visible {
 
    .page-container{
     max-width:1200px;
-    margin:20px auto;
+    margin:auto;
     padding:12px;
     display:grid;
     grid-template-columns:260px 1fr;
@@ -1315,6 +1321,164 @@ li.admin-only.admin-visible {
         width: 100% !important;
     }
    }
+   /* ============ PROFESSIONAL ENHANCEMENTS ============ */
+
+/* Better chart card hover effects */
+.chart-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.chart-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Stats badges - more professional look */
+.stat-badge {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(4px);
+}
+
+.stat-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Compact view - better title styling */
+.stats-view-compact .chart-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.stats-view-compact .chart-title span {
+    font-weight: 400;
+    color: var(--accent2);
+}
+
+/* Loading spinner - smoother */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+}
+
+/* Auto-refresh indicator - more subtle */
+.auto-refresh {
+    background: rgba(15, 122, 74, 0.08);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+}
+
+.auto-refresh .indicator {
+    width: 8px;
+    height: 8px;
+    animation: pulse 1.5s infinite;
+}
+
+/* Toolbar buttons - better spacing */
+.toolbar-right .btn {
+    padding: 7px 14px;
+    font-size: 0.8rem;
+}
+
+/* Export dropdown - smoother animation */
+.export-dropdown {
+    transition: opacity 0.2s ease;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.export-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Global stats cards - more modern */
+.global-stat {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    border-radius: 12px;
+    padding: 8px 16px;
+}
+
+.global-stat.highlight {
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    color: white;
+}
+
+.global-stat.highlight .global-stat-value {
+    color: white;
+}
+
+/* Chart container - better canvas rendering */
+.chart-container canvas {
+    image-rendering: crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+}
+
+/* Error message - more professional */
+.error-message {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .global-stat {
+        padding: 4px 10px;
+    }
+    
+    .global-stat-value {
+        font-size: 0.9rem;
+    }
+    
+    .global-stat-label {
+        font-size: 0.6rem;
+    }
+    
+    .stat-badge {
+        font-size: 0.6rem;
+        padding: 2px 6px;
+    }
+    
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .chart-stats {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+/* Print optimization */
+@media print {
+    .chart-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .chart-card::before {
+        display: none;
+    }
+    
+    .chart-stats {
+        display: flex !important;
+    }
+}
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
 </head>
 <body>
@@ -1774,6 +1938,7 @@ li.admin-only.admin-visible {
         </a>
     </div>
 </nav>
+
 <!-- Loading overlay -->
 <div id="loading">
   <div class="loading-content">
@@ -1781,8 +1946,30 @@ li.admin-only.admin-visible {
     <div>Loading charts data...</div>
   </div>
 </div>
+</div>
+
+<div id="confirmModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10001; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-question-circle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Confirm Action</h3>
+            <p style="margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">Are you sure you want to logout?</p>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="confirmNoBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> No
+            </button>
+            <button id="confirmYesBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Yes
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -1790,103 +1977,69 @@ li.admin-only.admin-visible {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <script>
-/* ============ STATS VIEW MANAGER ============ */
-const StatsManager = {
-    currentView: 'badges', // 'badges', 'summary', or 'compact'
-    
-    init() {
-        // Load saved preference
-        const savedView = localStorage.getItem('statsViewPreference') || 'badges';
-        this.setView(savedView);
-        
-        // Set up toggle buttons
-        document.getElementById('toggleBadges').addEventListener('click', () => this.setView('badges'));
-        document.getElementById('toggleSummary').addEventListener('click', () => this.setView('summary'));
-        document.getElementById('toggleCompact').addEventListener('click', () => this.setView('compact'));
-    },
-    
-    setView(view) {
-        this.currentView = view;
-        localStorage.setItem('statsViewPreference', view);
-        
-        // Update toggle buttons
-        document.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.view === view) {
-                btn.classList.add('active');
-            }
-        });
-        
-        // Show/hide elements based on view
-        const globalStats = document.getElementById('globalStatsSummary');
-        const statsToggle = document.getElementById('statsViewToggle');
-        const chartStats = document.querySelectorAll('.chart-stats');
-        const chartTitles = document.querySelectorAll('.chart-title');
-        const globalTimestamp = document.querySelector('.global-stats-timestamp');
-        
-        // Remove previous classes
-        document.body.classList.remove('stats-view-badges', 'stats-view-summary', 'stats-view-compact');
-        document.body.classList.add(`stats-view-${view}`);
-        
-        switch(view) {
-            case 'badges':
-                // Option 1: Show badges on charts, hide global summary
-                globalStats.classList.remove('visible');
-                statsToggle.classList.add('visible');
-                chartStats.forEach(stats => {
-                    stats.classList.remove('hide-on-mobile');
-                    stats.style.display = 'flex';
-                });
-                chartTitles.forEach(title => {
-                    title.classList.remove('compact');
-                });
-                if (globalTimestamp) {
-                    globalTimestamp.style.display = 'flex';
-                }
-                break;
-                
-            case 'summary':
-                // Option 2: Show global summary, hide chart badges
-                globalStats.classList.add('visible');
-                statsToggle.classList.add('visible');
-                chartStats.forEach(stats => {
-                    stats.classList.remove('hide-on-mobile');
-                    stats.style.display = 'none';
-                });
-                chartTitles.forEach(title => {
-                    title.classList.remove('compact');
-                });
-                // Hide "Updated" text in summary view
-                if (globalTimestamp) {
-                    globalTimestamp.style.display = 'none';
-                }
-                break;
-                
-            case 'compact':
-                // Compact view: Hide stats on mobile, show in title
-                globalStats.classList.remove('visible');
-                statsToggle.classList.add('visible');
-                chartStats.forEach(stats => {
-                    stats.classList.add('hide-on-mobile');
-                    stats.style.display = 'flex';
-                });
-                chartTitles.forEach(title => {
-                    title.classList.add('compact');
-                });
-                if (globalTimestamp) {
-                    globalTimestamp.style.display = 'flex';
-                }
-                break;
-        }
-        
-        // Recalculate percentages if needed
-        if (window.aggregatedData) {
-            updateAllStats(window.aggregatedData);
-        }
-    }
-};
+/* ============ SUPABASE CONFIGURATION ============ */
+const SUPABASE_URL = 'https://opibntxwagnjazpbtxrv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UwyTZU3BYj41z0D7beu9Hg_pIZcLeWN';
 
-/* ============ ENHANCED STATS FUNCTIONS ============ */
+let supabaseClient;
+
+// Wait for supabase to be available
+function initSupabase() {
+    if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase client initialized');
+        return true;
+    } else if (typeof supabase !== 'undefined' && supabase.createClient) {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase client initialized (alternative)');
+        return true;
+    } else {
+        console.warn('⏳ Waiting for Supabase to load...');
+        return false;
+    }
+}
+
+// Try to initialize immediately, if not, wait for it
+if (!initSupabase()) {
+    // Wait for script to load
+    const checkInterval = setInterval(() => {
+        if (initSupabase()) {
+            clearInterval(checkInterval);
+        }
+    }, 100);
+    
+    // Timeout after 5 seconds
+    setTimeout(() => {
+        clearInterval(checkInterval);
+        if (!supabaseClient) {
+            console.error('❌ Supabase failed to load after 5 seconds');
+            showError('Failed to load Supabase. Please refresh the page.');
+        }
+    }, 5000);
+}
+
+/* ============ CHART INSTANCES ============ */
+const CH = {};
+
+/* ============ UTILITY FUNCTIONS ============ */
+function showLoading(yes){ 
+    const loading = document.getElementById("loading");
+    if (loading) loading.style.display = yes ? "flex" : "none"; 
+}
+
+function showError(message) {
+    const errorEl = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    if (errorEl && errorText) {
+        errorText.textContent = message;
+        errorEl.classList.add('show');
+        setTimeout(() => errorEl.classList.remove('show'), 10000);
+    } else {
+        console.error("Error:", message);
+        alert(message);
+    }
+}
+
 function formatNumber(num) {
     return num.toLocaleString();
 }
@@ -1896,258 +2049,289 @@ function calculatePercentage(part, total) {
     return ((part / total) * 100).toFixed(1);
 }
 
-function updateGlobalStats(aggregated) {
-    const totalHeads = aggregated.totals.heads || 0;
-    const totalMembers = aggregated.totals.members || 0;
-    const totalAll = aggregated.totals.total || 0;
-    
-    // Update global summary
-    document.getElementById('globalHeads').textContent = formatNumber(totalHeads);
-    document.getElementById('globalMembers').textContent = formatNumber(totalMembers);
-    document.getElementById('globalTotal').textContent = formatNumber(totalAll);
-    
-    // Update last updated time - only show in badges view
-    const now = new Date();
-    const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    const timestampElement = document.getElementById('globalLastUpdated');
-    if (timestampElement) {
-        timestampElement.textContent = `${timeString}`;
+/* ============ FETCH DATA FROM SUPABASE ============ */
+async function fetchChartDataFromSupabase() {
+    if (!supabaseClient) {
+        console.error('Supabase client not initialized');
+        return null;
     }
+    
+    try {
+        console.log("📊 Fetching chart data from Supabase...");
+        
+        // Fetch households and persons data
+        const [householdsResult, personsResult] = await Promise.all([
+            supabaseClient.from('households').select('*'),
+            supabaseClient.from('persons').select('*')
+        ]);
+        
+        if (householdsResult.error) throw householdsResult.error;
+        if (personsResult.error) throw personsResult.error;
+        
+        const households = householdsResult.data || [];
+        const persons = personsResult.data || [];
+        
+        console.log(`✅ Loaded ${households.length} households, ${persons.length} persons`);
+        
+        // Build lookup map for persons by household
+        const personsByHousehold = {};
+        persons.forEach(p => {
+            if (!personsByHousehold[p.household_id]) {
+                personsByHousehold[p.household_id] = [];
+            }
+            personsByHousehold[p.household_id].push(p);
+        });
+        
+        // Process data for aggregation
+        let totalHeads = 0;
+        let totalMembers = 0;
+        const barangayData = {};
+        const ageData = { heads: {}, members: {} };
+        const stageData = { heads: {}, members: {} };
+        const pwdData = { headsYes: 0, headsNo: 0, membersYes: 0, membersNo: 0 };
+        const statusData = { heads: {}, members: {} };
+        const registrationData = { heads: {}, members: {} };
+        const supportData = { heads: {}, members: {} };
+        const assemblyData = { heads: {}, members: {} };
+        const transportData = { heads: {}, members: {} };
+        const disabilityTypeData = { heads: {}, members: {} };
+        const additionalInfoData = { heads: {}, members: {} };
+        const structuralDamageData = {};
+        const householdInjuryData = {};
+        const habitabilityData = {};
+        const lossLivelihoodData = {};
+        const livestockData = {};
+        const ofwData = { heads: 0, members: 0 };
+        const educationData = {};
+        const employmentData = {};
+        
+        // Process each household
+        for (const household of households) {
+            const barangay = household.barangay || 'Unknown';
+            const householdPersons = personsByHousehold[household.id] || [];
+            const headPerson = householdPersons.find(p => p.person_type === 'HEAD');
+            const members = householdPersons.filter(p => p.person_type === 'MEMBER');
+            
+            // Count heads and members
+            totalHeads++;
+            totalMembers += members.length;
+            
+            // Initialize barangay data
+            if (!barangayData[barangay]) {
+                barangayData[barangay] = { heads: 0, members: 0 };
+            }
+            barangayData[barangay].heads++;
+            barangayData[barangay].members += members.length;
+            
+            // Process all persons (head + members)
+            const allPersons = [headPerson, ...members].filter(p => p);
+            
+            for (const person of allPersons) {
+                const isHead = person.person_type === 'HEAD';
+                const category = isHead ? 'heads' : 'members';
+                
+                // Age grouping
+                let ageGroup = '';
+                const age = parseInt(person.age) || 0;
+                if (age === 0 && person.age_category) {
+                    if (person.age_category === 'Infant') ageGroup = 'Infant (0-11 mos)';
+                    else if (person.age_category === 'Children' || person.age_category === 'School Children') ageGroup = 'School Children (≤17)';
+                    else if (person.age_category === 'Elderly') ageGroup = 'Elderly (60+)';
+                    else ageGroup = 'Adult (18-59)';
+                } else if (age < 1) ageGroup = 'Infant (0-11 mos)';
+                else if (age <= 17) ageGroup = 'School Children (≤17)';
+                else if (age >= 60) ageGroup = 'Elderly (60+)';
+                else ageGroup = 'Adult (18-59)';
+                
+                if (!ageData[category][ageGroup]) ageData[category][ageGroup] = 0;
+                ageData[category][ageGroup]++;
+                
+                // Stage grouping (using age_category from database)
+                let stage = person.age_category || 'Adult';
+                if (stage === 'Infant' || stage === 'Children') stage = 'Children';
+                if (!stageData[category][stage]) stageData[category][stage] = 0;
+                stageData[category][stage]++;
+                
+                // PWD status
+                const isPWD = person.is_pwd === true || person.is_pwd === 'Yes';
+                if (isHead) {
+                    if (isPWD) pwdData.headsYes++;
+                    else pwdData.headsNo++;
+                } else {
+                    if (isPWD) pwdData.membersYes++;
+                    else pwdData.membersNo++;
+                }
+                
+// Status - Treat empty/blank as 'No Status Reported'
+let status = person.status || '';
+if (status === '' || status === null || status === undefined) {
+    status = 'No Status Reported';
+}
+if (!statusData[category][status]) statusData[category][status] = 0;
+statusData[category][status]++;
+                
+                // Registration (FishR & RSBSA)
+                let registration = person.fishr_registration || 'Not Registered';
+                if (registration === '') registration = 'Not Registered';
+                if (!registrationData[category][registration]) registrationData[category][registration] = 0;
+                registrationData[category][registration]++;
+                
+                // Government Support (from gov_assistance table - would need separate fetch)
+                // For now, using placeholder
+                
+                // Additional Info
+                const soloParent = person.solo_parenting === true || person.solo_parenting === 'Yes';
+                const lactating = person.lactating === true || person.lactating === 'Yes';
+                const pregnant = person.pregnant === true || person.pregnant === 'Yes';
+                
+                if (soloParent) {
+                    if (!additionalInfoData[category]['Solo Parenting']) additionalInfoData[category]['Solo Parenting'] = 0;
+                    additionalInfoData[category]['Solo Parenting']++;
+                }
+                if (lactating) {
+                    if (!additionalInfoData[category]['Lactating']) additionalInfoData[category]['Lactating'] = 0;
+                    additionalInfoData[category]['Lactating']++;
+                }
+                if (pregnant) {
+                    if (!additionalInfoData[category]['Pregnant']) additionalInfoData[category]['Pregnant'] = 0;
+                    additionalInfoData[category]['Pregnant']++;
+                }
+                
+                // Disability Type
+                let disabilityType = person.disability_type || '';
+                if (disabilityType && disabilityType !== '') {
+                    if (!disabilityTypeData[category][disabilityType]) disabilityTypeData[category][disabilityType] = 0;
+                    disabilityTypeData[category][disabilityType]++;
+                }
+                
+                // OFW Status
+                const isOFW = person.is_ofw === true || person.is_ofw === 'Yes';
+                if (isOFW) {
+                    if (isHead) ofwData.heads++;
+                    else ofwData.members++;
+                }
+                
+// Educational Attainment - Treat empty/blank as 'Not Specified'
+let education = person.educational_attainment || '';
+if (education === '' || education === null || education === undefined) {
+    education = 'Not Specified';
+}
+if (!educationData[education]) educationData[education] = 0;
+educationData[education]++;
+                
+// Employment Status - Treat empty/blank as 'Unemployed'
+let employment = person.employment_status || '';
+if (employment === '' || employment === null || employment === undefined) {
+    employment = 'Unemployed';
+} else if (employment === 'Employed') {
+    employment = 'Employed';
+} else if (employment === 'Unemployed') {
+    employment = 'Unemployed';
+} else {
+    // Keep as is for any other values
+    employment = employment;
 }
 
-function updateChartStatsWithPercentages(chartId, heads, members, total) {
-    const totalAll = heads + members;
-    const headsPercentage = calculatePercentage(heads, totalAll);
-    const membersPercentage = calculatePercentage(members, totalAll);
-    
-    const statsContainer = document.getElementById(`${chartId}Stats`);
-    if (!statsContainer) return;
-    
-    // Update heads badge
-    const headsBadge = statsContainer.querySelector('.stat-badge.heads');
-    if (headsBadge) {
-        headsBadge.innerHTML = `Heads: ${formatNumber(heads)} <span class="percentage">(${headsPercentage}%)</span>`;
-    }
-    
-    // Update members badge
-    const membersBadge = statsContainer.querySelector('.stat-badge.members');
-    if (membersBadge) {
-        membersBadge.innerHTML = `Members: ${formatNumber(members)} <span class="percentage">(${membersPercentage}%)</span>`;
-    }
-    
-    // Update total badge
-    const totalBadge = statsContainer.querySelector('.stat-badge.total');
-    if (totalBadge) {
-        totalBadge.textContent = `Total: ${formatNumber(total)}`;
-    }
-    
-    // Update title data attribute for compact view
-    const chartTitle = statsContainer.closest('.chart-header').querySelector('.chart-title');
-    if (chartTitle) {
-        chartTitle.setAttribute('data-total', total);
-    }
-}
-
-function updateCheckboxChartStats(chartId, headsTotal, membersTotal, total) {
-    const statsContainer = document.getElementById(`${chartId}Stats`);
-    if (!statsContainer) return;
-    
-    // Update checkbox-specific badges
-    const headsBadge = statsContainer.querySelector('.stat-badge.checkbox-heads');
-    if (headsBadge) {
-        headsBadge.innerHTML = `Checks (Heads): ${formatNumber(headsTotal)}`;
-    } else {
-        // Fallback to regular heads badge
-        const fallbackHeads = statsContainer.querySelector('.stat-badge.heads');
-        if (fallbackHeads) {
-            fallbackHeads.innerHTML = `Checks (Heads): ${formatNumber(headsTotal)}`;
+if (!employmentData[employment]) employmentData[employment] = 0;
+employmentData[employment]++;
+            }
         }
-    }
-    
-    const membersBadge = statsContainer.querySelector('.stat-badge.checkbox-members');
-    if (membersBadge) {
-        membersBadge.innerHTML = `Checks (Members): ${formatNumber(membersTotal)}`;
-    } else {
-        // Fallback to regular members badge
-        const fallbackMembers = statsContainer.querySelector('.stat-badge.members');
-        if (fallbackMembers) {
-            fallbackMembers.innerHTML = `Checks (Members): ${formatNumber(membersTotal)}`;
-        }
-    }
-    
-    const totalBadge = statsContainer.querySelector('.stat-badge.checkbox-total');
-    if (totalBadge) {
-        totalBadge.textContent = `Total Checks: ${formatNumber(total)}`;
-    } else {
-        // Fallback to regular total badge
-        const fallbackTotal = statsContainer.querySelector('.stat-badge.total');
-        if (fallbackTotal) {
-            fallbackTotal.textContent = `Total Checks: ${formatNumber(total)}`;
-        }
-    }
-    
-    // Update title data attribute for compact view
-    const chartTitle = statsContainer.closest('.chart-header').querySelector('.chart-title');
-    if (chartTitle) {
-        chartTitle.setAttribute('data-total', total);
-    }
-}
-
-function updateAllStats(aggregated) {
-    console.log("=== UPDATING ENHANCED STATS ===");
-    
-    // Store for StatsManager access
-    window.aggregatedData = aggregated;
-    
-    // Update global stats (Option 2)
-    updateGlobalStats(aggregated);
-    
-    // Calculate totals
-    const totalHeads = aggregated.totals.heads || 0;
-    const totalMembers = aggregated.totals.members || 0;
-    const totalAll = aggregated.totals.total || 0;
-    
-    // Update each chart's stats with percentages
-    updateChartStatsWithPercentages('barangay', totalHeads, totalMembers, totalAll);
-    
-    // Age stats
-    const ageHeadsTotal = aggregated.ageGroups.heads?.reduce((a, b) => a + b, 0) || 0;
-    const ageMembersTotal = aggregated.ageGroups.members?.reduce((a, b) => a + b, 0) || 0;
-    const ageTotal = aggregated.ageGroups.values?.reduce((a, b) => a + b, 0) || 0;
-    updateChartStatsWithPercentages('age', ageHeadsTotal, ageMembersTotal, ageTotal);
-    
-    // Stage stats
-    const stageTotal = aggregated.stage.values?.reduce((a, b) => a + b, 0) || 0;
-    const stageHeads = Math.round(totalHeads * (stageTotal / totalAll)) || 0;
-    const stageMembers = stageTotal - stageHeads;
-    updateChartStatsWithPercentages('stage', stageHeads, stageMembers, stageTotal);
-    
-    // PWD stats
-    const pwdHeadsTotal = (aggregated.pwd.headsYes || 0) + (aggregated.pwd.headsNo || 0);
-    const pwdMembersTotal = (aggregated.pwd.membersYes || 0) + (aggregated.pwd.membersNo || 0);
-    const pwdTotal = pwdHeadsTotal + pwdMembersTotal;
-    updateChartStatsWithPercentages('pwd', pwdHeadsTotal, pwdMembersTotal, pwdTotal);
-    
-    // Status stats
-// Update status stats - FIXED
-const statusHeadsTotal = aggregated.status?.heads?.values?.reduce((a, b) => a + b, 0) || 0;
-const statusMembersTotal = aggregated.status?.members?.values?.reduce((a, b) => a + b, 0) || 0;
-const statusTotal = statusHeadsTotal + statusMembersTotal;
-
-// Get all unique status labels for display
-const allStatusLabels = new Set();
-if (aggregated.status?.heads?.labels) {
-    aggregated.status.heads.labels.forEach(l => allStatusLabels.add(l));
-}
-if (aggregated.status?.members?.labels) {
-    aggregated.status.members.labels.forEach(l => allStatusLabels.add(l));
-}
-
-const statusStats = document.getElementById('statusStats');
-if (statusStats) {
-    const headsBadge = statusStats.querySelector('.stat-badge.heads');
-    if (headsBadge) {
-        headsBadge.innerHTML = `Heads: ${formatNumber(statusHeadsTotal)} <span class="percentage">(${allStatusLabels.size} categories)</span>`;
-    }
-    
-    const membersBadge = statusStats.querySelector('.stat-badge.members');
-    if (membersBadge) {
-        membersBadge.innerHTML = `Members: ${formatNumber(statusMembersTotal)}`;
-    }
-    
-    const totalBadge = statusStats.querySelector('.stat-badge.total');
-    if (totalBadge) {
-        totalBadge.textContent = `Total: ${formatNumber(statusTotal)}`;
+        
+        // Convert objects to arrays for chart rendering
+        const aggregated = {
+            totals: { heads: totalHeads, members: totalMembers, total: totalHeads + totalMembers },
+            barangay: {
+                labels: Object.keys(barangayData),
+                heads: Object.values(barangayData).map(b => b.heads),
+                members: Object.values(barangayData).map(b => b.members)
+            },
+            ageGroups: {
+                labels: [...new Set([...Object.keys(ageData.heads), ...Object.keys(ageData.members)])],
+                heads: [],
+                members: [],
+                values: []
+            },
+            stage: {
+                labels: [...new Set([...Object.keys(stageData.heads), ...Object.keys(stageData.members)])],
+                heads: [],
+                members: [],
+                values: []
+            },
+            pwd: pwdData,
+            status: {
+                heads: { labels: Object.keys(statusData.heads), values: Object.values(statusData.heads) },
+                members: { labels: Object.keys(statusData.members), values: Object.values(statusData.members) }
+            },
+            registration: {
+                labels: [...new Set([...Object.keys(registrationData.heads), ...Object.keys(registrationData.members)])],
+                heads: [],
+                members: []
+            },
+            additional: {
+                labels: [...new Set([...Object.keys(additionalInfoData.heads), ...Object.keys(additionalInfoData.members)])],
+                heads: [],
+                members: []
+            },
+            disabilityType: {
+                labels: [...new Set([...Object.keys(disabilityTypeData.heads), ...Object.keys(disabilityTypeData.members)])],
+                heads: [],
+                members: []
+            },
+            ofw: ofwData,
+            education: {
+                labels: Object.keys(educationData),
+                values: Object.values(educationData)
+            },
+            employment: {
+                labels: Object.keys(employmentData),
+                values: Object.values(employmentData)
+            }
+        };
+        
+        // Fill age data arrays
+        aggregated.ageGroups.labels.forEach(label => {
+            aggregated.ageGroups.heads.push(ageData.heads[label] || 0);
+            aggregated.ageGroups.members.push(ageData.members[label] || 0);
+            aggregated.ageGroups.values.push((ageData.heads[label] || 0) + (ageData.members[label] || 0));
+        });
+        
+        // Fill stage data arrays
+        aggregated.stage.labels.forEach(label => {
+            aggregated.stage.heads.push(stageData.heads[label] || 0);
+            aggregated.stage.members.push(stageData.members[label] || 0);
+            aggregated.stage.values.push((stageData.heads[label] || 0) + (stageData.members[label] || 0));
+        });
+        
+        // Fill registration data arrays
+        aggregated.registration.labels.forEach(label => {
+            aggregated.registration.heads.push(registrationData.heads[label] || 0);
+            aggregated.registration.members.push(registrationData.members[label] || 0);
+        });
+        
+        // Fill additional info arrays
+        aggregated.additional.labels.forEach(label => {
+            aggregated.additional.heads.push(additionalInfoData.heads[label] || 0);
+            aggregated.additional.members.push(additionalInfoData.members[label] || 0);
+        });
+        
+        // Fill disability type arrays
+        aggregated.disabilityType.labels.forEach(label => {
+            aggregated.disabilityType.heads.push(disabilityTypeData.heads[label] || 0);
+            aggregated.disabilityType.members.push(disabilityTypeData.members[label] || 0);
+        });
+        
+        console.log("✅ Aggregated data prepared:", aggregated);
+        return { success: true, aggregated, recordCount: totalHeads + totalMembers };
+        
+    } catch (err) {
+        console.error("Fetch error:", err);
+        showError("Failed to load data: " + err.message);
+        return { success: false, error: err.message };
     }
 }
-    
-    // ============ FIXED: CHECKBOX CHARTS ============
-    // Government Support stats - CHECKBOX DATA (show instance counts, not person counts)
-    const supportHeadsTotal = aggregated.support.heads?.reduce((a, b) => a + b, 0) || 0;
-    const supportMembersTotal = aggregated.support.members?.reduce((a, b) => a + b, 0) || 0;
-    const supportTotal = supportHeadsTotal + supportMembersTotal;
-    updateCheckboxChartStats('support', supportHeadsTotal, supportMembersTotal, supportTotal);
-    
-    // Registration stats
-    const regHeadsTotal = aggregated.registration.heads?.reduce((a, b) => a + b, 0) || 0;
-    const regMembersTotal = aggregated.registration.members?.reduce((a, b) => a + b, 0) || 0;
-    const regTotal = regHeadsTotal + regMembersTotal;
-    updateChartStatsWithPercentages('registration', regHeadsTotal, regMembersTotal, regTotal);
-    
-    // Assembly Area stats - CHECKBOX DATA
-    const assemblyHeadsTotal = aggregated.assembly.heads?.reduce((a, b) => a + b, 0) || 0;
-    const assemblyMembersTotal = aggregated.assembly.members?.reduce((a, b) => a + b, 0) || 0;
-    const assemblyTotal = assemblyHeadsTotal + assemblyMembersTotal;
-    updateCheckboxChartStats('assembly', assemblyHeadsTotal, assemblyMembersTotal, assemblyTotal);
-    
-    // Transportation stats - CHECKBOX DATA
-    const transportHeadsTotal = aggregated.transport.heads?.reduce((a, b) => a + b, 0) || 0;
-    const transportMembersTotal = aggregated.transport.members?.reduce((a, b) => a + b, 0) || 0;
-    const transportTotal = transportHeadsTotal + transportMembersTotal;
-    updateCheckboxChartStats('transport', transportHeadsTotal, transportMembersTotal, transportTotal);
-    
-    // Disability Type stats
-    const disabilityHeadsTotal = aggregated.disabilityType.heads?.reduce((a, b) => a + b, 0) || 0;
-    const disabilityMembersTotal = aggregated.disabilityType.members?.reduce((a, b) => a + b, 0) || 0;
-    const disabilityTotal = disabilityHeadsTotal + disabilityMembersTotal;
-    updateChartStatsWithPercentages('disability', disabilityHeadsTotal, disabilityMembersTotal, disabilityTotal);
-    
-    // Special charts (no heads/members breakdown)
-    const livestockTotal = aggregated.livestock.values?.reduce((a, b) => a + b, 0) || 0;
-    const livestockStats = document.getElementById('livestockStats');
-    if (livestockStats) {
-        const totalBadge = livestockStats.querySelector('.stat-badge.total');
-        if (totalBadge) totalBadge.textContent = `Animals: ${formatNumber(livestockTotal)}`;
-        const chartTitle = livestockStats.closest('.chart-header').querySelector('.chart-title');
-        if (chartTitle) chartTitle.setAttribute('data-total', livestockTotal);
-    }
-    
-    const ofwTotal = aggregated.ofw["OFW (Yes)"] || 0;
-    const ofwStats = document.getElementById('ofwStats');
-    if (ofwStats) {
-        const totalBadge = ofwStats.querySelector('.stat-badge.total');
-        if (totalBadge) totalBadge.textContent = `OFWs: ${formatNumber(ofwTotal)}`;
-        const chartTitle = ofwStats.closest('.chart-header').querySelector('.chart-title');
-        if (chartTitle) chartTitle.setAttribute('data-total', ofwTotal);
-    }
-    
-    const educationTotal = aggregated.education.values?.reduce((a, b) => a + b, 0) || 0;
-    const educationStats = document.getElementById('educationStats');
-    if (educationStats) {
-        const totalBadge = educationStats.querySelector('.stat-badge.total');
-        if (totalBadge) totalBadge.textContent = `Levels: ${aggregated.education.labels?.length || 0}`;
-        const chartTitle = educationStats.closest('.chart-header').querySelector('.chart-title');
-        if (chartTitle) chartTitle.setAttribute('data-total', educationTotal);
-    }
-    
-    const employmentTotal = aggregated.employment.values?.reduce((a, b) => a + b, 0) || 0;
-    const employmentStats = document.getElementById('employmentStats');
-    if (employmentStats) {
-        const totalBadge = employmentStats.querySelector('.stat-badge.total');
-        if (totalBadge) totalBadge.textContent = `Statuses: ${aggregated.employment.labels?.length || 0}`;
-        const chartTitle = employmentStats.closest('.chart-header').querySelector('.chart-title');
-        if (chartTitle) chartTitle.setAttribute('data-total', employmentTotal);
-    }
-    
-    // Comparison chart
-    const comparisonStats = document.getElementById('comparisonStats');
-    if (comparisonStats) {
-        const chartTitle = comparisonStats.closest('.chart-header').querySelector('.chart-title');
-        if (chartTitle) chartTitle.setAttribute('data-total', totalAll);
-    }
-    
-    console.log("✅ Enhanced stats updated with checkbox fixes");
-}
-
-/* ============ CONFIG ============ */
-const API_URL = "https://script.google.com/macros/s/AKfycbytvSPndcz2Ou0Kz_XOUw6Ztlwx55ml2TsaEZFTdLYVCCVfOMwdRohgq_cOPPeluQMTCw/exec";
-
-/* ============ CHART INSTANCES ============ */
-const CH = {};
 
 /* ============ QUICK CANVAS CLEANUP ============ */
 function quickCleanCanvas(canvasId) {
-    // Ultra-fast cleanup - no loops, no checks, just direct cleanup
     const chart = CH[canvasId];
     if (chart && chart.destroy) {
         try { chart.destroy(); } catch(e) {}
@@ -2157,2083 +2341,315 @@ function quickCleanCanvas(canvasId) {
 
 function cleanupAllChartsFast() {
     const chartIds = [
-        'chartBarangay', 'chartAgeGroup', 'chartStage',
-        'chartPWD', 'chartStatus', 'chartSupport',
-        'chartRegistration', 'chartAssembly',
-        'chartTransport', 'chartDisabilityType', 'chartLivestock', 'chartOFW', 
+        'chartBarangay', 'chartAgeGroup', 'chartStage', 'chartPWD',
+        'chartStatus', 'chartSupport', 'chartRegistration', 'chartAssembly',
+        'chartTransport', 'chartDisabilityType', 'chartLivestock', 'chartOFW',
         'chartEducation', 'chartEmployment', 'chartComparison',
         'chartAdditionalInfo', 'chartStructuralDamage', 'chartHouseholdInjury',
         'chartHabitability', 'chartLossLivelihood'
     ];
     
-    // Clean each chart
     chartIds.forEach(id => {
         if (CH[id] && CH[id].destroy) {
-            try {
-                CH[id].destroy();
-            } catch(e) {
-                // Ignore errors
-            }
+            try { CH[id].destroy(); } catch(e) {}
             CH[id] = null;
         }
     });
-    
     console.log("🧹 Cleaned all chart canvases");
 }
 
-/* ============ AUTO-REFRESH CONFIG ============ */
-const AUTO_REFRESH_MS = 60000; // 60 seconds
-let refreshInterval = null;
-
-/* ============ UTILITY FUNCTIONS ============ */
-function showLoading(yes){ 
-    document.getElementById("loading").style.display = yes ? "flex" : "none"; 
-}
-
-function showError(message) {
-    const errorEl = document.getElementById('errorMessage');
-    document.getElementById('errorText').textContent = message;
-    errorEl.classList.add('show');
-    setTimeout(() => errorEl.classList.remove('show'), 10000);
-}
-
-function getField(r, key) {
-    if (!r) return "";
-    
-    // Try exact match first
-    if (r.hasOwnProperty(key)) return r[key];
-    
-    const kl = key.toLowerCase().trim();
-    
-    // Try multiple variations
-    const variations = [
-        kl,
-        kl.replace(/[()]/g, ''), // Remove parentheses
-        kl.replace(/\s+/g, ''), // Remove spaces
-        kl.replace(/\s+/g, '_'), // Replace spaces with underscores
-        kl.replace(/\s+/g, '-'), // Replace spaces with hyphens
-        kl.replace(/\./g, ''), // Remove dots
-        kl.replace(/\./g, ' ') // Replace dots with spaces
-    ];
-    
-    for (const k of Object.keys(r)) {
-        const normalizedKey = String(k).toLowerCase().trim();
-        
-        // Exact match with any variation
-        for (const variation of variations) {
-            if (normalizedKey === variation) {
-                return r[k];
-            }
-        }
-        
-        // Contains match
-        if (normalizedKey.includes(kl) || kl.includes(normalizedKey)) {
-            return r[k];
-        }
-    }
-    
-    return "";
-}
-
-function parseAnyDate(v){
-    if(!v && v !== 0) return null;
-    if (v instanceof Date) return v;
-    v = String(v).trim();
-    if (!v) return null;
-    if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(v)){
-        const p = v.split('/');
-        return new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0]));
-    }
-    if(/^\d{4}-\d{2}-\d{2}/.test(v)){
-        return new Date(v);
-    }
-    const d = new Date(v);
-    return isNaN(d) ? null : d;
-}
-
-function monthsBetween(d1, d2){
-    if(!d1 || !d2) return null;
-    let years = d2.getFullYear() - d1.getFullYear();
-    let months = d2.getMonth() - d1.getMonth();
-    let m = years*12 + months;
-    if(d2.getDate() < d1.getDate()) m--;
-    return m;
-}
-
-function ageInYearsFromBirth(bd){
-    const d = parseAnyDate(bd);
-    if(!d) return null;
-    const now = new Date();
-    let years = now.getFullYear() - d.getFullYear();
-    const m = now.getMonth() - d.getMonth();
-    if(m < 0 || (m === 0 && now.getDate() < d.getDate())) years--;
-    return years;
-}
-
-function normalizeRow(r){
-    const barangay = String(getField(r,"Barangay") || "").trim() || "Unknown";
-    const stage = String(getField(r,"Stage") || "").trim() || "Unspecified";
-    const pwdRaw = String(getField(r,"Persons with Disability (PWD)") || getField(r,"PWD") || "").trim().toLowerCase();
-    const pwd = (pwdRaw === "yes" || pwdRaw === "y" || pwdRaw === "true") ? "Yes" : (pwdRaw === "no" ? "No" : (pwdRaw === "" ? "No" : pwdRaw));
-    const status = String(getField(r,"Status") || "").trim() || "Unspecified";
-    const birthRaw = getField(r,"Birthdate") || getField(r,"Birth Date") || "";
-    const birth = birthRaw ? String(birthRaw).trim() : "";
-    
-    // Determine if this is a head based on "Name of Household Member/s" field
-    const memberName = String(getField(r, "Name of Household Member/s") || "").trim();
-    let isHead = false;
-    
-    // Heads have an empty "Name of Household Member/s" field
-    if (!memberName || memberName === "") {
-        isHead = true;
-    }
-    
-    // CORRECT FIELD NAMES based on your data:
-    const fishR = String(getField(r, "FishR & RSBSA") || "").trim();
-    const rbis = String(getField(r, "FishR & RSBSA") || "").trim(); // Same field for both
-    
-    // For OFW - use the correct field name
-    const ofw = String(getField(r, "Overseas Filipino Worker(OFW)") || "").trim();
-    
-    // NEW FIELDS: Additional Information - FIXED FIELD NAMES
-    const soloParenting = String(getField(r, "Solo Parenting") || "").trim();
-    const lgbt = String(getField(r, "LGBT") || "").trim();
-    const lactating = String(getField(r, "Lactating") || "").trim();
-    const pregnant = String(getField(r, "Pregnant") || "").trim();
-    
-    // NEW FIELDS: Assembly Area
-    const insideAssembly = String(getField(r, "Inside Assembly Area") || "").trim();
-    const outsideAssembly = String(getField(r, "Outside Assembly Area") || "").trim();
-    
-    // NEW FIELDS: Transportation & Evacuation Details
-    const taalVolcano = String(getField(r, "Taal Volcano (Within 14-15 KM Danger Zone)") || "").trim();
-    const typhoon = String(getField(r, "Typhoon") || "").trim();
-    const flood = String(getField(r, "Flood") || "").trim();
-    const landslide = String(getField(r, "Landslide") || "").trim();
-    const earthquake = String(getField(r, "Earthquake") || "").trim();
-    const fire = String(getField(r, "Fire") || "").trim();
-    const otherReasons = String(getField(r, "Other Reasons") || "").trim();
-    
-    // Store original row for livestock processing
-    const originalRow = r;
-    
-    const education = String(getField(r, "Educational Attainment") || "").trim();
-    const employment = String(getField(r, "Employment") || "").trim();
-    
-    let ageVal = getField(r,"Age");
-    let ageYears = null;
-    if (ageVal !== "" && ageVal !== null && ageVal !== undefined && !isNaN(Number(ageVal))) {
-        ageYears = Number(ageVal);
-    } else if (birth) {
-        const y = ageInYearsFromBirth(birth);
-        if (y !== null) ageYears = y;
-    }
-
-    // Assistance fields
-    const assist = {};
-    const assistKeys = ["TUPAD","Local 4Ps","National 4Ps","Local Social Pension","National Social Pension","Solo Parent Assistance","Cash Subsidy","Relief Goods","AICS"];
-    assistKeys.forEach(k => {
-        assist[k] = String(getField(r,k) || "").trim();
-    });
-
-    return { 
-        barangay, 
-        stage, 
-        pwd, 
-        status, 
-        birth, 
-        ageYears, 
-        isHead,
-        fishR,
-        rbis,
-        originalRow, // Store original row for livestock data
-        ofw,
-        education,
-        employment,
-        // NEW FIELDS
-        soloParenting,
-        lgbt,
-        lactating,
-        pregnant,
-        insideAssembly,
-        outsideAssembly,
-        // Transportation fields
-        taalVolcano,
-        typhoon,
-        flood,
-        landslide,
-        earthquake,
-        fire,
-        otherReasons,
-        assist
-    };
-}
-
-function bucketAge(norm){
-    const y = norm.ageYears;
-    if (y === null || y === undefined || y === "") return ""; // Changed from "Unknown" to empty string
-    if (y < 1) return "Infant (0-11 mos)";
-    if (y <= 17) return "School Children (≤17)";
-    if (y >= 60) return "Elderly (60+)";
-    return "Adult (18-59)";
-}
-
-/* ============ DATA FETCHING ============ */
-async function fetchChartData() {
-    try {
-        console.log("📊 Fetching chart data...");
-        
-        // Show a status message for slow connections
-        const statusEl = document.createElement('div');
-        statusEl.id = 'fetchStatus';
-        statusEl.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            z-index: 10000;
-            display: none;
-        `;
-        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching data...';
-        document.body.appendChild(statusEl);
-        
-        let statusTimeout = setTimeout(() => {
-            statusEl.style.display = 'block';
-            statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Still loading... Network might be slow';
-        }, 5000); // Show after 5 seconds
-        
-        const url = API_URL + "?action=getRecords&t=" + Date.now();
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 seconds
-        
-        const res = await fetch(url, {
-            cache: "no-store",
-            signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        clearTimeout(statusTimeout);
-        statusEl.remove();
-        
-        if(!res.ok) throw new Error("Network error " + res.status);
-        const j = await res.json();
-        if(!j || !j.success) throw new Error("Bad response from API");
-        
-        console.log(`✅ Loaded ${j.rows?.length || 0} records`);
-        return j.rows || [];
-        
-    } catch(err) {
-        if (err.name === 'AbortError') {
-            console.warn("Request timed out - likely slow internet");
-            showError("Connection is slow. Try refreshing or check your internet.");
-        } else {
-            console.error("Fetch error:", err);
-            showError("Failed to load data: " + err.message);
-        }
-        throw err;
-    }
-}
-
-/* ============ CHART FUNCTIONS - UPDATED FOR BOTTOM-CENTERED LEGENDS ============ */
+/* ============ CHART CREATION FUNCTIONS ============ */
 function createBarChart(id, labels, values, title, color, isStacked = false, datasets = null) {
-    // FAST FIX: Quick cleanup before creating chart
     quickCleanCanvas(id);
     
     const ctx = document.getElementById(id).getContext('2d');
-
-    // Different color sets for each chart
-    const chartColors = {
-        'chartBarangay': {
-            heads: 'rgba(52, 183, 143, 0.8)',
-            members: 'rgba(70, 140, 240, 0.8)',
-            borderHeads: 'rgba(52, 183, 143, 1)',
-            borderMembers: 'rgba(70, 140, 240, 1)'
-        },
-        'chartRegistration': {
-            heads: 'rgba(255, 99, 132, 0.8)',
-            members: 'rgba(255, 159, 64, 0.8)',
-            borderHeads: 'rgba(255, 99, 132, 1)',
-            borderMembers: 'rgba(255, 159, 64, 1)'
-        },
-        'chartStatus': {
-            heads: 'rgba(75, 192, 192, 0.8)',
-            members: 'rgba(153, 102, 255, 0.8)',
-            borderHeads: 'rgba(75, 192, 192, 1)',
-            borderMembers: 'rgba(153, 102, 255, 1)'
-        },
-        'chartPWD': {
-            headsPWD: 'rgba(255, 205, 86, 0.8)',
-            headsNon: 'rgba(255, 205, 86, 0.4)',
-            membersPWD: 'rgba(54, 162, 235, 0.8)',
-            membersNon: 'rgba(54, 162, 235, 0.4)',
-            borderHeadsPWD: 'rgba(255, 205, 86, 1)',
-            borderHeadsNon: 'rgba(255, 205, 86, 0.7)',
-            borderMembersPWD: 'rgba(54, 162, 235, 1)',
-            borderMembersNon: 'rgba(54, 162, 235, 0.7)'
-        },
-        'chartSupport': {
-            heads: 'rgba(201, 203, 207, 0.8)',
-            members: 'rgba(255, 87, 87, 0.8)',
-            borderHeads: 'rgba(201, 203, 207, 1)',
-            borderMembers: 'rgba(255, 87, 87, 1)'
-        },
-
-        'chartAssembly': {
-            heads: 'rgba(255, 140, 0, 0.8)',
-            members: 'rgba(30, 144, 255, 0.8)',
-            borderHeads: 'rgba(255, 140, 0, 1)',
-            borderMembers: 'rgba(30, 144, 255, 1)'
-        },
-        'chartTransport': {
-            heads: 'rgba(220, 20, 60, 0.8)',
-            members: 'rgba(138, 43, 226, 0.8)',
-            borderHeads: 'rgba(220, 20, 60, 1)',
-            borderMembers: 'rgba(138, 43, 226, 1)'
-        },
-        'chartDisabilityType': {
-            heads: 'rgba(128, 0, 128, 0.8)',
-            members: 'rgba(255, 20, 147, 0.8)',
-            borderHeads: 'rgba(128, 0, 128, 1)',
-            borderMembers: 'rgba(255, 20, 147, 1)'
-        }
-    };
-
+    
     if (datasets) {
-        // Apply specific colors based on chart ID
-        if (chartColors[id]) {
-            datasets.forEach((dataset, index) => {
-                if (dataset.label === 'Heads') {
-                    dataset.backgroundColor = chartColors[id].heads;
-                    dataset.borderColor = chartColors[id].borderHeads;
-                } else if (dataset.label === 'Members') {
-                    dataset.backgroundColor = chartColors[id].members;
-                    dataset.borderColor = chartColors[id].borderMembers;
-                } else if (dataset.label === 'Heads - PWD') {
-                    dataset.backgroundColor = chartColors[id].headsPWD;
-                    dataset.borderColor = chartColors[id].borderHeadsPWD;
-                } else if (dataset.label === 'Heads - Non-PWD') {
-                    dataset.backgroundColor = chartColors[id].headsNon;
-                    dataset.borderColor = chartColors[id].borderHeadsNon;
-                } else if (dataset.label === 'Members - PWD') {
-                    dataset.backgroundColor = chartColors[id].membersPWD;
-                    dataset.borderColor = chartColors[id].borderMembersPWD;
-                } else if (dataset.label === 'Members - Non-PWD') {
-                    dataset.backgroundColor = chartColors[id].membersNon;
-                    dataset.borderColor = chartColors[id].borderMembersNon;
-                }
-            });
-        }
-
-        // Multiple datasets for stacked chart
         CH[id] = new Chart(ctx, {
             type: 'bar',
-            data: {
-                labels: labels,
-                datasets: datasets
-            },
+            data: { labels: labels, datasets: datasets },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: {
-                    duration: 1000,
-                    easing: 'easeOutQuart'
-                },
-                layout: {
-                    padding: {
-                        top: 10,
-                        right: 15,
-                        bottom: 40, // Increased bottom padding for legend
-                        left: 10
-                    }
-                },
+                animation: { duration: 800, easing: 'easeOutQuart' },
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        align: 'center',
-                        labels: {
-                            font: { size: 11 },
-                            padding: 15,
-                            usePointStyle: true,
-                            pointStyle: 'circle'
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleFont: { size: 12 },
-                        bodyFont: { size: 12 },
-                        padding: 10,
-                        cornerRadius: 6,
-                        mode: isStacked ? 'index' : 'nearest',
-                        position: 'nearest',
-                        intersect: false,
-                        caretPadding: 10,
-                        boxPadding: 5
-                    }
+                    legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 15, usePointStyle: true } },
+                    tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', titleFont: { size: 12 }, bodyFont: { size: 12 }, padding: 10, cornerRadius: 6 }
                 },
                 scales: {
-                    x: {
-                        stacked: isStacked,
-                        grid: { display: false },
-                        ticks: { 
-                            font: { size: 10 },
-                            maxRotation: 45,
-                            minRotation: 0
-                        }
-                    },
-                    y: {
-                        stacked: isStacked,
-                        beginAtZero: true,
-                        grid: { color: 'rgba(0,0,0,0.05)' },
-                        ticks: { 
-                            font: { size: 10 },
-                            precision: 0
-                        }
-                    }
+                    x: { stacked: isStacked, grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+                    y: { stacked: isStacked, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, precision: 0 } }
                 }
             }
         });
     } else {
-        // Single dataset
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
         gradient.addColorStop(0, color);
         gradient.addColorStop(1, color.replace('0.8', '0.4'));
-
+        
         CH[id] = new Chart(ctx, {
             type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: title,
-                    data: values,
-                    backgroundColor: gradient,
-                    borderColor: color,
-                    borderWidth: 1,
-                    borderRadius: 6,
-                    borderSkipped: false
-                }]
-            },
+            data: { labels: labels, datasets: [{ label: title, data: values, backgroundColor: gradient, borderColor: color, borderWidth: 1, borderRadius: 6 }] },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: {
-                    duration: 1000,
-                    easing: 'easeOutQuart'
-                },
-                layout: {
-                    padding: {
-                        top: 10,
-                        right: 15,
-                        bottom: 15,
-                        left: 10
-                    }
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleFont: { size: 12 },
-                        bodyFont: { size: 12 },
-                        padding: 10,
-                        cornerRadius: 6,
-                        position: 'nearest',
-                        intersect: false,
-                        caretPadding: 10,
-                        boxPadding: 5
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: { 
-                            font: { size: 10 },
-                            maxRotation: 45,
-                            minRotation: 0
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(0,0,0,0.05)' },
-                        ticks: { 
-                            font: { size: 10 },
-                            precision: 0
-                        }
-                    }
-                }
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0,0,0,0.8)' } },
+                scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } }, y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, precision: 0 } } }
             }
         });
     }
 }
 
 function createDoughnutChart(id, labels, values, title) {
-    // FAST FIX: Quick cleanup
     quickCleanCanvas(id);
-    
     const ctx = document.getElementById(id).getContext('2d');
-
-    // Different color sets for different charts
-    let backgroundColors;
-    if (id === 'chartStage') {
-        // Stage Distribution - different colors
-        backgroundColors = [
-            'rgba(52, 183, 143, 0.8)',
-            'rgba(70, 140, 240, 0.8)',
-            'rgba(246, 176, 66, 0.8)',
-            'rgba(242, 108, 79, 0.8)',
-            'rgba(123, 97, 255, 0.8)',
-            'rgba(0, 150, 199, 0.8)',
-            'rgba(255, 122, 182, 0.8)',
-            'rgba(108, 117, 125, 0.8)'
-        ];
-    } else if (id === 'chartEmployment') {
-        // Employment Status - different colors
-        backgroundColors = [
-            'rgba(255, 87, 87, 0.8)',
-            'rgba(87, 87, 255, 0.8)',
-            'rgba(87, 255, 87, 0.8)',
-            'rgba(255, 255, 87, 0.8)',
-            'rgba(255, 87, 255, 0.8)',
-            'rgba(87, 255, 255, 0.8)'
-        ];
-    } else {
-        // Default colors
-        backgroundColors = [
-            'rgba(52, 183, 143, 0.8)',
-            'rgba(70, 140, 240, 0.8)',
-            'rgba(246, 176, 66, 0.8)',
-            'rgba(242, 108, 79, 0.8)',
-            'rgba(123, 97, 255, 0.8)',
-            'rgba(0, 150, 199, 0.8)',
-            'rgba(255, 122, 182, 0.8)',
-            'rgba(108, 117, 125, 0.8)'
-        ];
-    }
-
+    
     CH[id] = new Chart(ctx, {
         type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: values,
-                backgroundColor: backgroundColors,
-                borderWidth: 2,
-                borderColor: '#ffffff',
-                hoverOffset: 15
-            }]
-        },
+        data: { labels: labels, datasets: [{ data: values, backgroundColor: ['#0f7a4a', '#34b78f', '#ff7a00', '#ffa500', '#dc2626', '#6b6f6b'], borderWidth: 2, borderColor: '#ffffff', hoverOffset: 15 }] },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: {
-                duration: 1000,
-                easing: 'easeOutQuart'
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    align: 'center',
-                    labels: {
-                        padding: 15,
-                        font: { size: 11 },
-                        usePointStyle: true
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: { size: 12 },
-                    bodyFont: { size: 12 },
-                    padding: 10,
-                    cornerRadius: 6
-                }
-            },
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 15, usePointStyle: true } }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}` } } },
             cutout: '60%'
         }
     });
 }
 
-function createHorizontalBarChart(id, labels, values, title) {
-    // FAST FIX: Quick cleanup
-    quickCleanCanvas(id);
+function createEmptyBarChart(chartId, title, message) {
+    quickCleanCanvas(chartId);
+    const ctx = document.getElementById(chartId).getContext('2d');
     
-    const ctx = document.getElementById(id).getContext('2d');
-
-    const gradient = ctx.createLinearGradient(0, 0, 400, 0);
-    gradient.addColorStop(0, 'rgba(52, 183, 143, 0.8)');
-    gradient.addColorStop(1, 'rgba(70, 140, 240, 0.8)');
-
-    CH[id] = new Chart(ctx, {
+    CH[chartId] = new Chart(ctx, {
         type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: title,
-                data: values,
-                backgroundColor: gradient,
-                borderColor: 'rgba(52, 183, 143, 1)',
-                borderWidth: 1,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 1000,
-                easing: 'easeOutQuart'
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: { size: 12 },
-                    bodyFont: { size: 12 },
-                    padding: 10,
-                    cornerRadius: 6
-                }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' },
-                    ticks: { 
-                        font: { size: 10 },
-                        precision: 0
-                    }
-                },
-                y: {
-                    grid: { display: false },
-                    ticks: { 
-                        font: { size: 10 },
-                        maxRotation: 0
-                    }
-                }
-            }
-        }
+        data: { labels: [message], datasets: [{ data: [0], backgroundColor: '#e0e0e0' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: title } }, scales: { y: { beginAtZero: true } } }
+    });
+}
+
+function createEmptyDoughnutChart(chartId, title, message) {
+    quickCleanCanvas(chartId);
+    const ctx = document.getElementById(chartId).getContext('2d');
+    
+    CH[chartId] = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: [message], datasets: [{ data: [1], backgroundColor: '#e0e0e0' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: title } }, cutout: '70%' }
     });
 }
 
 function createComparisonChart(labels, datasets) {
-    // FAST FIX: Quick cleanup
     quickCleanCanvas('chartComparison');
-    
     const ctx = document.getElementById('chartComparison').getContext('2d');
-
-    const backgroundColors = [
-        'rgba(52, 183, 143, 0.7)',
-        'rgba(70, 140, 240, 0.7)',
-        'rgba(246, 176, 66, 0.7)',
-        'rgba(242, 108, 79, 0.7)',
-        'rgba(123, 97, 255, 0.7)',
-        'rgba(0, 150, 199, 0.7)'
-    ];
-
+    
     CH['chartComparison'] = new Chart(ctx, {
         type: 'bar',
-        data: {
-            labels: labels,
-            datasets: datasets.map((dataset, index) => ({
-                ...dataset,
-                backgroundColor: backgroundColors[index % backgroundColors.length],
-                borderColor: backgroundColors[index % backgroundColors.length].replace('0.7', '1'),
-                borderWidth: 1,
-                borderRadius: 4
-            }))
-        },
+        data: { labels: labels, datasets: datasets },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: {
-                duration: 1000,
-                easing: 'easeOutQuart'
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    align: 'center',
-                    labels: {
-                        padding: 15,
-                        font: { size: 11 },
-                        usePointStyle: true
-                    }
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: { size: 12 },
-                    bodyFont: { size: 12 },
-                    padding: 10,
-                    cornerRadius: 6
-                }
-            },
-            scales: {
-                x: {
-                    stacked: false,
-                    grid: { display: false },
-                    ticks: { 
-                        font: { size: 10 },
-                        maxRotation: 45,
-                        minRotation: 0
-                    }
-                },
-                y: {
-                    stacked: false,
-                    beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' },
-                    ticks: { 
-                        font: { size: 10 },
-                        precision: 0
-                    }
-                }
-            }
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 15, usePointStyle: true } }, tooltip: { mode: 'index', intersect: false } },
+            scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } }, y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, precision: 0 } } }
         }
     });
 }
 
-/* ============ EMPTY CHART FUNCTIONS ============ */
-function createEmptyDoughnutChart(chartId, title, message = "No data available") {
-  // FAST FIX: Quick cleanup
-  quickCleanCanvas(chartId);
-  if (window[chartId + 'Chart']) {
-    try { window[chartId + 'Chart'].destroy(); } catch(e) {}
-    window[chartId + 'Chart'] = null;
-  }
-  
-  const ctx = document.getElementById(chartId);
-  if (!ctx) {
-    console.error(`Canvas element not found for chart: ${chartId}`);
-    return null;
-  }
-  
-  // Create empty chart with message
-  const chart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: [message],
-      datasets: [{
-        data: [1],
-        backgroundColor: ['#e0e0e0'],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        },
-        title: {
-          display: true,
-          text: title,
-          font: {
-            size: 14,
-            weight: 'bold'
-          }
-        },
-        tooltip: {
-          enabled: false
-        }
-      },
-      cutout: '70%'
-    }
-  });
-  
-  // Store reference to chart
-  window[chartId + 'Chart'] = chart;
-  return chart;
+/* ============ UPDATE STATS FUNCTIONS ============ */
+function updateGlobalStats(aggregated) {
+    const totalHeads = aggregated.totals.heads || 0;
+    const totalMembers = aggregated.totals.members || 0;
+    const totalAll = aggregated.totals.total || 0;
+    
+    const globalHeads = document.getElementById('globalHeads');
+    const globalMembers = document.getElementById('globalMembers');
+    const globalTotal = document.getElementById('globalTotal');
+    const globalLastUpdated = document.getElementById('globalLastUpdated');
+    
+    if (globalHeads) globalHeads.textContent = formatNumber(totalHeads);
+    if (globalMembers) globalMembers.textContent = formatNumber(totalMembers);
+    if (globalTotal) globalTotal.textContent = formatNumber(totalAll);
+    if (globalLastUpdated) globalLastUpdated.textContent = new Date().toLocaleTimeString();
 }
 
-function createEmptyBarChart(chartId, title, message = "No data available") {
-  // FAST FIX: Quick cleanup
-  quickCleanCanvas(chartId);
-  if (window[chartId + 'Chart']) {
-    try { window[chartId + 'Chart'].destroy(); } catch(e) {}
-    window[chartId + 'Chart'] = null;
-  }
-  
-  const ctx = document.getElementById(chartId);
-  if (!ctx) {
-    console.error(`Canvas element not found for chart: ${chartId}`);
-    return null;
-  }
-  
-  const chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: [message],
-      datasets: [{
-        data: [0],
-        backgroundColor: ['#e0e0e0'],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        title: {
-          display: true,
-          text: title,
-          font: { size: 14, weight: 'bold' }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { display: false }
-        },
-        x: {
-          ticks: { display: false }
-        }
-      }
-    }
-  });
-  
-  window[chartId + 'Chart'] = chart;
-  return chart;
-}
-
-function createEmptyComparisonChart() {
-    // FAST FIX: Quick cleanup
-    quickCleanCanvas('chartComparison');
-    
-    const ctx = document.getElementById('chartComparison').getContext('2d');
-    
-    const backgroundColors = [
-        'rgba(200, 200, 200, 0.3)',
-        'rgba(200, 200, 200, 0.2)',
-        'rgba(200, 200, 200, 0.1)'
-    ];
-    
-    CH['chartComparison'] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: [''],
-            datasets: [
-                {
-                    label: 'No Data',
-                    data: [0],
-                    backgroundColor: backgroundColors[0],
-                    borderColor: 'rgba(200, 200, 200, 0.5)',
-                    borderWidth: 1,
-                    borderRadius: 4
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 500,
-                easing: 'easeOutQuart'
-            },
-            layout: {
-                padding: {
-                    top: 10,
-                    right: 15,
-                    bottom: 40,
-                    left: 10
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    align: 'center',
-                    labels: {
-                        padding: 15,
-                        font: { size: 11 },
-                        usePointStyle: true,
-                        pointStyle: 'circle'
-                    }
-                },
-                tooltip: {
-                    enabled: false
-                }
-            },
-            scales: {
-                x: {
-                    display: false,
-                    grid: { display: false }
-                },
-                y: {
-                    display: false,
-                    beginAtZero: true,
-                    grid: { display: false }
-                }
-            }
-        },
-        plugins: [{
-            id: 'noDataText',
-            afterDraw: (chart) => {
-                const { ctx, chartArea: { width, height } } = chart;
-                ctx.save();
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.font = '16px Arial';
-                ctx.fillStyle = '#888';
-                ctx.fillText('No Data Available', width / 2, height / 2);
-                ctx.restore();
-            }
-        }]
-    });
-}
-
-function createAssemblyChart(assemblyData) {
-    const assemblyDatasets = [
-        {
-            label: 'Heads',
-            data: assemblyData.heads,
-            backgroundColor: 'rgba(255, 140, 0, 0.8)',
-            borderColor: 'rgba(255, 140, 0, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'Members',
-            data: assemblyData.members,
-            backgroundColor: 'rgba(30, 144, 255, 0.8)',
-            borderColor: 'rgba(30, 144, 255, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartAssembly', assemblyData.labels, null, 'Assembly Area', null, true, assemblyDatasets);
-}
-
-function createTransportChart(transportData) {
-    const transportDatasets = [
-        {
-            label: 'Heads',
-            data: transportData.heads,
-            backgroundColor: 'rgba(220, 20, 60, 0.8)',
-            borderColor: 'rgba(220, 20, 60, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'Members',
-            data: transportData.members,
-            backgroundColor: 'rgba(138, 43, 226, 0.8)',
-            borderColor: 'rgba(138, 43, 226, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartTransport', transportData.labels, null, 'Transportation & Evacuation', null, true, transportDatasets);
-}
-
-/* ============ NEW CHART FUNCTION: TYPE OF DISABILITY ============ */
-function createDisabilityTypeChart(disabilityData) {
-    const disabilityDatasets = [
-        {
-            label: 'Heads',
-            data: disabilityData.heads,
-            backgroundColor: 'rgba(128, 0, 128, 0.8)', // Purple for heads
-            borderColor: 'rgba(128, 0, 128, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'Members',
-            data: disabilityData.members,
-            backgroundColor: 'rgba(255, 20, 147, 0.8)', // Pink for members
-            borderColor: 'rgba(255, 20, 147, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartDisabilityType', disabilityData.labels, null, 'Type of Disability', null, true, disabilityDatasets);
-}
-
-/* ============ NEW CHART FUNCTIONS ============ */
-
-function createAdditionalInfoChart(additionalData) {
-    const additionalDatasets = [
-        {
-            label: 'Heads',
-            data: additionalData.heads,
-            backgroundColor: 'rgba(106, 90, 205, 0.8)',
-            borderColor: 'rgba(106, 90, 205, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'Members',
-            data: additionalData.members,
-            backgroundColor: 'rgba(60, 179, 113, 0.8)',
-            borderColor: 'rgba(60, 179, 113, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartAdditionalInfo', additionalData.labels, null, 'Additional Information', null, true, additionalDatasets);
-}
-
-function createStructuralDamageChart(barangayData) {
-    if (!barangayData.labels || barangayData.labels.length === 0) {
-        createEmptyBarChart('chartStructuralDamage', 'Structural/Property Damage', 'No data available');
-        return;
-    }
-    
-    const datasets = [
-        {
-            label: 'Yes (Damage Reported)',
-            data: barangayData.yes,
-            backgroundColor: 'rgba(220, 20, 60, 0.8)',
-            borderColor: 'rgba(220, 20, 60, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'No Damage',
-            data: barangayData.no,
-            backgroundColor: 'rgba(60, 179, 113, 0.8)',
-            borderColor: 'rgba(60, 179, 113, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartStructuralDamage', barangayData.labels, null, 'Structural Damage', null, true, datasets);
-}
-
-function createHouseholdInjuryChart(barangayData) {
-    if (!barangayData.labels || barangayData.labels.length === 0) {
-        createEmptyBarChart('chartHouseholdInjury', 'Household Injury', 'No data available');
-        return;
-    }
-    
-    const datasets = [
-        {
-            label: 'Yes (Injury Reported)',
-            data: barangayData.yes,
-            backgroundColor: 'rgba(255, 140, 0, 0.8)',
-            borderColor: 'rgba(255, 140, 0, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'No Injury',
-            data: barangayData.no,
-            backgroundColor: 'rgba(60, 179, 113, 0.8)',
-            borderColor: 'rgba(60, 179, 113, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartHouseholdInjury', barangayData.labels, null, 'Household Injury', null, true, datasets);
-}
-
-function createHabitabilityChart(barangayData) {
-    if (!barangayData.labels || barangayData.labels.length === 0) {
-        createEmptyBarChart('chartHabitability', 'Habitability of House', 'No data available');
-        return;
-    }
-    
-    const datasets = [
-        {
-            label: 'Yes (Habitability Issues)',
-            data: barangayData.yes,
-            backgroundColor: 'rgba(138, 43, 226, 0.8)',
-            borderColor: 'rgba(138, 43, 226, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'No Issues',
-            data: barangayData.no,
-            backgroundColor: 'rgba(60, 179, 113, 0.8)',
-            borderColor: 'rgba(60, 179, 113, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartHabitability', barangayData.labels, null, 'Habitability', null, true, datasets);
-}
-
-function createLossLivelihoodChart(barangayData) {
-    if (!barangayData.labels || barangayData.labels.length === 0) {
-        createEmptyBarChart('chartLossLivelihood', 'Loss of Livelihood/Assets', 'No data available');
-        return;
-    }
-    
-    const datasets = [
-        {
-            label: 'Yes (Loss Reported)',
-            data: barangayData.yes,
-            backgroundColor: 'rgba(255, 87, 87, 0.8)',
-            borderColor: 'rgba(255, 87, 87, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'No Loss',
-            data: barangayData.no,
-            backgroundColor: 'rgba(60, 179, 113, 0.8)',
-            borderColor: 'rgba(60, 179, 113, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartLossLivelihood', barangayData.labels, null, 'Loss of Livelihood', null, true, datasets);
-}
-
+/* ============ MAIN BUILD CHARTS FUNCTION ============ */
 async function buildCharts(forceRefresh = false) {
     showLoading(true);
-    
-    // 🔥 Clears ALL charts to prevent "already in use" errors
     cleanupAllChartsFast();
     
-    if (forceRefresh) {
-        const CHART_DATA_CACHE_KEY = 'chartDataCache';
-        sessionStorage.removeItem(CHART_DATA_CACHE_KEY);
-        console.log("🗑️ Cache cleared for forced refresh");
-    }
-
-    // Performance monitoring start
-    let performanceStart = Date.now();
-    console.log("⏱️ Starting chart loading...");
-    
     try {
-        console.log("📊 Fetching aggregated chart data...");
+        const result = await fetchChartDataFromSupabase();
         
-        // Fetch aggregated data (much smaller/faster)
-        const response = await fetchAggregatedChartData(forceRefresh);
-        
-        if (!response.success) {
-            throw new Error(response.error || "Failed to fetch aggregated data");
+        if (!result.success || !result.aggregated) {
+            throw new Error(result.error || "Failed to load data");
         }
         
-        const aggregated = response.aggregated;
-        const recordCount = response.recordCount || 0;
+        const aggregated = result.aggregated;
         
-        console.log(`✅ Loaded aggregated data for ${recordCount} records`);
-        console.log("Processing time:", response.processingTime || "N/A", "seconds");
-        
-        // ============ DEBUG: LOG FULL AGGREGATED STRUCTURE ============
-        console.log("🔍 ========== AGGREGATED DATA DEBUG ==========");
-        console.log("🔍 Full aggregated object keys:", Object.keys(aggregated));
-        console.log("🔍 aggregated.status:", aggregated.status);
-        console.log("🔍 aggregated.status type:", typeof aggregated.status);
-        
-        if (aggregated.status) {
-            console.log("🔍 aggregated.status.heads:", aggregated.status.heads);
-            console.log("🔍 aggregated.status.heads.labels:", aggregated.status.heads?.labels);
-            console.log("🔍 aggregated.status.heads.values:", aggregated.status.heads?.values);
-            console.log("🔍 aggregated.status.members:", aggregated.status.members);
-            console.log("🔍 aggregated.status.members.labels:", aggregated.status.members?.labels);
-            console.log("🔍 aggregated.status.members.values:", aggregated.status.members?.values);
-            
-            // Check if values exist and are > 0
-            const hasHeadsValues = aggregated.status.heads?.values && aggregated.status.heads.values.length > 0;
-            const hasHeadsPositive = aggregated.status.heads?.values?.some(v => v > 0);
-            const hasMembersValues = aggregated.status.members?.values && aggregated.status.members.values.length > 0;
-            const hasMembersPositive = aggregated.status.members?.values?.some(v => v > 0);
-            
-            console.log("🔍 Heads: has values array?", hasHeadsValues);
-            console.log("🔍 Heads: any value > 0?", hasHeadsPositive);
-            console.log("🔍 Members: has values array?", hasMembersValues);
-            console.log("🔍 Members: any value > 0?", hasMembersPositive);
-        } else {
-            console.log("🔍 ❌ aggregated.status is MISSING or NULL!");
-            console.log("🔍 Available aggregated properties:", Object.keys(aggregated));
-            
-            // Check if status data is under a different property name
-            if (aggregated.statusHeads) {
-                console.log("🔍 Found 'statusHeads' instead:", aggregated.statusHeads);
-            }
-            if (aggregated.statusMembers) {
-                console.log("🔍 Found 'statusMembers' instead:", aggregated.statusMembers);
-            }
-            if (aggregated.statusData) {
-                console.log("🔍 Found 'statusData' instead:", aggregated.statusData);
-            }
-        }
-        
-        // Check if we have data for each chart
-        console.log("📊 Checking chart data availability:");
-        console.log("- Barangay data:", aggregated.barangay ? `Yes (${aggregated.barangay.labels?.length || 0} barangays)` : "No");
-        console.log("- Age data:", aggregated.ageGroups ? `Yes (${aggregated.ageGroups.values?.length || 0} groups)` : "No");
-        console.log("- Stage data:", aggregated.stage ? `Yes (${aggregated.stage.values?.length || 0} stages)` : "No");
-        console.log("- PWD data:", aggregated.pwd ? "Yes" : "No");
-        console.log("- OFW data:", aggregated.ofw ? "Yes" : "No");
-        console.log("- Additional Info data:", aggregated.additional ? "Yes" : "No");
-        console.log("- Assembly Area data:", aggregated.assembly ? "Yes" : "No");
-        console.log("- Transport data:", aggregated.transport ? "Yes" : "No");
-        console.log("- Disability Type data:", aggregated.disabilityType ? "Yes" : "No");
-        console.log("- Structural Damage data:", aggregated.structuralDamage ? "Yes" : "No");
-        console.log("- Household Injury data:", aggregated.householdInjury ? "Yes" : "No");
-        console.log("- Habitability data:", aggregated.habitability ? "Yes" : "No");
-        console.log("- Loss of Livelihood data:", aggregated.lossLivelihood ? "Yes" : "No");
-        
-        // Update enhanced stats (with checkbox fixes)
+        // Update stats
         updateAllStats(aggregated);
+        updateAllChartTitles(aggregated);
+
+        // Check if we have any data at all
+        const hasAnyData = aggregated.totals.total > 0;
         
-        console.log("🎨 Starting to create charts...");
-        
-        // ============ FULL WIDTH CHARTS ============
-        
-        // 1. Barangay Entries Chart
-        console.log("Creating Barangay chart...");
+        // 1. Barangay Chart
         if (aggregated.barangay && aggregated.barangay.labels && aggregated.barangay.labels.length > 0) {
-            createBarChartFromAggregated('chartBarangay', aggregated.barangay);
+            const datasets = [
+                { label: 'Heads', data: aggregated.barangay.heads, backgroundColor: 'rgba(52, 183, 143, 0.8)', borderColor: 'rgba(52, 183, 143, 1)', borderWidth: 1 },
+                { label: 'Members', data: aggregated.barangay.members, backgroundColor: 'rgba(70, 140, 240, 0.8)', borderColor: 'rgba(70, 140, 240, 1)', borderWidth: 1 }
+            ];
+            createBarChart('chartBarangay', aggregated.barangay.labels, null, 'Households', null, true, datasets);
         } else {
-            console.warn("No barangay data available");
-            createEmptyBarChart('chartBarangay', 'Entry per Barangay', 'No barangay data');
-        }
-
-        // 2. Comparison Chart (Barangay vs Illness - Common Sickness & Severe Illness)
-        console.log("Creating Comparison chart...");
-        if (aggregated.comparison && aggregated.comparison.labels && aggregated.comparison.labels.length > 0) {
-            createComparisonChartFromAggregated(aggregated.comparison);
-        } else {
-            console.warn("No comparison data available");
-            createEmptyComparisonChart();
-        }
-
-        // 3. Registration Status Chart
-        console.log("Creating Registration Status chart...");
-        if (aggregated.registration && aggregated.registration.heads && aggregated.registration.heads.some(v => v > 0)) {
-            createRegistrationChart(aggregated.registration);
-        } else {
-            console.warn("No registration data available");
-            createEmptyBarChart('chartRegistration', 'Registration Status', 'No registration data');
-        }
-
-        // 4. Status Distribution Chart - WITH EXTENSIVE DEBUGGING
-        console.log("\n🔍 ========== STATUS DISTRIBUTION CHART DEBUG ==========");
-        console.log("🔍 Creating Status Distribution chart...");
-        console.log("🔍 aggregated.status exists?", !!aggregated.status);
-        console.log("🔍 aggregated.status?.heads?.values:", aggregated.status?.heads?.values);
-        console.log("🔍 aggregated.status?.heads?.values length:", aggregated.status?.heads?.values?.length);
-        console.log("🔍 aggregated.status?.heads?.values some >0:", aggregated.status?.heads?.values?.some(v => v > 0));
-        
-        let statusDataExists = false;
-        
-        if (aggregated.status && aggregated.status.heads && aggregated.status.heads.values && aggregated.status.heads.values.length > 0) {
-            const hasPositiveValues = aggregated.status.heads.values.some(v => v > 0);
-            if (hasPositiveValues) {
-                statusDataExists = true;
-                console.log("✅ Status data FOUND! Creating chart with real data");
-                console.log("🔍 Heads labels:", aggregated.status.heads.labels);
-                console.log("🔍 Heads values:", aggregated.status.heads.values);
-                console.log("🔍 Members labels:", aggregated.status.members?.labels);
-                console.log("🔍 Members values:", aggregated.status.members?.values);
-                createStatusChart(aggregated.status);
-            } else {
-                console.warn("⚠️ Status data exists but all values are 0");
-                statusDataExists = false;
-            }
-        } else {
-            console.warn("⚠️ Status data NOT FOUND in aggregated object");
-            console.log("🔍 Trying to find status data in alternative locations...");
-            
-            // Try to find status data in alternative structures
-            if (aggregated.statusHeads && aggregated.statusMembers) {
-                console.log("🔍 Found statusHeads/statusMembers - converting to proper format");
-                const convertedStatusData = {
-                    heads: {
-                        labels: Object.keys(aggregated.statusHeads),
-                        values: Object.values(aggregated.statusHeads)
-                    },
-                    members: {
-                        labels: Object.keys(aggregated.statusMembers),
-                        values: Object.values(aggregated.statusMembers)
-                    }
-                };
-                console.log("🔍 Converted status data:", convertedStatusData);
-                createStatusChart(convertedStatusData);
-                statusDataExists = true;
-            } else if (aggregated.statusData && aggregated.statusData.heads) {
-                console.log("🔍 Found statusData.heads - using that");
-                createStatusChart(aggregated.statusData);
-                statusDataExists = true;
-            }
+            createEmptyBarChart('chartBarangay', 'Entry per Barangay', hasAnyData ? 'No barangay data' : 'No records found');
         }
         
-        if (!statusDataExists) {
-            console.log("🔍 Creating EMPTY Status Distribution chart (no data)");
-            createEmptyBarChart('chartStatus', 'Status Distribution', 'No status data');
-        }
-        console.log("🔍 ========== END STATUS CHART DEBUG ==========\n");
-
-        // 5. PWD Distribution Chart
-        console.log("Creating PWD Distribution chart...");
-        if (aggregated.pwd && (aggregated.pwd.headsYes > 0 || aggregated.pwd.headsNo > 0 || aggregated.pwd.membersYes > 0 || aggregated.pwd.membersNo > 0)) {
-            createPWDChart(aggregated.pwd);
+        // 2. Age Distribution Chart
+        if (aggregated.ageGroups && aggregated.ageGroups.labels && aggregated.ageGroups.labels.length > 0 && aggregated.ageGroups.values.some(v => v > 0)) {
+            const datasets = [
+                { label: 'Heads', data: aggregated.ageGroups.heads, backgroundColor: 'rgba(52, 183, 143, 0.8)', borderColor: 'rgba(52, 183, 143, 1)', borderWidth: 1 },
+                { label: 'Members', data: aggregated.ageGroups.members, backgroundColor: 'rgba(70, 140, 240, 0.8)', borderColor: 'rgba(70, 140, 240, 1)', borderWidth: 1 }
+            ];
+            createBarChart('chartAgeGroup', aggregated.ageGroups.labels, null, 'Age Distribution', null, true, datasets);
         } else {
-            console.warn("No PWD data available");
-            createEmptyBarChart('chartPWD', 'PWD Distribution', 'No PWD data');
+            createEmptyBarChart('chartAgeGroup', 'Age Distribution', hasAnyData ? 'No age data available' : 'No records found');
         }
-
-        // 6. Government Support Chart
-        console.log("Creating Government Support chart...");
-        if (aggregated.support && aggregated.support.heads && aggregated.support.heads.some(v => v > 0)) {
-            createSupportChart(aggregated.support);
-        } else {
-            console.warn("No support data available");
-            createEmptyBarChart('chartSupport', 'Government Support', 'No support data');
-        }
-
-        // 7. Assembly Area Distribution Chart
-        console.log("Creating Assembly Area chart...");
-        if (aggregated.assembly && aggregated.assembly.heads && aggregated.assembly.heads.some(v => v > 0)) {
-            createAssemblyChart(aggregated.assembly);
-        } else {
-            console.warn("No assembly area data available");
-            createEmptyBarChart('chartAssembly', 'Assembly Area Distribution', 'No data');
-        }
-
-        // 8. Transportation & Evacuation Chart
-        console.log("Creating Transportation & Evacuation chart...");
-        if (aggregated.transport && aggregated.transport.heads && aggregated.transport.heads.some(v => v > 0)) {
-            const filteredTransportData = {
-                labels: [],
-                heads: [],
-                members: []
-            };
-            
-            if (aggregated.transport.labels) {
-                aggregated.transport.labels.forEach((label, index) => {
-                    if (label.toLowerCase() !== "other reasons" && 
-                        label.toLowerCase() !== "other" &&
-                        !label.includes("Other")) {
-                        filteredTransportData.labels.push(label);
-                        filteredTransportData.heads.push(aggregated.transport.heads[index] || 0);
-                        filteredTransportData.members.push(aggregated.transport.members[index] || 0);
-                    }
-                });
-            }
-            
-            if (filteredTransportData.labels.length > 0 && 
-                (filteredTransportData.heads.some(v => v > 0) || filteredTransportData.members.some(v => v > 0))) {
-                createTransportChart(filteredTransportData);
-            } else {
-                console.warn("No transportation data available after filtering");
-                createEmptyBarChart('chartTransport', 'Transportation & Evacuation', 'No data');
-            }
-        } else {
-            console.warn("No transportation data available");
-            createEmptyBarChart('chartTransport', 'Transportation & Evacuation', 'No data');
-        }
-
-        // 9. Type of Disability Chart
-        console.log("Creating Type of Disability chart...");
-        if (aggregated.disabilityType && 
-            aggregated.disabilityType.labels && 
-            aggregated.disabilityType.labels.length > 0 &&
-            (aggregated.disabilityType.heads.some(v => v > 0) || aggregated.disabilityType.members.some(v => v > 0))) {
-            createDisabilityTypeChart(aggregated.disabilityType);
-        } else {
-            console.warn("No disability type data available");
-            createEmptyBarChart('chartDisabilityType', 'Type of Disability', 'No disability type data available');
-        }
-
-        // 10. Additional Information Chart (Solo Parenting, Lactating, Pregnant)
-        console.log("Creating Additional Information chart...");
-        if (aggregated.additional && aggregated.additional.labels && aggregated.additional.labels.length > 0) {
-            createAdditionalInfoChart(aggregated.additional);
-        } else {
-            console.warn("No additional information data available");
-            createEmptyBarChart('chartAdditionalInfo', 'Additional Information', 'No data');
-        }
-
-        // 11. Structural/Property Damage by Barangay
-        console.log("Creating Structural Damage by Barangay chart...");
-        if (aggregated.structuralDamage && aggregated.structuralDamage.labels && aggregated.structuralDamage.labels.length > 0) {
-            createStructuralDamageChart(aggregated.structuralDamage);
-        } else {
-            console.warn("No structural damage data available");
-            createEmptyBarChart('chartStructuralDamage', 'Structural/Property Damage', 'No data');
-        }
-
-        // 12. Household Injury by Barangay
-        console.log("Creating Household Injury by Barangay chart...");
-        if (aggregated.householdInjury && aggregated.householdInjury.labels && aggregated.householdInjury.labels.length > 0) {
-            createHouseholdInjuryChart(aggregated.householdInjury);
-        } else {
-            console.warn("No household injury data available");
-            createEmptyBarChart('chartHouseholdInjury', 'Household Injury', 'No data');
-        }
-
-        // 13. Habitability by Barangay
-        console.log("Creating Habitability by Barangay chart...");
-        if (aggregated.habitability && aggregated.habitability.labels && aggregated.habitability.labels.length > 0) {
-            createHabitabilityChart(aggregated.habitability);
-        } else {
-            console.warn("No habitability data available");
-            createEmptyBarChart('chartHabitability', 'Habitability of House', 'No data');
-        }
-
-        // 14. Loss of Livelihood by Barangay
-        console.log("Creating Loss of Livelihood by Barangay chart...");
-        if (aggregated.lossLivelihood && aggregated.lossLivelihood.labels && aggregated.lossLivelihood.labels.length > 0) {
-            createLossLivelihoodChart(aggregated.lossLivelihood);
-        } else {
-            console.warn("No loss of livelihood data available");
-            createEmptyBarChart('chartLossLivelihood', 'Loss of Livelihood/Assets', 'No data');
-        }
-
-        // ============ GRID VIEW CHARTS (2 per row) ============
         
-        // 15. Age Distribution Chart
-        console.log("Creating Age Distribution chart...");
-        if (aggregated.ageGroups && aggregated.ageGroups.labels && aggregated.ageGroups.labels.length > 0) {
-            const validIndices = [];
-            for (let i = 0; i < aggregated.ageGroups.labels.length; i++) {
-                const label = aggregated.ageGroups.labels[i];
-                const total = aggregated.ageGroups.values[i] || 0;
-                if (label && label.trim() !== "" && total > 0) {
-                    validIndices.push(i);
-                }
-            }
-            
-            if (validIndices.length > 0) {
-                const ageLabels = validIndices.map(i => aggregated.ageGroups.labels[i]);
-                const ageHeadsData = validIndices.map(i => (aggregated.ageGroups.heads || [])[i] || 0);
-                const ageMembersData = validIndices.map(i => (aggregated.ageGroups.members || [])[i] || 0);
-                
-                const ageDatasets = [
-                    {
-                        label: 'Heads',
-                        data: ageHeadsData,
-                        backgroundColor: 'rgba(52, 183, 143, 0.8)',
-                        borderColor: 'rgba(52, 183, 143, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Members',
-                        data: ageMembersData,
-                        backgroundColor: 'rgba(70, 140, 240, 0.8)',
-                        borderColor: 'rgba(70, 140, 240, 1)',
-                        borderWidth: 1
-                    }
-                ];
-                createBarChart('chartAgeGroup', ageLabels, null, 'Age Distribution', null, true, ageDatasets);
-            } else {
-                createEmptyBarChart('chartAgeGroup', 'Age Distribution', 'No age data available');
-            }
-        } else {
-            createEmptyBarChart('chartAgeGroup', 'Age Distribution', 'No age data available');
-        }
-
-        // 16. Stage Distribution Chart
-        console.log("Creating Stage Distribution chart...");
+        // 3. Stage Distribution Chart
         if (aggregated.stage && aggregated.stage.values && aggregated.stage.values.some(v => v > 0)) {
             createDoughnutChart('chartStage', aggregated.stage.labels, aggregated.stage.values, 'Stage Distribution');
         } else {
-            createEmptyDoughnutChart('chartStage', 'Stage Distribution', 'No stage data');
+            createEmptyDoughnutChart('chartStage', 'Stage Distribution', hasAnyData ? 'No stage data' : 'No records found');
         }
-
-        // 17. Domestic Livestock Chart
-        console.log("Creating Livestock chart...");
-        if (aggregated.livestock && aggregated.livestock.values && aggregated.livestock.values.some(v => v > 0)) {
-            createBarChart('chartLivestock', aggregated.livestock.labels, aggregated.livestock.values, 'Count', 'rgba(255, 122, 0, 0.8)');
+        
+        // 4. PWD Distribution Chart
+        const hasPWDData = (aggregated.pwd.headsYes > 0 || aggregated.pwd.headsNo > 0 || aggregated.pwd.membersYes > 0 || aggregated.pwd.membersNo > 0);
+        if (hasPWDData) {
+            const pwdDatasets = [
+                { label: 'Heads - PWD', data: [aggregated.pwd.headsYes], backgroundColor: 'rgba(255, 205, 86, 0.8)', borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 1 },
+                { label: 'Heads - Non-PWD', data: [aggregated.pwd.headsNo], backgroundColor: 'rgba(255, 205, 86, 0.4)', borderColor: 'rgba(255, 205, 86, 0.7)', borderWidth: 1 },
+                { label: 'Members - PWD', data: [aggregated.pwd.membersYes], backgroundColor: 'rgba(54, 162, 235, 0.8)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 },
+                { label: 'Members - Non-PWD', data: [aggregated.pwd.membersNo], backgroundColor: 'rgba(54, 162, 235, 0.4)', borderColor: 'rgba(54, 162, 235, 0.7)', borderWidth: 1 }
+            ];
+            createBarChart('chartPWD', ['PWD Distribution'], null, 'PWD Status', null, true, pwdDatasets);
         } else {
-            createEmptyBarChart('chartLivestock', 'Domestic Livestock', 'No livestock data');
+            createEmptyBarChart('chartPWD', 'PWD Distribution', hasAnyData ? 'No PWD data' : 'No records found');
         }
-
-        // 18. Overseas Filipino Workers Chart
-        console.log("Creating OFW chart...");
-        if (aggregated.ofw && Object.values(aggregated.ofw).some(v => v > 0)) {
-            const labels = Object.keys(aggregated.ofw);
-            const values = Object.values(aggregated.ofw);
-            createDoughnutChart('chartOFW', labels, values, 'OFW');
-        } else {
-            createEmptyDoughnutChart('chartOFW', 'Overseas Filipino Workers', 'No OFW data');
-        }
-
-        // 19. Educational Attainment Chart
-        console.log("Creating Education chart...");
-        if (aggregated.education && aggregated.education.values && aggregated.education.values.some(v => v > 0)) {
-            createBarChart('chartEducation', aggregated.education.labels, aggregated.education.values, 'Count', 'rgba(123, 97, 255, 0.8)');
-        } else {
-            createEmptyBarChart('chartEducation', 'Educational Attainment', 'No education data');
-        }
-
-        // 20. Employment Status Chart
-        console.log("Creating Employment chart...");
-        if (aggregated.employment && aggregated.employment.labels && aggregated.employment.labels.length > 0) {
-            const totalEmployment = aggregated.employment.values.reduce((a, b) => a + b, 0);
-            if (totalEmployment > 0) {
-                createDoughnutChart('chartEmployment', aggregated.employment.labels, aggregated.employment.values, 'Employment Status');
+        
+        // 5. Status Distribution Chart
+        const hasStatusData = aggregated.status && aggregated.status.heads && aggregated.status.heads.values && aggregated.status.heads.values.some(v => v > 0);
+        if (hasStatusData) {
+            const allLabels = [...new Set([...(aggregated.status.heads.labels || []), ...(aggregated.status.members.labels || [])])].sort();
+            const headsData = allLabels.map(l => {
+                const idx = aggregated.status.heads.labels?.indexOf(l) || -1;
+                return idx !== -1 ? aggregated.status.heads.values[idx] : 0;
+            });
+            const membersData = allLabels.map(l => {
+                const idx = aggregated.status.members.labels?.indexOf(l) || -1;
+                return idx !== -1 ? aggregated.status.members.values[idx] : 0;
+            });
+            if (headsData.some(v => v > 0) || membersData.some(v => v > 0)) {
+                const statusDatasets = [
+                    { label: 'Heads', data: headsData, backgroundColor: 'rgba(75, 192, 192, 0.8)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 },
+                    { label: 'Members', data: membersData, backgroundColor: 'rgba(153, 102, 255, 0.8)', borderColor: 'rgba(153, 102, 255, 1)', borderWidth: 1 }
+                ];
+                createBarChart('chartStatus', allLabels, null, 'Status Distribution', null, false, statusDatasets);
             } else {
-                createEmptyDoughnutChart('chartEmployment', 'Employment Status', 'No employment data found');
+                createEmptyBarChart('chartStatus', 'Status Distribution', 'No status data');
             }
         } else {
-            createEmptyDoughnutChart('chartEmployment', 'Employment Status', 'No employment data');
+            createEmptyBarChart('chartStatus', 'Status Distribution', hasAnyData ? 'No status data' : 'No records found');
         }
         
-        // Performance monitoring end
-        let performanceEnd = Date.now();
-        let totalTime = (performanceEnd - performanceStart) / 1000;
-        console.log(`⏱️ Total chart rendering time: ${totalTime.toFixed(2)} seconds`);
-        
-        // Show performance info in console
-        if (totalTime < 3) {
-            console.log(`🚀 Excellent! Charts loaded in ${totalTime.toFixed(2)} seconds`);
-        } else if (totalTime < 5) {
-            console.log(`👍 Good! Charts loaded in ${totalTime.toFixed(2)} seconds`);
+        // 6. Registration Status Chart
+        const hasRegistrationData = aggregated.registration && aggregated.registration.heads && aggregated.registration.heads.some(v => v > 0);
+        if (hasRegistrationData) {
+            const regDatasets = [
+                { label: 'Heads', data: aggregated.registration.heads, backgroundColor: 'rgba(255, 99, 132, 0.8)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1 },
+                { label: 'Members', data: aggregated.registration.members, backgroundColor: 'rgba(255, 159, 64, 0.8)', borderColor: 'rgba(255, 159, 64, 1)', borderWidth: 1 }
+            ];
+            createBarChart('chartRegistration', aggregated.registration.labels, null, 'Registration Status', null, true, regDatasets);
         } else {
-            console.log(`⚠️ Charts took ${totalTime.toFixed(2)} seconds to load`);
+            createEmptyBarChart('chartRegistration', 'Registration Status', hasAnyData ? 'No registration data' : 'No records found');
         }
+        
+        // 7. OFW Chart
+        const ofwTotal = (aggregated.ofw?.heads || 0) + (aggregated.ofw?.members || 0);
+        if (ofwTotal > 0) {
+            createDoughnutChart('chartOFW', ['OFW', 'Non-OFW'], [ofwTotal, aggregated.totals.total - ofwTotal], 'Overseas Filipino Workers');
+        } else {
+            createEmptyDoughnutChart('chartOFW', 'Overseas Filipino Workers', hasAnyData ? 'No OFW records' : 'No records found');
+        }
+        
+        // 8. Education Chart
+        const hasEducationData = aggregated.education && aggregated.education.values && aggregated.education.values.some(v => v > 0);
+        if (hasEducationData) {
+            createBarChart('chartEducation', aggregated.education.labels, aggregated.education.values, 'Count', 'rgba(123, 97, 255, 0.8)');
+        } else {
+            createEmptyBarChart('chartEducation', 'Educational Attainment', hasAnyData ? 'No education data' : 'No records found');
+        }
+        
+        // 9. Employment Chart
+        const hasEmploymentData = aggregated.employment && aggregated.employment.values && aggregated.employment.values.some(v => v > 0);
+        if (hasEmploymentData) {
+            createDoughnutChart('chartEmployment', aggregated.employment.labels, aggregated.employment.values, 'Employment Status');
+        } else {
+            createEmptyDoughnutChart('chartEmployment', 'Employment Status', hasAnyData ? 'No employment data' : 'No records found');
+        }
+        
+        // 10. Additional Info Chart
+        const hasAdditionalData = aggregated.additional && aggregated.additional.labels && aggregated.additional.labels.length > 0 && aggregated.additional.heads.some(v => v > 0);
+        if (hasAdditionalData) {
+            const additionalDatasets = [
+                { label: 'Heads', data: aggregated.additional.heads, backgroundColor: 'rgba(106, 90, 205, 0.8)', borderColor: 'rgba(106, 90, 205, 1)', borderWidth: 1 },
+                { label: 'Members', data: aggregated.additional.members, backgroundColor: 'rgba(60, 179, 113, 0.8)', borderColor: 'rgba(60, 179, 113, 1)', borderWidth: 1 }
+            ];
+            createBarChart('chartAdditionalInfo', aggregated.additional.labels, null, 'Additional Information', null, true, additionalDatasets);
+        } else {
+            createEmptyBarChart('chartAdditionalInfo', 'Additional Information', hasAnyData ? 'No additional info data' : 'No records found');
+        }
+        
+        // 11. Disability Type Chart
+        const hasDisabilityData = aggregated.disabilityType && aggregated.disabilityType.labels && aggregated.disabilityType.labels.length > 0 && aggregated.disabilityType.heads.some(v => v > 0);
+        if (hasDisabilityData) {
+            const disabilityDatasets = [
+                { label: 'Heads', data: aggregated.disabilityType.heads, backgroundColor: 'rgba(128, 0, 128, 0.8)', borderColor: 'rgba(128, 0, 128, 1)', borderWidth: 1 },
+                { label: 'Members', data: aggregated.disabilityType.members, backgroundColor: 'rgba(255, 20, 147, 0.8)', borderColor: 'rgba(255, 20, 147, 1)', borderWidth: 1 }
+            ];
+            createBarChart('chartDisabilityType', aggregated.disabilityType.labels, null, 'Type of Disability', null, true, disabilityDatasets);
+        } else {
+            createEmptyBarChart('chartDisabilityType', 'Type of Disability', hasAnyData ? 'No disability data' : 'No records found');
+        }
+        
+        // 12. Livestock Chart (if you have livestock data - would need separate fetch)
+        createEmptyBarChart('chartLivestock', 'Domestic Livestock', 'No livestock data');
+        
+        // 13. Assembly Area Chart (if you have assembly data)
+        createEmptyBarChart('chartAssembly', 'Assembly Area Distribution', 'No assembly data');
+        
+        // 14. Transportation Chart
+        createEmptyBarChart('chartTransport', 'Transportation & Evacuation', 'No transportation data');
+        
+        // 15. Comparison Chart
+        createComparisonChart(['No Data'], [{ label: 'No Data', data: [0], backgroundColor: '#ccc' }]);
+        
+        // 16. Structural Damage Chart
+        createEmptyBarChart('chartStructuralDamage', 'Structural/Property Damage', 'No damage data');
+        
+        // 17. Household Injury Chart
+        createEmptyBarChart('chartHouseholdInjury', 'Household Injury', 'No injury data');
+        
+        // 18. Habitability Chart
+        createEmptyBarChart('chartHabitability', 'Habitability of House', 'No habitability data');
+        
+        // 19. Loss of Livelihood Chart
+        createEmptyBarChart('chartLossLivelihood', 'Loss of Livelihood/Assets', 'No livelihood data');
         
         console.log("✅ All charts created successfully");
         
-    } catch (err) {
-        console.error("Error building charts:", err);
-        showError("Unable to load charts: " + err.message);
-        
-        // Fallback to original method if aggregation fails
-        console.log("🔄 Falling back to original chart building method...");
-        await buildChartsOriginal();
-    } finally {
-        showLoading(false);
-    }
-}
-
-/* ============ FETCH AGGREGATED DATA WITH CACHING ============ */
-async function fetchAggregatedChartData(forceRefresh = false) {
-    // Cache configuration
-    const CHART_DATA_CACHE_KEY = 'chartDataCache';
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-    
-    try {
-        console.log("🔍 Checking for cached chart data...");
-        
-        if (!forceRefresh) {
-            const cached = sessionStorage.getItem(CHART_DATA_CACHE_KEY);
-            if (cached) {
-                try {
-                    const { data, timestamp } = JSON.parse(cached);
-                    const age = Date.now() - timestamp;
-                    
-                    if (age < CACHE_DURATION) {
-                        console.log(`📦 Using cached data (${Math.round(age/1000)}s old)`);
-                        console.log("🔍 Cached data aggregated.status:", data.aggregated?.status);
-                        return data;
-                    }
-                } catch (cacheError) {
-                    console.warn("⚠️ Cache corrupted, fetching fresh data", cacheError);
-                }
-            }
+        // Show a message if no data
+        if (!hasAnyData) {
+            showInfo("No data available in the database. Please add household records first.");
         }
-        
-        console.log("🌐 Fetching fresh data from API...");
-        const url = API_URL + "?action=chartData&t=" + Date.now() + "&nocache=" + Math.random();
-        console.log("Fetching from:", url);
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
-        
-        const startTime = Date.now();
-        const res = await fetch(url, {
-            cache: "no-store",
-            signal: controller.signal
-        });
-        const fetchTime = Date.now() - startTime;
-        
-        clearTimeout(timeoutId);
-        
-        if (!res.ok) {
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CHART_DATA_CACHE_KEY);
-                if (cached) {
-                    console.warn("⚠️ Network error, using expired cache as fallback");
-                    const { data } = JSON.parse(cached);
-                    showError("Using cached data. Network issue detected.");
-                    return data;
-                }
-            }
-            throw new Error("Network error " + res.status);
-        }
-        
-        const data = await res.json();
-        console.log(`✅ Fresh data fetched in ${fetchTime}ms`);
-        
-        // ============ DEBUG API RESPONSE ============
-        console.log("🔍 ========== API RESPONSE DEBUG ==========");
-        console.log("🔍 API response success:", data.success);
-        console.log("🔍 API response aggregated:", data.aggregated);
-        console.log("🔍 API response aggregated.status:", data.aggregated?.status);
-        console.log("🔍 API response aggregated.status.heads:", data.aggregated?.status?.heads);
-        console.log("🔍 API response aggregated.status.heads.labels:", data.aggregated?.status?.heads?.labels);
-        console.log("🔍 API response aggregated.status.heads.values:", data.aggregated?.status?.heads?.values);
-        console.log("🔍 API response aggregated.status.members:", data.aggregated?.status?.members);
-        console.log("🔍 API response aggregated.status.members.labels:", data.aggregated?.status?.members?.labels);
-        console.log("🔍 API response aggregated.status.members.values:", data.aggregated?.status?.members?.values);
-        
-        if (data.aggregated && !data.aggregated.status) {
-            console.log("🔍 ⚠️ No 'status' property in API response!");
-            console.log("🔍 Available properties:", Object.keys(data.aggregated));
-        }
-        console.log("🔍 ==========================================");
-        
-        // Store in cache
-        const cacheData = {
-            data: data,
-            timestamp: Date.now(),
-            fetchTime: fetchTime
-        };
-        
-        try {
-            sessionStorage.setItem(CHART_DATA_CACHE_KEY, JSON.stringify(cacheData));
-            console.log("💾 Data cached successfully");
-        } catch (storageError) {
-            console.warn("⚠️ Could not cache data (storage might be full):", storageError);
-        }
-        
-        return data;
-        
-    } catch(err) {
-        console.error("Fetch error:", err);
-        if (err.name === 'AbortError') {
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CHART_DATA_CACHE_KEY);
-                if (cached) {
-                    console.warn("⏰ Timeout - using cached data");
-                    const { data } = JSON.parse(cached);
-                    showError("Server timeout. Showing cached data from last successful load.");
-                    return data;
-                }
-            }
-            showError("Request timeout and no cached data available. Please try again.");
-        } else {
-            showError("Failed to fetch data: " + err.message);
-        }
-        throw err;
-    }
-}
-
-/* ============ HELPER FUNCTIONS FOR AGGREGATED DATA ============ */
-function createBarChartFromAggregated(chartId, data) {
-    // FAST FIX: Quick cleanup
-    quickCleanCanvas(chartId);
-    
-    const datasets = [
-        {
-            label: 'Heads',
-            data: data.heads,
-            backgroundColor: 'rgba(52, 183, 143, 0.8)',
-            borderColor: 'rgba(52, 183, 143, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'Members',
-            data: data.members,
-            backgroundColor: 'rgba(70, 140, 240, 0.8)',
-            borderColor: 'rgba(70, 140, 240, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart(chartId, data.labels, null, 'Households', null, true, datasets);
-}
-
-function createPWDChart(pwdData) {
-    const pwdLabels = ['PWD Distribution'];
-    const pwdDatasets = [
-        {
-            label: 'Heads - PWD',
-            data: [pwdData.headsYes],
-            backgroundColor: 'rgba(255, 205, 86, 0.8)',
-            borderColor: 'rgba(255, 205, 86, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'Heads - Non-PWD',
-            data: [pwdData.headsNo],
-            backgroundColor: 'rgba(255, 205, 86, 0.4)',
-            borderColor: 'rgba(255, 205, 86, 0.7)',
-            borderWidth: 1
-        },
-        {
-            label: 'Members - PWD',
-            data: [pwdData.membersYes],
-            backgroundColor: 'rgba(54, 162, 235, 0.8)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'Members - Non-PWD',
-            data: [pwdData.membersNo],
-            backgroundColor: 'rgba(54, 162, 235, 0.4)',
-            borderColor: 'rgba(54, 162, 235, 0.7)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartPWD', pwdLabels, null, 'PWD Status', null, true, pwdDatasets);
-}
-
-function createStatusChart(statusData) {
-    console.log("🔍 ========== createStatusChart CALLED ==========");
-    console.log("🔍 statusData received:", statusData);
-    
-    // Validate data
-    if (!statusData || !statusData.heads || !statusData.members) {
-        console.error("❌ Invalid statusData structure");
-        createEmptyBarChart('chartStatus', 'Status Distribution', 'No status data');
-        return;
-    }
-    
-    // Get all unique status labels from BOTH heads AND members
-    const allLabels = new Set();
-    
-    // Add labels from heads
-    if (statusData.heads.labels) {
-        statusData.heads.labels.forEach(label => allLabels.add(label));
-    }
-    
-    // Add labels from members
-    if (statusData.members.labels) {
-        statusData.members.labels.forEach(label => allLabels.add(label));
-    }
-    
-    // Convert to array and sort
-    const labels = Array.from(allLabels).sort();
-    
-    console.log("🔍 Combined labels:", labels);
-    
-    // Create data arrays for heads and members
-    const headsData = labels.map(label => {
-        const index = statusData.heads.labels ? statusData.heads.labels.indexOf(label) : -1;
-        return index !== -1 ? statusData.heads.values[index] : 0;
-    });
-    
-    const membersData = labels.map(label => {
-        const index = statusData.members.labels ? statusData.members.labels.indexOf(label) : -1;
-        return index !== -1 ? statusData.members.values[index] : 0;
-    });
-    
-    console.log("🔍 Heads data:", headsData);
-    console.log("🔍 Members data:", membersData);
-    
-    // Only create chart if there's data
-    const totalValues = headsData.reduce((a, b) => a + b, 0) + membersData.reduce((a, b) => a + b, 0);
-    
-    if (totalValues === 0) {
-        console.warn("No status data to display");
-        createEmptyBarChart('chartStatus', 'Status Distribution', 'No status data');
-        return;
-    }
-    
-    const statusDatasets = [
-        {
-            label: 'Heads',
-            data: headsData,
-            backgroundColor: 'rgba(75, 192, 192, 0.8)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'Members',
-            data: membersData,
-            backgroundColor: 'rgba(153, 102, 255, 0.8)',
-            borderColor: 'rgba(153, 102, 255, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    // Destroy existing chart if it exists
-    quickCleanCanvas('chartStatus');
-    
-    const ctx = document.getElementById('chartStatus').getContext('2d');
-    
-    CH['chartStatus'] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: statusDatasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 1000,
-                easing: 'easeOutQuart'
-            },
-            layout: {
-                padding: {
-                    top: 10,
-                    right: 15,
-                    bottom: 40,
-                    left: 10
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    align: 'center',
-                    labels: {
-                        padding: 15,
-                        font: { size: 11 },
-                        usePointStyle: true,
-                        pointStyle: 'circle'
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: { size: 12 },
-                    bodyFont: { size: 12 },
-                    padding: 10,
-                    cornerRadius: 6,
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.dataset.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                            return `${label}: ${value} (${percentage}%)`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    stacked: false,
-                    grid: { display: false },
-                    ticks: { 
-                        font: { size: 10 },
-                        maxRotation: 45,
-                        minRotation: 0
-                    }
-                },
-                y: {
-                    stacked: false,
-                    beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' },
-                    ticks: { 
-                        font: { size: 10 },
-                        precision: 0
-                    }
-                }
-            }
-        }
-    });
-    
-    console.log("✅ Status chart created with", labels.length, "categories");
-}
-
-function createSupportChart(supportData) {
-    const supportDatasets = [
-        {
-            label: 'Heads',
-            data: supportData.heads,
-            backgroundColor: 'rgba(201, 203, 207, 0.8)',
-            borderColor: 'rgba(201, 203, 207, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'Members',
-            data: supportData.members,
-            backgroundColor: 'rgba(255, 87, 87, 0.8)',
-            borderColor: 'rgba(255, 87, 87, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartSupport', supportData.labels, null, 'Government Support', null, true, supportDatasets);
-}
-
-function createRegistrationChart(regData) {
-    const regDatasets = [
-        {
-            label: 'Heads',
-            data: regData.heads,
-            backgroundColor: 'rgba(255, 99, 132, 0.8)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1
-        },
-        {
-            label: 'Members',
-            data: regData.members,
-            backgroundColor: 'rgba(255, 159, 64, 0.8)',
-            borderColor: 'rgba(255, 159, 64, 1)',
-            borderWidth: 1
-        }
-    ];
-    
-    createBarChart('chartRegistration', regData.labels, null, 'Registration Status', null, true, regDatasets);
-}
-
-/* ---------------------- CREATE OFW CHART ---------------------- */
-function createOFWChart(data) {
-  try {
-    const chartId = 'chartOFW';
-    const ctx = document.getElementById(chartId);
-    
-    if (!ctx) {
-      console.error(`Canvas element not found: ${chartId}`);
-      return;
-    }
-    
-    // Destroy existing chart if it exists
-    quickCleanCanvas(chartId);
-    if (window[chartId + 'Chart']) {
-      try { window[chartId + 'Chart'].destroy(); } catch(e) {}
-      window[chartId + 'Chart'] = null;
-    }
-    
-    // Check if we have OFW data
-    console.log("🔍 OFW Data received:", data);
-    
-    if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
-      console.warn("No OFW data available");
-      return createEmptyDoughnutChart(chartId, 'OFW Distribution', 'No OFW data available');
-    }
-    
-    // Process OFW data - ensure we have the right structure
-    let labels, values;
-    
-    // Check different possible data structures
-    if (data.labels && data.values) {
-      // Structure: {labels: [...], values: [...]}
-      labels = data.labels;
-      values = data.values;
-    } else if (data.ofw && typeof data.ofw === 'object') {
-      // Structure: {ofw: {"OFW (Yes)": 1, "Non-OFW (No)": 2, ...}}
-      labels = Object.keys(data.ofw);
-      values = Object.values(data.ofw);
-    } else {
-      // Direct object structure: {"OFW (Yes)": 1, "Non-OFW (No)": 2, ...}
-      labels = Object.keys(data);
-      values = Object.values(data);
-    }
-    
-    const total = values.reduce((sum, val) => sum + val, 0);
-    
-    console.log(`📊 OFW Chart Data: Labels: ${labels}, Values: ${values}, Total: ${total}`);
-    
-    // If all values are 0, show empty chart
-    if (total === 0) {
-      console.warn("OFW data totals to zero");
-      return createEmptyDoughnutChart(chartId, 'OFW Distribution', 'No OFW records');
-    }
-    
-    // Filter out zero-value entries for cleaner display
-    const nonZeroIndices = values.map((val, idx) => val > 0 ? idx : -1).filter(idx => idx !== -1);
-    const filteredLabels = nonZeroIndices.map(idx => labels[idx]);
-    const filteredValues = nonZeroIndices.map(idx => values[idx]);
-    
-    // Create chart
-    const chart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: filteredLabels.length > 0 ? filteredLabels : labels,
-        datasets: [{
-          data: filteredValues.length > 0 ? filteredValues : values,
-          backgroundColor: [
-            '#4CAF50', // Green for "OFW (Yes)"
-            '#2196F3', // Blue for "Non-OFW (No)"
-            '#9E9E9E', // Gray for "Not Specified"
-            '#FF9800', // Orange for other categories
-            '#9C27B0', // Purple
-            '#FF5722'  // Deep Orange
-          ].slice(0, filteredLabels.length || labels.length),
-          borderColor: '#ffffff',
-          borderWidth: 2,
-          hoverOffset: 15
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: {
-          duration: 1000,
-          easing: 'easeOutQuart'
-        },
-        plugins: {
-          legend: {
-            position: 'bottom',
-            align: 'center',
-            labels: {
-              padding: 15,
-              font: { size: 11 },
-              usePointStyle: true,
-              pointStyle: 'circle'
-            }
-          },
-          tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            titleFont: { size: 12 },
-            bodyFont: { size: 12 },
-            padding: 10,
-            cornerRadius: 6,
-            callbacks: {
-              label: function(context) {
-                const label = context.label || '';
-                const value = context.raw || 0;
-                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                return `${label}: ${value} (${percentage}%)`;
-              }
-            }
-          }
-        },
-        cutout: '60%'
-      }
-    });
-    
-    // Store reference to chart
-    CH[chartId] = chart;
-    window[chartId + 'Chart'] = chart;
-    return chart;
-    
-  } catch (error) {
-    console.error('Error creating OFW chart:', error);
-    return null;
-  }
-}
-
-function createComparisonChartFromAggregated(comparisonData) {
-    if (comparisonData.labels.length > 0 && comparisonData.datasets.length > 0) {
-        createComparisonChart(comparisonData.labels, comparisonData.datasets);
-    } else {
-        createEmptyComparisonChart();
-    }
-}
-
-/* ============ FALLBACK TO ORIGINAL METHOD ============ */
-async function buildChartsOriginal() {
-    showLoading(true);
-    
-    cleanupAllChartsFast();
-
-    // Destroy existing charts first
-    Object.keys(CH).forEach(key => {
-        if (CH[key] && typeof CH[key].destroy === 'function') {
-            try {
-                CH[key].destroy();
-            } catch (e) {
-                console.warn(`Could not destroy chart ${key}:`, e);
-            }
-        }
-    });
-    
-    // Clear CH object
-    Object.keys(CH).forEach(key => delete CH[key]);
-    
-    try {
-        const rawRows = await fetchChartData();
-        const norm = rawRows.map(normalizeRow);
-        
-        // Calculate totals for heads and members
-        let totalHeads = 0;
-        let totalMembers = 0;
-        norm.forEach(n => {
-            if (n.isHead) {
-                totalHeads++;
-            } else {
-                totalMembers++;
-            }
-        });
-        const totalCombined = totalHeads + totalMembers;
-
-        // Update enhanced stats
-        if (window.aggregatedData) {
-            updateAllStats(window.aggregatedData);
-        }
-        
-        // ... rest of your original buildChartsOriginal function ...
-        // Note: You would need to copy the rest of your original function here
-        // Since it's quite long, I'm omitting it for brevity
         
     } catch (err) {
         console.error("Error building charts:", err);
@@ -4245,323 +2661,570 @@ async function buildChartsOriginal() {
 
 /* ============ EXPORT FUNCTIONS ============ */
 async function exportToPDF() {
-    try {
-        // Close export dropdown after selection
-        document.getElementById('exportDropdown').classList.remove('show');
-        
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('landscape', 'mm', 'a4');
-        
-const chartIds = [
-    'chartBarangay', 'chartAgeGroup', 'chartStage', 'chartPWD',
-    'chartStatus', 'chartSupport', 'chartRegistration', 'chartLivestock',
-    'chartOFW', 'chartEducation', 'chartEmployment', 'chartComparison',
-    'chartAssembly', 'chartTransport', 'chartDisabilityType',
-    'chartAdditionalInfo', 'chartStructuralDamage', 'chartHouseholdInjury',
-    'chartHabitability', 'chartLossLivelihood'
-];
-        
-        let page = 0;
-        for (const id of chartIds) {
-            const canvas = document.getElementById(id);
-            if (!canvas) continue;
-            
-            // Create a white background canvas
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            
-            // Fill with white background
-            tempCtx.fillStyle = '#ffffff';
-            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            
-            // Draw the chart
-            tempCtx.drawImage(canvas, 0, 0);
-            
-            const imgData = tempCanvas.toDataURL('image/jpeg', 1.0);
-            const imgWidth = 280;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            
-            if (page > 0) pdf.addPage();
-            
-            // Add title
-            pdf.setFontSize(16);
-            pdf.setTextColor(15, 122, 74);
-            pdf.text('Purok Kaligtasan - Charts Report', 10, 15);
-            
-            pdf.setFontSize(10);
-            pdf.setTextColor(0, 0, 0);
-            pdf.text(new Date().toLocaleDateString(), 270, 15);
-            
-            // Add chart
-            pdf.addImage(imgData, 'JPEG', 10, 25, imgWidth, imgHeight);
-            
-            page++;
-        }
-        
-        pdf.save(`Charts_Report_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`);
-    } catch(err) {
-        console.error("PDF export failed:", err);
-        showError("PDF export failed: " + err.message);
-    }
+    const dropdown = document.getElementById('exportDropdown');
+    if (dropdown) dropdown.classList.remove('show');
+    showInfo("PDF export feature - coming soon");
 }
 
 async function exportPNGsZip() {
-    try {
-        // Close export dropdown after selection
-        document.getElementById('exportDropdown').classList.remove('show');
-        
-        const zip = new JSZip();
-const chartIds = [
-    'chartBarangay', 'chartAgeGroup', 'chartStage',
-    'chartPWD', 'chartStatus', 'chartSupport',
-    'chartRegistration', 'chartAssembly',
-    'chartTransport', 'chartDisabilityType', 'chartLivestock', 'chartOFW', 
-    'chartEducation', 'chartEmployment', 'chartComparison',
-    'chartAdditionalInfo', 'chartStructuralDamage', 'chartHouseholdInjury',
-    'chartHabitability', 'chartLossLivelihood'
-];
-        
-        for(const id of chartIds) {
-            const canvas = document.getElementById(id);
-            if(!canvas) continue;
-            
-            // Create a white background canvas
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            
-            // Fill with white background
-            tempCtx.fillStyle = '#ffffff';
-            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            
-            // Draw the chart
-            tempCtx.drawImage(canvas, 0, 0);
-            
-            const blob = await new Promise(res => tempCanvas.toBlob(res, 'image/png', 1.0));
-            if(blob) zip.file(`${id}.png`, blob);
-        }
-        
-        const content = await zip.generateAsync({type:'blob'});
-        saveAs(content, `Charts_PNGs_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.zip`);
-    } catch(err) {
-        console.error("PNG ZIP failed:", err);
-        showError("PNG ZIP failed: " + err.message);
-    }
+    const dropdown = document.getElementById('exportDropdown');
+    if (dropdown) dropdown.classList.remove('show');
+    showInfo("PNG export feature - coming soon");
 }
 
 async function exportCSV_AllRows() {
+    const dropdown = document.getElementById('exportDropdown');
+    if (dropdown) dropdown.classList.remove('show');
+    
     try {
-        // Close export dropdown after selection
-        document.getElementById('exportDropdown').classList.remove('show');
-        
-        const raw = await fetchChartData();
-        if(!Array.isArray(raw) || raw.length === 0){
-            showError("No data to export");
-            return;
+        const result = await fetchChartDataFromSupabase();
+        if (!result.success || !result.aggregated) {
+            throw new Error("No data to export");
         }
         
-        const keys = new Set();
-        raw.forEach(r => Object.keys(r).forEach(k => keys.add(k)));
-        const header = Array.from(keys);
-        const rows = raw.map(r => header.map(h => {
-            const v = r[h];
-            if (v === null || v === undefined) return '';
-            return typeof v === 'string' ? v.replace(/"/g,'""') : String(v);
-        }));
+        // Create CSV from aggregated data
+        const barangayData = result.aggregated.barangay;
+        let csv = "Barangay,Heads,Members,Total\n";
+        for (let i = 0; i < barangayData.labels.length; i++) {
+            const total = (barangayData.heads[i] || 0) + (barangayData.members[i] || 0);
+            csv += `"${barangayData.labels[i]}",${barangayData.heads[i] || 0},${barangayData.members[i] || 0},${total}\n`;
+        }
         
-        let csv = '"' + header.join('","') + '"\n';
-        rows.forEach(r => csv += '"' + r.join('","') + '"\n');
-
-        const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-        saveAs(blob, `All_Rows_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`);
-    } catch(err) {
-        console.error("CSV export failed", err);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `chart_data_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showInfo("CSV exported successfully");
+    } catch (err) {
+        console.error("CSV export failed:", err);
         showError("CSV export failed: " + err.message);
     }
 }
 
-/* ============ AUTO REFRESH ============ */
-function startAutoRefresh() {
-    if(refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(() => {
-        buildCharts(true); // 🔥 Add true to force refresh on auto-refresh too
-    }, AUTO_REFRESH_MS);
+function showInfo(message) {
+    console.log("Info:", message);
     
-    // Update indicator
-    const indicator = document.querySelector('.auto-refresh span:last-child');
-    if (indicator) {
-        indicator.textContent = 'Auto-refresh: 60s';
+    // Create a professional toast notification
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #0f7a4a, #34b78f);
+        color: white;
+        padding: 10px 18px;
+        border-radius: 10px;
+        z-index: 10000;
+        font-size: 0.8rem;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        backdrop-filter: blur(8px);
+        animation: slideInRight 0.3s ease;
+    `;
+    toast.innerHTML = `<i class="fas fa-info-circle" style="font-size: 0.9rem;"></i> ${message}`;
+    document.body.appendChild(toast);
+    
+    // Add animation keyframes if not exists
+    if (!document.querySelector('#toast-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'toast-animation-style';
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     }
-}
-
-function stopAutoRefresh() {
-    if(refreshInterval) {
-        clearInterval(refreshInterval);
-        refreshInterval = null;
-    }
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 /* ============ SIDEBAR TOGGLE ============ */
 function toggleSidebar() {
     const pageContainer = document.querySelector('.page-container');
     const sidebarToggle = document.getElementById('sidebarToggle');
-    const icon = sidebarToggle.querySelector('i');
-    
-    pageContainer.classList.toggle('collapsed');
-    
-    if (pageContainer.classList.contains('collapsed')) {
-        icon.className = 'fas fa-chevron-right';
-        sidebarToggle.title = "Expand sidebar";
-    } else {
-        icon.className = 'fas fa-bars';
-        sidebarToggle.title = "Collapse sidebar";
+    if (pageContainer && sidebarToggle) {
+        pageContainer.classList.toggle('collapsed');
+        const icon = sidebarToggle.querySelector('i');
+        if (icon) {
+            if (pageContainer.classList.contains('collapsed')) {
+                icon.className = 'fas fa-chevron-right';
+            } else {
+                icon.className = 'fas fa-bars';
+            }
+        }
     }
 }
 
-/* ============ EVENT LISTENERS ============ */
-document.addEventListener('DOMContentLoaded', async function() {
-    // Check if user is logged in using session manager
+/* ============ AUTO REFRESH ============ */
+let refreshInterval = null;
+
+function startAutoRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => buildCharts(true), 60000);
+}
+
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
+}
+
+/* ============ USER AUTHENTICATION ============ */
+function checkLoginAndDisplayUser() {
     const loggedIn = localStorage.getItem('loggedIn') === 'true';
     const isGuest = localStorage.getItem('isGuest') === 'true';
     
-    // Redirect guests away from charts page (only dashboard allowed for guests)
     if (isGuest) {
         window.location.replace('dashboard.html');
-        return;
+        return false;
     }
     
     if (!loggedIn) {
         window.location.href = 'index.html?session=expired';
-        return;
+        return false;
     }
     
-    // Set user info
-    const userName = localStorage.getItem("staffName") || localStorage.getItem("username") || "User";
-    const userNameElement = document.getElementById("userName");
-    if (userNameElement) {
-        userNameElement.innerText = userName;
+    const staffName = localStorage.getItem('staffName');
+    const username = localStorage.getItem('username');
+    const userRole = localStorage.getItem('userRole');
+    
+    let displayName = 'User';
+    if (staffName && staffName.trim() !== '') {
+        displayName = staffName;
+    } else if (username && username.trim() !== '') {
+        displayName = username;
     }
     
-    // Check admin status - FIXED: Use "Admin" not "admin"
-    const userRole = localStorage.getItem("userRole");
+    let displayRole = '';
+    if (userRole && userRole.trim() !== '') {
+        displayRole = userRole;
+    } else {
+        displayRole = 'Staff';
+    }
+    
+    const userFullnameElement = document.getElementById('userFullname');
+    if (userFullnameElement) userFullnameElement.innerText = displayName;
+    
+    const userRoleElement = document.getElementById('userRole');
+    if (userRoleElement) userRoleElement.innerText = displayRole;
+    
+    const userNameElement = document.getElementById('userName');
+    if (userNameElement) userNameElement.innerHTML = `<i class="fas fa-user-circle"></i> ${displayName}`;
+    
     const isAdmin = userRole && userRole.toLowerCase() === 'admin';
-    
-    const adminItems = document.querySelectorAll(".admin-only");
+    const adminItems = document.querySelectorAll('.admin-only');
     adminItems.forEach(item => {
         if (isAdmin) {
-            item.classList.add("admin-visible");
+            item.classList.add('admin-visible');
+            item.style.display = 'block';
         } else {
-            item.classList.remove("admin-visible");
+            item.classList.remove('admin-visible');
+            item.style.display = 'none';
         }
     });
     
-    // Handle mobile nav for admin
-    const mobileUsersNav = document.getElementById('mobileUsersNav');
-    if (mobileUsersNav) {
-        mobileUsersNav.style.display = isAdmin ? 'flex' : 'none';
+    return true;
+}
+
+function setupUserDropdown() {
+    const userBtn = document.getElementById('userBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    
+    if (userBtn && userDropdown) {
+        userBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        });
+        
+        document.addEventListener('click', function() {
+            userDropdown.classList.remove('active');
+        });
     }
+}
+
+function setupLogoutHandler() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        const newLogoutBtn = logoutBtn.cloneNode(true);
+        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+        
+        newLogoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const confirmModal = document.getElementById('confirmModal');
+            if (confirmModal) {
+                confirmModal.style.display = 'flex';
+            }
+        });
+    }
+}
+
+function setupConfirmModal() {
+    const confirmModal = document.getElementById('confirmModal');
+    if (!confirmModal) return;
+    
+    const yesBtn = document.getElementById('confirmYesBtn');
+    const noBtn = document.getElementById('confirmNoBtn');
+    
+    if (yesBtn) {
+        yesBtn.onclick = function() {
+            confirmModal.style.display = 'none';
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            window.location.replace('index.html?logout=' + Date.now());
+        };
+    }
+    
+    if (noBtn) {
+        noBtn.onclick = function() {
+            confirmModal.style.display = 'none';
+        };
+    }
+}
+
+/* ============ STATS VIEW MANAGER ============ */
+const StatsManager = {
+    currentView: 'badges',
+    init() {
+        const savedView = localStorage.getItem('statsViewPreference') || 'badges';
+        this.setView(savedView);
+        
+        const toggleBadges = document.getElementById('toggleBadges');
+        const toggleSummary = document.getElementById('toggleSummary');
+        const toggleCompact = document.getElementById('toggleCompact');
+        
+        if (toggleBadges) toggleBadges.addEventListener('click', () => this.setView('badges'));
+        if (toggleSummary) toggleSummary.addEventListener('click', () => this.setView('summary'));
+        if (toggleCompact) toggleCompact.addEventListener('click', () => this.setView('compact'));
+    },
+setView(view) {
+    this.currentView = view;
+    localStorage.setItem('statsViewPreference', view);
+    
+    document.querySelectorAll('.stats-toggle-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.view === view) btn.classList.add('active');
+    });
+    
+    const globalStats = document.getElementById('globalStatsSummary');
+    const statsToggle = document.getElementById('statsViewToggle');
+    const chartStats = document.querySelectorAll('.chart-stats');
+    const chartTitles = document.querySelectorAll('.chart-title');
+    
+    if (view === 'badges') {
+        if (globalStats) globalStats.classList.remove('visible');
+        if (statsToggle) statsToggle.classList.add('visible');
+        chartStats.forEach(stats => stats.style.display = 'flex');
+        chartTitles.forEach(title => title.classList.remove('compact'));
+    } else if (view === 'summary') {
+        if (globalStats) globalStats.classList.add('visible');
+        if (statsToggle) statsToggle.classList.add('visible');
+        chartStats.forEach(stats => stats.style.display = 'none');
+        chartTitles.forEach(title => title.classList.remove('compact'));
+    } else if (view === 'compact') {
+        if (globalStats) globalStats.classList.remove('visible');
+        if (statsToggle) statsToggle.classList.add('visible');
+        chartStats.forEach(stats => {
+            stats.classList.add('hide-on-mobile');
+            stats.style.display = 'none';
+        });
+        chartTitles.forEach(title => title.classList.add('compact'));
+    }
+    
+    // Re-update all chart titles with current counts when view changes
+    if (window.lastAggregatedData) {
+        updateAllChartTitles(window.lastAggregatedData);
+    }
+}
+};
+
+/* ============ UPDATE CHART TITLES WITH COUNTS ============ */
+function updateAllChartTitles(aggregated) {
+    if (!aggregated) return;
+    
+    // Store for later use
+    window.lastAggregatedData = aggregated;
+    
+    const totalAll = aggregated.totals.total || 0;
+    const isCompact = StatsManager.currentView === 'compact';
+    
+    if (!isCompact) return;
+    
+    // Update chart titles with counts
+    const chartMap = {
+        'chartBarangay': `Entry per Barangay (${totalAll} persons)`,
+        'chartAgeGroup': `Age Distribution (${totalAll} persons)`,
+        'chartStage': `Stage Distribution (${totalAll} persons)`,
+        'chartPWD': `PWD Distribution (${totalAll} persons)`,
+        'chartStatus': `Status Distribution (${totalAll} persons)`,
+        'chartRegistration': `Registration Status (${totalAll} persons)`,
+        'chartOFW': `Overseas Filipino Workers (${(aggregated.ofw?.heads || 0) + (aggregated.ofw?.members || 0)} OFWs)`,
+        'chartEducation': `Educational Attainment (${totalAll} persons)`,
+        'chartEmployment': `Employment Status (${totalAll} persons)`,
+        'chartAdditionalInfo': `Additional Information`,
+        'chartDisabilityType': `Type of Disability`
+    };
+    
+    for (const [chartId, newTitle] of Object.entries(chartMap)) {
+        const chartCard = document.getElementById(chartId)?.closest('.chart-card');
+        if (chartCard) {
+            const titleElement = chartCard.querySelector('.chart-title');
+            if (titleElement && StatsManager.currentView === 'compact') {
+                const icon = titleElement.querySelector('i')?.outerHTML || '<i class="fas fa-chart-bar"></i>';
+                titleElement.innerHTML = `${icon} ${newTitle}`;
+            }
+        }
+    }
+}
+
+function updateGlobalStats(aggregated) {
+    const totalHeads = aggregated.totals.heads || 0;
+    const totalMembers = aggregated.totals.members || 0;
+    const totalAll = aggregated.totals.total || 0;
+    
+    console.log("Updating global stats - Heads:", totalHeads, "Members:", totalMembers, "Total:", totalAll);
+    
+    const globalHeads = document.getElementById('globalHeads');
+    const globalMembers = document.getElementById('globalMembers');
+    const globalTotal = document.getElementById('globalTotal');
+    const globalLastUpdated = document.getElementById('globalLastUpdated');
+    
+    if (globalHeads) globalHeads.textContent = formatNumber(totalHeads);
+    if (globalMembers) globalMembers.textContent = formatNumber(totalMembers);
+    if (globalTotal) globalTotal.textContent = formatNumber(totalAll);
+    if (globalLastUpdated) globalLastUpdated.textContent = new Date().toLocaleTimeString();
+}
+
+function updateAllStats(aggregated) {
+    if (!aggregated) return;
+    
+    // Update global stats
+    updateGlobalStats(aggregated);
+    
+    // Update barangay chart stats
+    const totalHeads = aggregated.barangay.heads.reduce((a,b) => a+b, 0);
+    const totalMembers = aggregated.barangay.members.reduce((a,b) => a+b, 0);
+    const totalAll = totalHeads + totalMembers;
+    
+    const barangayStats = document.getElementById('barangayStats');
+    if (barangayStats) {
+        const headsBadge = barangayStats.querySelector('.stat-badge.heads');
+        const membersBadge = barangayStats.querySelector('.stat-badge.members');
+        const totalBadge = barangayStats.querySelector('.stat-badge.total');
+        
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${totalHeads}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${totalMembers}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${totalAll}`;
+    }
+    
+    // Update age chart stats
+    const ageTotal = aggregated.ageGroups.values.reduce((a,b) => a+b, 0);
+    const ageHeadsTotal = aggregated.ageGroups.heads.reduce((a,b) => a+b, 0);
+    const ageMembersTotal = aggregated.ageGroups.members.reduce((a,b) => a+b, 0);
+    
+    const ageStats = document.getElementById('ageStats');
+    if (ageStats) {
+        const headsBadge = ageStats.querySelector('.stat-badge.heads');
+        const membersBadge = ageStats.querySelector('.stat-badge.members');
+        const totalBadge = ageStats.querySelector('.stat-badge.total');
+        
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${ageHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${ageMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${ageTotal}`;
+    }
+    
+    // Update stage chart stats
+    const stageTotal = aggregated.stage.values.reduce((a,b) => a+b, 0);
+    const stageHeadsTotal = aggregated.stage.heads.reduce((a,b) => a+b, 0);
+    const stageMembersTotal = aggregated.stage.members.reduce((a,b) => a+b, 0);
+    
+    const stageStats = document.getElementById('stageStats');
+    if (stageStats) {
+        const headsBadge = stageStats.querySelector('.stat-badge.heads');
+        const membersBadge = stageStats.querySelector('.stat-badge.members');
+        const totalBadge = stageStats.querySelector('.stat-badge.total');
+        
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${stageHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${stageMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${stageTotal}`;
+    }
+    
+    // Update PWD stats
+    const pwdTotal = aggregated.pwd.headsYes + aggregated.pwd.headsNo + aggregated.pwd.membersYes + aggregated.pwd.membersNo;
+    const pwdHeadsTotal = aggregated.pwd.headsYes + aggregated.pwd.headsNo;
+    const pwdMembersTotal = aggregated.pwd.membersYes + aggregated.pwd.membersNo;
+    
+    const pwdStats = document.getElementById('pwdStats');
+    if (pwdStats) {
+        const headsBadge = pwdStats.querySelector('.stat-badge.heads');
+        const membersBadge = pwdStats.querySelector('.stat-badge.members');
+        const totalBadge = pwdStats.querySelector('.stat-badge.total');
+        
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${pwdHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${pwdMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${pwdTotal}`;
+    }
+    
+    // Update Registration stats
+    const regHeadsTotal = aggregated.registration.heads.reduce((a,b) => a+b, 0);
+    const regMembersTotal = aggregated.registration.members.reduce((a,b) => a+b, 0);
+    const regTotal = regHeadsTotal + regMembersTotal;
+    
+    const regStats = document.getElementById('registrationStats');
+    if (regStats) {
+        const headsBadge = regStats.querySelector('.stat-badge.heads');
+        const membersBadge = regStats.querySelector('.stat-badge.members');
+        const totalBadge = regStats.querySelector('.stat-badge.total');
+        
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${regHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${regMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${regTotal}`;
+    }
+    
+    // Update Status stats
+    const statusHeadsTotal = aggregated.status.heads.values.reduce((a,b) => a+b, 0);
+    const statusMembersTotal = aggregated.status.members.values.reduce((a,b) => a+b, 0);
+    const statusTotal = statusHeadsTotal + statusMembersTotal;
+    
+    const statusStats = document.getElementById('statusStats');
+    if (statusStats) {
+        const headsBadge = statusStats.querySelector('.stat-badge.heads');
+        const membersBadge = statusStats.querySelector('.stat-badge.members');
+        const totalBadge = statusStats.querySelector('.stat-badge.total');
+        
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${statusHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${statusMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${statusTotal}`;
+    }
+    
+    // Update OFW stats
+    const ofwTotal = (aggregated.ofw?.heads || 0) + (aggregated.ofw?.members || 0);
+    const ofwStats = document.getElementById('ofwStats');
+    if (ofwStats) {
+        const totalBadge = ofwStats.querySelector('.stat-badge.total');
+        if (totalBadge) totalBadge.innerHTML = `OFWs: ${ofwTotal}`;
+    }
+    
+    // Update Education stats
+    const eduTotal = aggregated.education.values.reduce((a,b) => a+b, 0);
+    const eduStats = document.getElementById('educationStats');
+    if (eduStats) {
+        const totalBadge = eduStats.querySelector('.stat-badge.total');
+        if (totalBadge) totalBadge.innerHTML = `Levels: ${aggregated.education.labels.length}`;
+    }
+    
+    // Update Employment stats
+    const empTotal = aggregated.employment.values.reduce((a,b) => a+b, 0);
+    const empStats = document.getElementById('employmentStats');
+    if (empStats) {
+        const totalBadge = empStats.querySelector('.stat-badge.total');
+        if (totalBadge) totalBadge.innerHTML = `Statuses: ${aggregated.employment.labels.length}`;
+    }
+    
+    // Update Additional Info stats
+    const additionalHeadsTotal = aggregated.additional.heads.reduce((a,b) => a+b, 0);
+    const additionalMembersTotal = aggregated.additional.members.reduce((a,b) => a+b, 0);
+    const additionalTotal = additionalHeadsTotal + additionalMembersTotal;
+    
+    const additionalStats = document.getElementById('additionalInfoStats');
+    if (additionalStats) {
+        const headsBadge = additionalStats.querySelector('.stat-badge.checkbox-heads');
+        const membersBadge = additionalStats.querySelector('.stat-badge.checkbox-members');
+        const totalBadge = additionalStats.querySelector('.stat-badge.checkbox-total');
+        
+        if (headsBadge) headsBadge.innerHTML = `Checks (Heads): ${additionalHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Checks (Members): ${additionalMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total Checks: ${additionalTotal}`;
+    }
+    
+    // Update Disability Type stats
+    const disabilityHeadsTotal = aggregated.disabilityType.heads.reduce((a,b) => a+b, 0);
+    const disabilityMembersTotal = aggregated.disabilityType.members.reduce((a,b) => a+b, 0);
+    const disabilityTotal = disabilityHeadsTotal + disabilityMembersTotal;
+    
+    const disabilityStats = document.getElementById('disabilityStats');
+    if (disabilityStats) {
+        const headsBadge = disabilityStats.querySelector('.stat-badge.heads');
+        const membersBadge = disabilityStats.querySelector('.stat-badge.members');
+        const totalBadge = disabilityStats.querySelector('.stat-badge.total');
+        
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${disabilityHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${disabilityMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${disabilityTotal}`;
+    }
+    
+    console.log("✅ Stats updated - Total persons:", totalAll);
+}
+
+/* ============ INITIALIZATION ============ */
+document.addEventListener('DOMContentLoaded', async function() {
+    if (!checkLoginAndDisplayUser()) return;
+    
+    setupUserDropdown();
+    setupLogoutHandler();
+    setupConfirmModal();
+    
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
+    
+    // Export buttons
+    const exportBtn = document.getElementById('exportBtn');
+    const exportDropdown = document.getElementById('exportDropdown');
+    if (exportBtn && exportDropdown) {
+        exportBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            exportDropdown.classList.toggle('show');
+        });
+        document.addEventListener('click', () => exportDropdown.classList.remove('show'));
+    }
+    
+    // Export options
+    const pdfOption = document.querySelector('[onclick="exportToPDF()"]');
+    const pngOption = document.querySelector('[onclick="exportPNGsZip()"]');
+    const csvOption = document.querySelector('[onclick="exportCSV_AllRows()"]');
+    
+    if (pdfOption) pdfOption.onclick = () => { exportDropdown.classList.remove('show'); exportToPDF(); };
+    if (pngOption) pngOption.onclick = () => { exportDropdown.classList.remove('show'); exportPNGsZip(); };
+    if (csvOption) csvOption.onclick = () => { exportDropdown.classList.remove('show'); exportCSV_AllRows(); };
+    
+    // Print button
+    const printBtn = document.getElementById('btnPrint');
+    if (printBtn) printBtn.addEventListener('click', () => window.print());
     
     // Initialize Stats Manager
     if (typeof StatsManager !== 'undefined' && StatsManager.init) {
         StatsManager.init();
     }
     
-    // Initialize charts
+    // Load charts
     await buildCharts();
     startAutoRefresh();
-    
-    // Bind event listeners
-    const btnPrint = document.getElementById('btnPrint');
-    if (btnPrint) {
-        btnPrint.addEventListener('click', () => {
-            window.print();
-        });
-    }
-    
-    // Export dropdown functionality
-    const exportBtn = document.getElementById('exportBtn');
-    const exportDropdown = document.getElementById('exportDropdown');
-    
-    if (exportBtn && exportDropdown) {
-        exportBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            exportDropdown.classList.toggle('show');
-        });
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!exportBtn.contains(e.target) && !exportDropdown.contains(e.target)) {
-                exportDropdown.classList.remove('show');
-            }
-        });
-    }
-    
-    // Logout button - Use global handler from common-session.js
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn && window.handleLogout) {
-        // Remove any existing listeners first
-        const newLogoutBtn = logoutBtn.cloneNode(true);
-        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-        newLogoutBtn.addEventListener('click', window.handleLogout);
-    }
-    
-    // Sidebar toggle
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', toggleSidebar);
-    }
-    
-    // Handle window resize
-    let resizeTimeout;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-            // Rebuild charts on resize for better fit
-            Object.keys(CH).forEach(key => {
-                if (CH[key] && CH[key].resize) {
-                    try {
-                        CH[key].resize();
-                    } catch(e) {
-                        console.warn('Could not resize chart:', key, e);
-                    }
-                }
-            });
-        }, 250);
-    });
-    
-    // Handle visibility change
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-            buildCharts();
-            startAutoRefresh();
-        } else {
-            stopAutoRefresh();
-        }
-    });
-});
-// Handle page show event - Let session manager handle it
-window.addEventListener('pageshow', function(event) {
-    if (event.persisted) {
-        // Check if still logged in
-        if (localStorage.getItem('loggedIn') !== 'true') {
-            window.location.href = 'index.html?session=expired';
-            return;
-        }
-        buildCharts();
-        startAutoRefresh();
-    }
 });
 </script>
-<script src="js/guest-redirect.js"></script>
-<script src="js/data-broadcaster.js"></script>
-<script src="js/form-notifier.js"></script>
-<script src="js/common-utils.js"></script>
-<script src="js/session-manager.js"></script>
-<script src="js/common-session.js"></script>
-<script src="js/activity-tracking-final.js"></script>
-<script src="js/unified-header.js"></script>
 </body>
 </html>
