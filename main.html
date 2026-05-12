@@ -3,11 +3,16 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <!-- PREVENT CACHING -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 <title>Home — Purok Kaligtasan 133</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="css/header-styles.css">
 <link rel="stylesheet" href="css/uniform-styles.css">
 <link rel="stylesheet" href="css/main-style.css">
+<script src="js/session-check.js"></script>
 <style>
    :root{
     --bg:#f6f8f7;
@@ -77,7 +82,7 @@
    
    .page-container{
     max-width:1200px;
-    margin:20px auto;
+    margin: auto;
     padding:12px;
     display:grid;
     grid-template-columns:260px 1fr;
@@ -799,88 +804,310 @@
   </div>
 </nav>
 
+<!-- Force Logout Modal (Device A receives this) -->
+<div id="forceLogoutModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">Force Logout Request</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;">Someone is trying to log in to your account from another device.</p>
+            <p style="margin: 0; color: #1e293b; font-size: 0.8rem; font-weight: 500;">Do you want to allow force logout?</p>
+            <div style="margin-top: 8px; font-size: 0.7rem; color: #ff7a00;" id="requestTimer">This request will expire in 30 seconds</div>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="denyForceLogoutBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> Deny
+            </button>
+            <button id="allowForceLogoutBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Allow
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/force-logout.js"></script>
+
+<!-- Force Logout Modal (Device A) -->
+<div id="forceLogoutModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">Force Logout Request</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;">Someone is trying to log in to your account from another device.</p>
+            <p style="margin: 0; color: #1e293b; font-size: 0.8rem; font-weight: 500;">Do you want to allow force logout?</p>
+            <div style="margin-top: 8px; font-size: 0.7rem; color: #ff7a00;" id="requestTimer">This request will expire in 30 seconds</div>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="denyForceLogoutBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> Deny
+            </button>
+            <button id="allowForceLogoutBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Allow
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10001; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-question-circle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;" id="confirmTitle">Confirm Action</h3>
+            <p style="margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;" id="confirmMessage">Are you sure? you want to logout?</p>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="confirmNoBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> No
+            </button>
+            <button id="confirmYesBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Yes
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Info Modal -->
+<div id="infoModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10001; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;" id="infoIcon">
+                <i class="fas fa-info-circle" style="font-size: 1.6rem; color: #0f7a4a; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;" id="infoTitle">Notice</h3>
+            <p style="margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;" id="infoMessage"></p>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="infoOkBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> OK
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Debug Panel -->
+<div style="position: fixed; bottom: 10px; left: 10px; background: #1a1a2e; color: #0f0; padding: 8px 12px; border-radius: 8px; font-size: 11px; z-index: 9999; font-family: monospace; border: 1px solid #0f0;">
+    <div><strong>🔍 Force Logout Monitor</strong></div>
+    <div>🔄 Polling: <span id="debugPollingStatus">Checking...</span></div>
+    <div>🆔 Session: <span id="debugSessionId">-</span></div>
+    <div>👤 User: <span id="debugUserId">-</span></div>
+    <button id="testForceLogoutBtn" style="margin-top: 5px; background: #0f0; color: #000; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;">📢 Test Request</button>
+</div>
+
+<style>
+    @keyframes modalSlideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/force-logout.js"></script>
+
 <script>
-function handleLogout() {
+// ============ MAIN.HTML - DASHBOARD PAGE ============
+const SUPABASE_URL = 'https://opibntxwagnjazpbtxrv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UwyTZU3BYj41z0D7beu9Hg_pIZcLeWN';
+let supabaseClient;
+
+if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+}
+
+// Debug display
+function updateDebugDisplay() {
+    const sessionId = localStorage.getItem('sessionId');
+    const userId = localStorage.getItem('userId');
+    const debugSession = document.getElementById('debugSessionId');
+    const debugUser = document.getElementById('debugUserId');
+    const debugStatus = document.getElementById('debugPollingStatus');
+    
+    if (debugSession) debugSession.textContent = sessionId ? sessionId.substring(0, 8) + '...' : '-';
+    if (debugUser) debugUser.textContent = userId ? userId.substring(0, 8) + '...' : '-';
+    
+    const isActive = window.ForceLogout && window.ForceLogout._pollingActive;
+    if (debugStatus) {
+        debugStatus.textContent = isActive ? '✅ ACTIVE' : '❌ INACTIVE';
+        debugStatus.style.color = isActive ? '#0f0' : '#f00';
+    }
+}
+
+async function testRequest() {
+    const userId = localStorage.getItem('userId');
+    const sessionId = localStorage.getItem('sessionId');
+    if (!userId || !sessionId) {
+        alert('No active session');
+        return;
+    }
+    
+    const { error } = await supabaseClient
+        .from('force_logout_requests')
+        .insert({
+            user_id: userId,
+            request_session_id: crypto.randomUUID(),
+            target_session_id: sessionId,
+            status: 'pending',
+            expires_at: new Date(Date.now() + 30000).toISOString()
+        });
+    
+    if (error) {
+        alert('Error: ' + error.message);
+    } else {
+        alert('✅ Test request created! Modal should appear.');
+    }
+}
+
+async function performLogout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+        logoutBtn.disabled = true;
+    }
+    
+    if (window.ForceLogout && window.ForceLogout.terminateSession) {
+        await window.ForceLogout.terminateSession();
+    } else if (supabaseClient) {
+        const sessionId = localStorage.getItem('sessionId');
+        if (sessionId) {
+            await supabaseClient
+                .from('user_sessions')
+                .update({ is_active: false, terminated_at: new Date().toISOString() })
+                .eq('session_id', sessionId);
+        }
+    }
+    
     localStorage.clear();
     sessionStorage.clear();
-    const logoutUrl = 'index.html?logout=true&t=' + Date.now();
-    window.location.replace(logoutUrl);
+    window.location.href = 'index.html';
+}
+
+async function handleLogout() {
+    const confirmModal = document.getElementById('confirmModal');
+    if (confirmModal) {
+        confirmModal.style.display = 'flex';
+        document.getElementById('confirmYesBtn').onclick = async () => {
+            confirmModal.style.display = 'none';
+            await performLogout();
+        };
+        document.getElementById('confirmNoBtn').onclick = () => {
+            confirmModal.style.display = 'none';
+        };
+    } else {
+        if (confirm('Logout?')) await performLogout();
+    }
+}
+
+// ✅ FIXED: Allow guest users to pass session check
+async function checkSession() {
+    const loggedIn = localStorage.getItem('loggedIn') === 'true';
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    const sessionId = localStorage.getItem('sessionId');
+    
+    // ✅ ALLOW GUEST USERS
+    if (isGuest) {
+        console.log('👤 Guest user - allowing access to dashboard');
+        return true;
+    }
+    
+    // Regular user validation
+    if (!loggedIn || !sessionId) {
+        console.log('❌ No valid session, redirecting to login');
+        window.location.href = 'index.html';
+        return false;
+    }
+    
+    return true;
+}
+
+// ✅ FIXED: Handle guest user display
+function displayUserInfo() {
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    const staffName = localStorage.getItem('staffName');
+    const username = localStorage.getItem('username');
+    const userRole = localStorage.getItem('userRole');
+    
+    let displayName = staffName || username || 'User';
+    let displayRole = userRole || 'Staff';
+    
+    if (isGuest) {
+        displayName = 'Guest User';
+        displayRole = 'Guest';
+    }
+    
+    const userFullnameElem = document.getElementById('userFullname');
+    if (userFullnameElem) userFullnameElem.innerText = displayName;
+    
+    const userRoleElem = document.getElementById('userRole');
+    if (userRoleElem) userRoleElem.innerText = displayRole;
+}
+
+// ✅ FIXED: Hide admin features for guests
+function setupAdminVisibility() {
+    const userRole = localStorage.getItem('userRole');
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    
+    if (isGuest) {
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.style.display = 'none';
+        });
+        return;
+    }
+    
+    const isAdmin = userRole && userRole.toLowerCase() === 'admin';
+    document.querySelectorAll('.admin-only').forEach(el => {
+        el.style.display = isAdmin ? '' : 'none';
+        if (isAdmin) el.classList.add('admin-visible');
+    });
 }
 
 function toggleSidebar() {
-    const pageContainer = document.querySelector('.page-container');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    
-    // Add null checks
-    if (!pageContainer || !sidebarToggle) return;
-    
-    const icon = sidebarToggle.querySelector('i');
-    
-    pageContainer.classList.toggle('collapsed');
-    
-    if (pageContainer.classList.contains('collapsed')) {
-        if (icon) icon.className = 'fas fa-chevron-right';
-        sidebarToggle.title = "Expand sidebar";
-    } else {
-        if (icon) icon.className = 'fas fa-bars';
-        sidebarToggle.title = "Collapse sidebar";
+    document.querySelector('.page-container').classList.toggle('collapsed');
+}
+
+function setupUserDropdown() {
+    const userBtn = document.getElementById('userBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    if (userBtn && userDropdown) {
+        userBtn.onclick = (e) => {
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        };
+        document.onclick = () => userDropdown.classList.remove('active');
     }
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
-    const loggedIn = localStorage.getItem('loggedIn') === 'true';
-    const isGuest = localStorage.getItem('isGuest') === 'true';
+    if (!await checkSession()) return;
+    displayUserInfo();
+    setupAdminVisibility();
+    setupUserDropdown();
     
-    if (isGuest) {
-        window.location.replace('dashboard.html');
-        return;
-    }
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.onclick = (e) => { e.preventDefault(); handleLogout(); };
     
-if (loggedIn) {
-    const userName = localStorage.getItem("staffName") || localStorage.getItem("username") || "User";
-    const userFullnameElem = document.getElementById("userFullname");
-    if (userFullnameElem) {
-        userFullnameElem.innerText = userName;
-    }
-        
-        const userRole = localStorage.getItem("userRole");
-        const isAdmin = userRole && userRole.toLowerCase() === 'admin';
-        
-        const adminItems = document.querySelectorAll(".admin-only");
-        adminItems.forEach(item => {
-            if (isAdmin) {
-                item.classList.add("admin-visible");
-            } else {
-                item.classList.remove("admin-visible");
-            }
-        });
-        
-        const mobileUsersNav = document.getElementById('mobileUsersNav');
-        if (mobileUsersNav) {
-            if (isAdmin) {
-                mobileUsersNav.classList.add('admin-visible');
-            } else {
-                mobileUsersNav.classList.remove('admin-visible');
-            }
-        }
-        
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', handleLogout);
-        }
-        
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', toggleSidebar);
-        }
-    }
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) sidebarToggle.onclick = toggleSidebar;
+    
+    const testBtn = document.getElementById('testForceLogoutBtn');
+    if (testBtn) testBtn.onclick = testRequest;
+    
+    const infoOkBtn = document.getElementById('infoOkBtn');
+    if (infoOkBtn) infoOkBtn.onclick = () => {
+        document.getElementById('infoModal').style.display = 'none';
+    };
+    
+    setInterval(updateDebugDisplay, 1000);
+    updateDebugDisplay();
 });
 </script>
-<script src="js/common-utils.js"></script>
-<script src="js/session-manager.js"></script>
-<script src="js/common-session.js"></script>
-<script src="js/guest-redirect.js"></script>
-<script src="js/activity-tracking-final.js"></script>
-<script src="js/unified-header.js"></script>
 </body>
 </html>
