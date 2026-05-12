@@ -7525,7 +7525,8 @@ function populateEditFormFields(head, members) {
             loadMemberCalamityFiles(members, 0);
         }
     }, 100);
-    
+    syncAnimalCheckboxes();
+
     captureOriginalEditFormState();
 }
 
@@ -7590,28 +7591,71 @@ function restrictEditPanelBarangay() {
 }
 
 function syncAnimalCheckboxes() {
-    document.querySelectorAll('#editPanel .animal-card input[type="checkbox"]').forEach(checkbox => {
-        const animalCard = checkbox.closest('.animal-card');
-        const qtyInput = animalCard ? animalCard.querySelector('.qty') : null;
-        if (qtyInput) {
-            qtyInput.disabled = !checkbox.checked;
-            checkbox.addEventListener('change', () => {
-                qtyInput.disabled = !checkbox.checked;
-                if (checkbox.checked && !qtyInput.value) qtyInput.value = '1';
-                else if (!checkbox.checked) qtyInput.value = '';
-                markEditFormChanged();
-            });
-            qtyInput.addEventListener('input', () => {
-                if (qtyInput.value && qtyInput.value !== '0') {
-                    if (!checkbox.checked) checkbox.checked = true;
-                    qtyInput.disabled = false;
-                } else if (qtyInput.value === '' || qtyInput.value === '0') {
-                    checkbox.checked = false;
-                    qtyInput.disabled = true;
-                }
-                markEditFormChanged();
-            });
+    console.log('syncAnimalCheckboxes called - setting up animal handlers');
+    
+    // Process each animal card in the edit panel
+    const animalCards = document.querySelectorAll('#editPanel .animal-card');
+    
+    animalCards.forEach(card => {
+        const checkbox = card.querySelector('input[type="checkbox"]');
+        const qtyInput = card.querySelector('.qty');
+        
+        if (!checkbox || !qtyInput) return;
+        
+        // Remove existing listeners by cloning (to avoid duplicates)
+        const newCheckbox = checkbox.cloneNode(true);
+        const newQtyInput = qtyInput.cloneNode(true);
+        
+        checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+        qtyInput.parentNode.replaceChild(newQtyInput, qtyInput);
+        
+        // CRITICAL: Set initial state based on checkbox
+        if (newCheckbox.checked) {
+            newQtyInput.disabled = false;
+            if (!newQtyInput.value || newQtyInput.value === '0' || newQtyInput.value === '') {
+                newQtyInput.value = '1';
+            }
+        } else {
+            newQtyInput.disabled = true;
         }
+        
+        // Add change event to checkbox
+        newCheckbox.addEventListener('change', function(e) {
+            console.log(`Checkbox ${this.id} changed to: ${this.checked}`);
+            if (this.checked) {
+                // Enable quantity field
+                newQtyInput.disabled = false;
+                // If quantity is empty or 0, set to 1
+                if (!newQtyInput.value || newQtyInput.value === '0' || newQtyInput.value === '') {
+                    newQtyInput.value = '1';
+                    console.log(`Set ${this.id} quantity to 1`);
+                }
+            } else {
+                // Disable and clear quantity field
+                newQtyInput.disabled = true;
+                newQtyInput.value = '';
+                console.log(`Cleared ${this.id} quantity`);
+            }
+            markEditFormChanged();
+        });
+        
+        // Add input event to quantity field
+        newQtyInput.addEventListener('input', function() {
+            console.log(`Quantity ${newCheckbox.id} changed to: ${this.value}`);
+            if (this.value && this.value !== '0' && this.value !== '') {
+                // If quantity has a value, ensure checkbox is checked
+                if (!newCheckbox.checked) {
+                    newCheckbox.checked = true;
+                    this.disabled = false;
+                }
+            } else if (this.value === '' || this.value === '0') {
+                // If quantity is empty or 0, uncheck and disable
+                newCheckbox.checked = false;
+                this.disabled = true;
+                this.value = '';
+            }
+            markEditFormChanged();
+        });
     });
 }
 
@@ -9223,6 +9267,11 @@ function buildCalamityDocsArray(uploadedUrls, editHead, householdId, userFullNam
 function openEditPanel() {
     $('editPanel')?.classList.add('open');
     $('panelOverlay')?.classList.add('show');
+    
+    // Re-attach animal checkbox handlers after panel is visible
+    setTimeout(() => {
+        syncAnimalCheckboxes();
+    }, 100);
 }
 
 /* ============ UI SETUP FUNCTIONS ============ */
