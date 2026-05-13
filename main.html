@@ -956,6 +956,7 @@ async function testRequest() {
     }
 }
 
+// ✅ FIXED: Enhanced performLogout with proper session cleanup
 async function performLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -963,21 +964,32 @@ async function performLogout() {
         logoutBtn.disabled = true;
     }
     
-    if (window.ForceLogout && window.ForceLogout.terminateSession) {
-        await window.ForceLogout.terminateSession();
-    } else if (supabaseClient) {
-        const sessionId = localStorage.getItem('sessionId');
-        if (sessionId) {
+    const sessionId = localStorage.getItem('sessionId');
+    
+    // Deactivate session in database FIRST
+    if (sessionId && supabaseClient) {
+        try {
             await supabaseClient
                 .from('user_sessions')
                 .update({ is_active: false, terminated_at: new Date().toISOString() })
                 .eq('session_id', sessionId);
+            console.log('✅ Session deactivated in Supabase');
+        } catch (err) {
+            console.error('Failed to deactivate session:', err);
         }
     }
     
+    // Clear all local storage
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = 'index.html';
+    
+    // Clear cookies
+    document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    
+    // Redirect to login
+    window.location.replace('index.html?logout=' + Date.now());
 }
 
 async function handleLogout() {
@@ -996,19 +1008,17 @@ async function handleLogout() {
     }
 }
 
-// ✅ FIXED: Allow guest users to pass session check
+// Allow guest users to pass session check
 async function checkSession() {
     const loggedIn = localStorage.getItem('loggedIn') === 'true';
     const isGuest = localStorage.getItem('isGuest') === 'true';
     const sessionId = localStorage.getItem('sessionId');
     
-    // ✅ ALLOW GUEST USERS
     if (isGuest) {
         console.log('👤 Guest user - allowing access to dashboard');
         return true;
     }
     
-    // Regular user validation
     if (!loggedIn || !sessionId) {
         console.log('❌ No valid session, redirecting to login');
         window.location.href = 'index.html';
@@ -1018,7 +1028,7 @@ async function checkSession() {
     return true;
 }
 
-// ✅ FIXED: Handle guest user display
+// Handle guest user display
 function displayUserInfo() {
     const isGuest = localStorage.getItem('isGuest') === 'true';
     const staffName = localStorage.getItem('staffName');
@@ -1040,7 +1050,7 @@ function displayUserInfo() {
     if (userRoleElem) userRoleElem.innerText = displayRole;
 }
 
-// ✅ FIXED: Hide admin features for guests
+// Hide admin features for guests
 function setupAdminVisibility() {
     const userRole = localStorage.getItem('userRole');
     const isGuest = localStorage.getItem('isGuest') === 'true';
