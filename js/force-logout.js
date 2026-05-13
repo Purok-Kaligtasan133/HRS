@@ -10,32 +10,33 @@ if (!window._forceLogoutInstance) {
     let currentRequestId = null;
     let modalTimer = null;
     
-async function init() {
-    if (window._supabaseInitialized) return;
-    window._supabaseInitialized = true;
-    
-    // SKIP for guest users
-    const isGuest = localStorage.getItem('isGuest') === 'true';
-    if (isGuest) {
-        console.log('👤 Guest user detected - Force logout disabled');
-        return;
+    async function init() {
+        if (window._supabaseInitialized) return;
+        window._supabaseInitialized = true;
+        
+        // SKIP for guest users
+        const isGuest = localStorage.getItem('isGuest') === 'true';
+        if (isGuest) {
+            console.log('👤 Guest user detected - Force logout disabled');
+            return;
+        }
+        
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+        });
+        
+        const sessionId = localStorage.getItem('sessionId');
+        const loggedIn = localStorage.getItem('loggedIn') === 'true';
+        
+        if (sessionId && loggedIn) {
+            console.log('✅ Force logout initialized - Starting heartbeat and listener');
+            startHeartbeat();
+            startListening();
+        } else {
+            console.log('⚠️ No valid session found - Force logout not started');
+        }
     }
     
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-    });
-    
-    const sessionId = localStorage.getItem('sessionId');
-    const loggedIn = localStorage.getItem('loggedIn') === 'true';
-    
-    if (sessionId && loggedIn) {
-        console.log('✅ Force logout initialized - Starting heartbeat and listener');
-        startHeartbeat();
-        startListening();
-    } else {
-        console.log('⚠️ No valid session found - Force logout not started');
-    }
-}
     function startHeartbeat() {
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         heartbeatInterval = setInterval(async () => {
@@ -182,15 +183,70 @@ async function init() {
         currentRequestId = null;
     }
     
-    // Clean up on page unload
-    window.addEventListener('beforeunload', function() {
+    // ✅ ENHANCED: terminateSession function for manual logout
+    async function terminateSession() {
+        console.log('🔄 Manual session termination requested');
+        const sessionId = localStorage.getItem('sessionId');
+        
+        if (sessionId && supabaseClient) {
+            try {
+                const { error } = await supabaseClient
+                    .from('user_sessions')
+                    .update({ 
+                        is_active: false, 
+                        terminated_at: new Date().toISOString() 
+                    })
+                    .eq('session_id', sessionId);
+                
+                if (error) {
+                    console.error('Failed to terminate session:', error);
+                } else {
+                    console.log('✅ Session terminated successfully');
+                }
+            } catch (err) {
+                console.error('Termination error:', err);
+            }
+        }
+        
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        if (realtimeChannel && supabaseClient) {
+            supabaseClient.removeChannel(realtimeChannel);
+        }
+    }
+    
+    // Clean up on page unload (only for manual logout, not refresh)
+    let isManualLogout = false;
+    
+    window.addEventListener('beforeunload', async function() {
+        // Only cleanup if user is actually logging out, not just refreshing
+        if (isManualLogout && supabaseClient) {
+            const sessionId = localStorage.getItem('sessionId');
+            if (sessionId) {
+                try {
+                    await supabaseClient
+                        .from('user_sessions')
+                        .update({ 
+                            is_active: false, 
+                            terminated_at: new Date().toISOString() 
+                        })
+                        .eq('session_id', sessionId);
+                    console.log('Session cleaned up on manual logout');
+                } catch(err) {}
+            }
+        }
+        
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         if (realtimeChannel && supabaseClient) {
             supabaseClient.removeChannel(realtimeChannel);
         }
     });
     
-    window.ForceLogout = { init: init };
+    // Expose functions globally
+    window.ForceLogout = { 
+        init: init,
+        terminateSession: terminateSession,
+        setManualLogout: function(val) { isManualLogout = val; }
+    };
     
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
