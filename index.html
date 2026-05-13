@@ -739,6 +739,13 @@ async function performLogin(user, roleToStore, isDefaultPassword = false) {
     const sessionId = crypto.randomUUID();
     
     try {
+        // ✅ FIX: First, clean up any orphaned sessions for this user
+        await supabaseClient
+            .from('user_sessions')
+            .update({ is_active: false, terminated_at: new Date().toISOString() })
+            .eq('user_id', user.id)
+            .eq('is_active', true);
+        
         const sessionCreated = await createSession(user.id, sessionId);
         
         if (!sessionCreated) {
@@ -931,14 +938,37 @@ async function handleLogin(event) {
                 return;
             }
             
-            // Check for existing active session (another device)
-            const { hasActiveSession, sessionId: existingSessionId } = await checkActiveSession(user.id);
-            
-            if (hasActiveSession) {
-                await requestForceLogout(user, roleToStore, existingSessionId, loginBtn, originalText, isDefaultPassword);
-            } else {
-                await performLogin(user, roleToStore, isDefaultPassword);
-            }
+// Check for existing active session (another device)
+const { hasActiveSession, sessionId: existingSessionId } = await checkActiveSession(user.id);
+
+if (hasActiveSession) {
+    // Check how old the existing session is
+    const { data: existingSession } = await supabaseClient
+        .from('user_sessions')
+        .select('created_at')
+        .eq('session_id', existingSessionId)
+        .maybeSingle();
+    
+    const sessionAge = existingSession ? Date.now() - new Date(existingSession.created_at).getTime() : Infinity;
+    const isVeryRecent = sessionAge < 30 * 1000; // Less than 30 seconds old
+    
+    // ONLY auto-replace for VERY recent sessions (within 30 seconds)
+    if (isVeryRecent) {
+        console.log('🔄 Auto-replacing very recent session (Messenger -> Chrome)');
+        
+        await supabaseClient
+            .from('user_sessions')
+            .update({ is_active: false, terminated_at: new Date().toISOString() })
+            .eq('session_id', existingSessionId);
+        
+        await performLogin(user, roleToStore, isDefaultPassword);
+        
+    } else {
+        await requestForceLogout(user, roleToStore, existingSessionId, loginBtn, originalText, isDefaultPassword);
+    }
+} else {
+    await performLogin(user, roleToStore, isDefaultPassword);
+}
         });
     } catch (err) {
         ModalManager.showInfo('Login Failed', err.message || 'An error occurred.', 'error');
