@@ -13,6 +13,13 @@
     const loggedIn = localStorage.getItem('loggedIn') === 'true';
     const sessionId = localStorage.getItem('sessionId');
     const userId = localStorage.getItem('userId');
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+    
+    // Guest users bypass session check
+    if (isGuest) {
+        console.log('👤 Guest user - bypassing session check');
+        return;
+    }
     
     // If not logged in, redirect to login page
     if (!loggedIn || !sessionId || !userId) {
@@ -21,28 +28,42 @@
         return;
     }
     
-    // Function to validate session with server (optional but more secure)
+    // ✅ ENHANCED: Function to validate session with server
     async function validateSessionWithServer() {
-        if (!window.supabaseClient) return true;
+        // Try to get supabase client from various possible locations
+        let client = window.supabaseClient;
+        
+        if (!client && typeof supabaseClient !== 'undefined') {
+            client = supabaseClient;
+        }
+        
+        if (!client) {
+            console.log('Supabase client not available yet - skipping validation');
+            return true;
+        }
         
         try {
-            const { data, error } = await window.supabaseClient
+            const { data, error } = await client
                 .from('user_sessions')
-                .select('is_active')
+                .select('is_active, session_id')
                 .eq('session_id', sessionId)
+                .eq('user_id', userId)
                 .eq('is_active', true)
                 .maybeSingle();
             
             if (error || !data) {
-                console.log('Server session validation failed');
+                console.log('❌ Server session validation failed - session not active');
                 localStorage.clear();
                 sessionStorage.clear();
-                window.location.replace('index.html');
+                window.location.replace('index.html?session=expired');
                 return false;
             }
+            
+            console.log('✅ Server session validation passed');
             return true;
         } catch (err) {
             console.error('Session validation error:', err);
+            // Don't redirect on network error, let it try again later
             return true;
         }
     }
@@ -59,14 +80,23 @@
             if (!stillLoggedIn || !stillHasSession) {
                 window.location.replace('index.html');
             } else {
-                // Optional: Force reload to get fresh page
-                window.location.reload();
+                // Validate with server on cache load
+                validateSessionWithServer();
             }
         }
     });
     
-    // Optional: Validate with server (uncomment if you want server-side validation)
-    // validateSessionWithServer();
+    // ✅ Run server validation on page load (after a short delay to ensure Supabase is ready)
+    setTimeout(() => {
+        validateSessionWithServer();
+    }, 500);
+    
+    // ✅ Also validate every 60 seconds to catch sessions terminated by other devices
+    setInterval(() => {
+        if (localStorage.getItem('loggedIn') === 'true' && !localStorage.getItem('isGuest')) {
+            validateSessionWithServer();
+        }
+    }, 60000);
     
     console.log('✅ Session check active - User is logged in');
 })();
