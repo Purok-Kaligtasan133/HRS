@@ -2567,6 +2567,51 @@ function setupUserDropdown() {
     }
 }
 
+// ============ UPDATED LOGOUT FUNCTIONS WITH SESSION CLEANUP ============
+
+async function performLogout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+        logoutBtn.disabled = true;
+    }
+    
+    // ✅ CRITICAL FIX: Deactivate session in Supabase
+    const sessionId = localStorage.getItem('sessionId');
+    
+    if (sessionId && supabaseClient) {
+        try {
+            const { error } = await supabaseClient
+                .from('user_sessions')
+                .update({ 
+                    is_active: false, 
+                    terminated_at: new Date().toISOString() 
+                })
+                .eq('session_id', sessionId);
+            
+            if (error) {
+                console.error('Failed to deactivate session:', error);
+            } else {
+                console.log('✅ Session deactivated in Supabase');
+            }
+        } catch (err) {
+            console.error('Logout error:', err);
+        }
+    }
+    
+    // Clear all local storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear cookies
+    document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    
+    // Redirect to login with cache-busting
+    window.location.replace('index.html?logout=' + Date.now());
+}
+
 function setupLogoutHandler() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -2575,7 +2620,6 @@ function setupLogoutHandler() {
         
         newLogoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            // Show confirmation modal
             const confirmModal = document.getElementById('confirmModal');
             if (confirmModal) {
                 confirmModal.style.display = 'flex';
@@ -2584,7 +2628,6 @@ function setupLogoutHandler() {
     }
 }
 
-// Setup confirmation modal buttons
 function setupConfirmModal() {
     const confirmModal = document.getElementById('confirmModal');
     if (!confirmModal) return;
@@ -2593,15 +2636,9 @@ function setupConfirmModal() {
     const noBtn = document.getElementById('confirmNoBtn');
     
     if (yesBtn) {
-        yesBtn.onclick = function() {
+        yesBtn.onclick = async function() {
             confirmModal.style.display = 'none';
-            // Perform actual logout
-            localStorage.clear();
-            sessionStorage.clear();
-            document.cookie.split(";").forEach(function(c) { 
-                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-            });
-            window.location.replace('index.html?logout=' + Date.now());
+            await performLogout();
         };
     }
     
@@ -2611,25 +2648,13 @@ function setupConfirmModal() {
         };
     }
 }
+
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const pageContainer = document.querySelector('.page-container');
     if (sidebar && pageContainer) {
         pageContainer.classList.toggle('collapsed');
     }
-}
-function handleLogout() {
-    // Clear everything
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    // Optional: Clear any cookies if used
-    document.cookie.split(";").forEach(function(c) { 
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-    });
-    
-    // Redirect to login with cache-busting parameter
-    window.location.replace('index.html?logout=' + Date.now());
 }
 // ============ INITIALIZATION ============
 document.addEventListener('DOMContentLoaded', async function() {
