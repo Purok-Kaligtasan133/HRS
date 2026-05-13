@@ -2360,8 +2360,10 @@ async function saveUser() {
   
   try {
     const dbRole = role === 'Admin' ? 'admin' : 'staff';
+    const DEFAULT_PASSWORD = 'password123';
     
     if (EDIT_TARGET) {
+      // EDIT EXISTING USER
       const updateData = {
         full_name: fullname,
         role: dbRole,
@@ -2372,7 +2374,8 @@ async function saveUser() {
       if (password) {
         const hashedPassword = await hashPassword(password);
         updateData.password_hash = hashedPassword;
-        updateData.must_change_password = true;
+        // Only require password change if setting to default 'password123'
+        updateData.must_change_password = (password === DEFAULT_PASSWORD);
       }
       
       const { error } = await supabaseClient
@@ -2392,7 +2395,9 @@ async function saveUser() {
       await showAlert(`User "${username}" has been successfully updated.`, 'Success', 'success');
       
     } else {
+      // CREATE NEW USER
       const hashedPassword = await hashPassword(password);
+      const isDefaultPassword = (password === DEFAULT_PASSWORD);
       
       const { error } = await supabaseClient
         .from('users')
@@ -2402,7 +2407,7 @@ async function saveUser() {
           role: dbRole,
           assigned_barangay: barangay === 'ALL' ? null : barangay,
           password_hash: hashedPassword,
-          must_change_password: true,
+          must_change_password: isDefaultPassword,  // Only true if using 'password123'
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -2475,13 +2480,14 @@ async function resetPassword() {
   }
   
   try {
-    const hashedPassword = await hashPassword('password123');
+    const DEFAULT_PASSWORD = 'password123';
+    const hashedPassword = await hashPassword(DEFAULT_PASSWORD);
     
     const { error } = await supabaseClient
       .from('users')
       .update({
         password_hash: hashedPassword,
-        must_change_password: true,
+        must_change_password: true,  // User must change password on next login since it's 'password123'
         updated_at: new Date().toISOString()
       })
       .eq('username', username);
@@ -2492,7 +2498,7 @@ async function resetPassword() {
       action: 'Reset Password',
       actor: currentUser,
       target_table: 'users',
-      details: `Reset password for user: ${username}`
+      details: `Reset password for user: ${username} to default '${DEFAULT_PASSWORD}'. User must change password on next login.`
     }]);
     
     closeResetModal();
