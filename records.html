@@ -1749,8 +1749,8 @@ body {
     border: 1px solid rgba(0,0,0,0.1);
 }
 .legend-swatch.no-members {
-    background: #f0f0f0;
-    border-color: #cccccc;
+    background: #ffffff;
+    border: 1px solid #cccccc;
 }
 .legend-swatch.small {
     background: #d4f6ff;
@@ -2501,7 +2501,6 @@ body {
     background: white;
     border-radius: var(--radius-sm);
     padding: 8px 12px;
-    margin-top: 8px;
     border: 1px solid var(--border);
     display: flex;
     align-items: center;
@@ -2615,6 +2614,605 @@ body {
 }
 html {
     overflow-y: scroll;
+}
+/* ============ MOBILE TABLE - EXACTLY LIKE DESKTOP ============ */
+@media (max-width: 768px) {
+    /* Hide virtual scroller on mobile */
+    .virtual-scroll-container {
+        display: none !important;
+    }
+    
+    /* Show paginated table with desktop styling */
+    .mobile-table-container {
+        display: block !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 16px;
+        background: white;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        position: relative;
+    }
+    
+    .mobile-records-table {
+        min-width: max-content !important;
+        width: 100%;
+        border-collapse: collapse !important;
+        font-size: 0.75rem;
+        background: white;
+    }
+    
+    /* FORCE REMOVE ALL BORDERS - HIGHEST PRIORITY */
+    .mobile-records-table,
+    .mobile-records-table tbody,
+    .mobile-records-table tr,
+    .mobile-records-table td {
+        border: none !important;
+        border-style: none !important;
+        border-width: 0 !important;
+        outline: none !important;
+    }
+    
+    /* Only header has bottom border */
+    .mobile-records-table th {
+        background: #e9f7f2 !important;
+        font-weight: 600 !important;
+        font-size: 0.7rem !important;
+        text-transform: uppercase !important;
+        color: #334155 !important;
+        padding: 12px 6px !important;
+        border-bottom: 2px solid #d1d5db !important;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        white-space: nowrap !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+    }
+    
+    /* Cells - NO BORDERS */
+    .mobile-records-table td {
+        padding: 8px 6px !important;
+        border: none !important;
+        border-style: none !important;
+        border-width: 0 !important;
+        white-space: nowrap !important;
+        vertical-align: top !important;
+    }
+    
+    /* Override any border from parent tables */
+    .mobile-records-table tr td {
+        border: none !important;
+    }
+    
+    /* First header cell (checkbox) - sticky left */
+    .mobile-records-table th:first-child {
+        position: sticky !important;
+        left: 0 !important;
+        background: #e9f7f2 !important;
+        z-index: 20 !important;
+        text-align: center !important;
+        width: 30px !important;
+    }
+    
+    /* First data cell (checkbox) - sticky left */
+    .mobile-records-table td:first-child {
+        position: sticky !important;
+        left: 0 !important;
+        background: inherit;
+        z-index: 10 !important;
+        text-align: center !important;
+        width: 30px !important;
+    }
+    
+    /* Fix hover for checkbox cell */
+    .mobile-records-table tr:hover td:first-child {
+        background-color: rgba(15, 122, 74, 0.08) !important;
+    }
+    
+    /* Actions header cell - sticky right - DARK BACKGROUND */
+    .mobile-records-table th:last-child {
+        position: sticky !important;
+        right: 0 !important;
+        background: #2c3e50 !important;
+        color: white !important;
+        z-index: 20 !important;
+        text-align: center !important;
+        width: 80px !important;
+    }
+    
+    /* Actions data cell for HOUSEHOLD rows - DARK BACKGROUND */
+    .mobile-records-table tr.household-row td:last-child {
+        position: sticky !important;
+        right: 0 !important;
+        background: #2c3e50 !important;
+        z-index: 15 !important;
+        text-align: center !important;
+        width: 80px !important;
+    }
+    
+    /* Actions data cell for MEMBER rows - LIGHT BACKGROUND */
+    .mobile-records-table tr.member-row td:last-child {
+        position: sticky !important;
+        right: 0 !important;
+        background: #fafafa !important;
+        z-index: 15 !important;
+        text-align: center !important;
+        width: 80px !important;
+    }
+    
+    /* Fix hover for household action cell */
+    .mobile-records-table tr.household-row:hover td:last-child {
+        background: #2c3e50 !important;
+    }
+    
+    /* Fix hover for member action cell */
+    .mobile-records-table tr.member-row:hover td:last-child {
+        background: #fafafa !important;
+    }
+    
+    /* Row hover effect */
+    .mobile-records-table tr:hover {
+        background-color: rgba(15, 122, 74, 0.08) !important;
+    }
+    
+    /* Household row colors based on member count */
+    .mobile-records-table tr[data-member-count="0"] { background: #ffffff !important; }
+    .mobile-records-table tr[data-member-count="1"] { background: #d4f6ff !important; }
+    .mobile-records-table tr[data-member-count="2-4"] { background: #d9ffd9 !important; }
+    .mobile-records-table tr[data-member-count="5-7"] { background: #fff7c2 !important; }
+    .mobile-records-table tr[data-member-count="8+"] { background: #ffd6d6 !important; }
+    
+    /* Member row styling */
+    .mobile-records-table tr.member-row {
+        background-color: #fafafa !important;
+    }
+    
+    /* Member row first cell indentation */
+    .mobile-records-table tr.member-row td:first-child {
+        padding-left: 24px !important;
+        background: #fafafa !important;
+    }
+    
+    /* Member rows hover */
+    .mobile-records-table tr.member-row:hover {
+        background-color: rgba(15, 122, 74, 0.05) !important;
+    }
+    
+    /* Checkbox styling */
+    .row-select-mobile {
+        width: 16px !important;
+        height: 16px !important;
+        cursor: pointer !important;
+        accent-color: #0f7a4a !important;
+    }
+    
+    /* Select all checkbox in header */
+    #mobileSelectAll {
+        width: 16px !important;
+        height: 16px !important;
+        cursor: pointer !important;
+        accent-color: #0f7a4a !important;
+    }
+    
+    /* Action buttons container */
+    .action-btns {
+        display: flex !important;
+        gap: 8px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Action buttons - white icons */
+    .action-btns button {
+        background: none !important;
+        border: none !important;
+        cursor: pointer !important;
+        padding: 4px 6px !important;
+        border-radius: 3px !important;
+        font-size: 0.7rem !important;
+        transition: all 0.2s ease !important;
+        color: white !important;
+    }
+    
+    .action-btns .edit-btn {
+        color: white !important;
+    }
+    
+    .action-btns .edit-btn:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    .action-btns .delete-btn {
+        color: white !important;
+    }
+    
+    .action-btns .delete-btn:hover {
+        background: rgba(220, 38, 38, 0.3) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    /* Member rows - hide action buttons */
+    .member-row .action-btns {
+        visibility: hidden !important;
+    }
+    
+    /* Loading state - WHITE BACKGROUND */
+    .mobile-loading,
+    .virtual-loading-row,
+    #loadingMoreRow,
+    #noMoreRecordsRow {
+        text-align: center !important;
+        padding: 12px 16px !important;
+        background: #ffffff !important;
+        color: #0f7a4a !important;
+        font-size: 0.8rem !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* No more records message specific */
+    #noMoreRecordsRow,
+    #loadingMoreRow {
+        color: #6c757d !important;
+    }
+    
+    /* Highlight matches */
+    .highlight-match {
+        background-color: #fffe8a !important;
+        padding: 1px 2px !important;
+        border-radius: 3px !important;
+        font-weight: bold !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-table-container {
+        display: none !important;
+    }
+}
+/* ============ FINAL FORCE FIX ============ */
+
+/* Remove the container border if it's there */
+.mobile-table-container {
+    border: 1px solid #e1e8e5 !important;
+}
+
+/* Ensure NO borders between rows */
+.mobile-records-table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+}
+
+.mobile-records-table tr,
+.mobile-records-table td,
+.mobile-records-table th {
+    border: none !important;
+    border-width: 0 !important;
+    border-style: none !important;
+}
+
+/* Only keep header bottom border */
+.mobile-records-table th {
+    border-bottom: 2px solid #d1d5db !important;
+}
+
+/* Force loading message background to white */
+.mobile-loading,
+.virtual-loading-row,
+#loadingMoreRow,
+#noMoreRecordsRow {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+}
+
+/* Remove any box shadows that might look like borders */
+.mobile-records-table td,
+.mobile-records-table th {
+    box-shadow: none !important;
+}
+/* ============ MOBILE FEEDBACK MESSAGES ============ */
+@media (max-width: 768px) {
+    /* No records message */
+    .mobile-no-records,
+    #mobileNoRecordsMessage {
+        text-align: center !important;
+        padding: 40px 20px !important;
+        background: #fff8e1 !important;
+        color: #ff7a00 !important;
+        font-size: 0.85rem !important;
+        border-radius: 8px !important;
+        margin: 20px 0 !important;
+    }
+    
+    .mobile-no-records i,
+    #mobileNoRecordsMessage i {
+        margin-right: 8px !important;
+        font-size: 1rem !important;
+    }
+    
+    /* Loading more indicator */
+    .mobile-loading-more {
+        text-align: center !important;
+        padding: 12px 16px !important;
+        background: #ffffff !important;
+        color: #0f7a4a !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .mobile-loading-more i {
+        margin-right: 6px !important;
+    }
+    
+    /* No more records message */
+    .mobile-no-more {
+        text-align: center !important;
+        padding: 12px 16px !important;
+        background: #f9f9f9 !important;
+        color: #6c757d !important;
+        font-size: 0.75rem !important;
+        font-style: italic !important;
+    }
+    
+    .mobile-no-more i {
+        margin-right: 6px !important;
+        color: #0f7a4a !important;
+    }
+}
+/* Permanent gap fix - keep columns wide enough */
+@media (max-width: 768px) {
+    .mobile-records-table {
+        table-layout: auto !important;
+    }
+    
+    .mobile-records-table th:first-child,
+    .mobile-records-table td:first-child {
+        width: 40px !important;
+        min-width: 40px !important;
+        padding: 12px 0 !important;
+    }
+    
+    .mobile-records-table th:last-child,
+    .mobile-records-table td:last-child {
+        width: 85px !important;
+        min-width: 85px !important;
+    }
+    
+    .mobile-records-table th:nth-child(2),
+    .mobile-records-table td:nth-child(2) {
+        min-width: 100px !important;
+    }
+    
+    .mobile-records-table th:nth-child(4),
+    .mobile-records-table td:nth-child(4) {
+        min-width: 180px !important;
+    }
+}
+/* ============ UPDATED MOBILE TABLE CSS - NO GAPS ============ */
+@media (max-width: 768px) {
+    /* Hide virtual scroller on mobile */
+    .virtual-scroll-container {
+        display: none !important;
+    }
+    
+    /* Show paginated table with desktop styling */
+    .mobile-table-container {
+        display: block !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 16px;
+        background: white;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        position: relative;
+    }
+    
+    /* CRITICAL: Table layout without fixed width to prevent gaps */
+    .mobile-records-table {
+        min-width: max-content !important;
+        width: 100%;
+        border-collapse: collapse !important;
+        border-spacing: 0 !important;
+        table-layout: auto !important;  /* KEY: auto instead of fixed */
+        font-size: 0.75rem;
+        background: white;
+    }
+    
+    /* Remove ALL borders and spacing */
+    .mobile-records-table,
+    .mobile-records-table tbody,
+    .mobile-records-table thead,
+    .mobile-records-table tr,
+    .mobile-records-table td,
+    .mobile-records-table th {
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Header styling */
+    .mobile-records-table th {
+        background: #e9f7f2 !important;
+        font-weight: 600 !important;
+        font-size: 0.7rem !important;
+        text-transform: uppercase !important;
+        color: #334155 !important;
+        padding: 12px 8px !important;
+        border-bottom: 2px solid #d1d5db !important;
+        white-space: nowrap !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+    }
+    
+    /* Data cells */
+    .mobile-records-table td {
+        padding: 8px 8px !important;
+        border: none !important;
+        white-space: nowrap !important;
+        vertical-align: middle !important;
+    }
+    
+    /* ===== STICKY COLUMNS - KEEP FIRST AND LAST ONLY ===== */
+    
+    /* First header cell (checkbox) - sticky left */
+    .mobile-records-table th:first-child {
+        position: sticky !important;
+        left: 0 !important;
+        background: #e9f7f2 !important;
+        z-index: 25 !important;
+        text-align: center !important;
+        width: 40px !important;
+        min-width: 40px !important;
+        padding: 12px 0 !important;
+    }
+    
+    /* First data cell (checkbox) - sticky left */
+    .mobile-records-table td:first-child {
+        position: sticky !important;
+        left: 0 !important;
+        background: inherit;
+        z-index: 20 !important;
+        text-align: center !important;
+        width: 40px !important;
+        min-width: 40px !important;
+        padding: 8px 0 !important;
+    }
+    
+    /* Last header cell (actions) - sticky right */
+    .mobile-records-table th:last-child {
+        position: sticky !important;
+        right: 0 !important;
+        background: #2c3e50 !important;
+        color: white !important;
+        z-index: 25 !important;
+        text-align: center !important;
+        width: 85px !important;
+        min-width: 85px !important;
+        padding: 12px 0 !important;
+    }
+    
+    /* Last data cell (actions) - sticky right */
+    .mobile-records-table td:last-child {
+        position: sticky !important;
+        right: 0 !important;
+        z-index: 20 !important;
+        text-align: center !important;
+        width: 85px !important;
+        min-width: 85px !important;
+        padding: 8px 0 !important;
+    }
+    
+    /* NON-sticky columns - let them size naturally */
+    .mobile-records-table th:not(:first-child):not(:last-child),
+    .mobile-records-table td:not(:first-child):not(:last-child) {
+        position: static !important;
+        width: auto !important;
+    }
+    
+    /* Minimum widths for important columns to prevent squishing */
+    .mobile-records-table th:nth-child(2),
+    .mobile-records-table td:nth-child(2) {
+        min-width: 100px !important;
+    }
+    
+    .mobile-records-table th:nth-child(3),
+    .mobile-records-table td:nth-child(3) {
+        min-width: 90px !important;
+    }
+    
+    .mobile-records-table th:nth-child(4),
+    .mobile-records-table td:nth-child(4) {
+        min-width: 180px !important;
+    }
+    
+    .mobile-records-table th:nth-child(5),
+    .mobile-records-table td:nth-child(5) {
+        min-width: 110px !important;
+    }
+    
+    /* Background colors for sticky cells */
+    .mobile-records-table tr.household-row td:first-child {
+        background-color: inherit !important;
+    }
+    
+    .mobile-records-table tr.member-row td:first-child {
+        background-color: #fafafa !important;
+    }
+    
+    .mobile-records-table tr.household-row td:last-child {
+        background-color: #2c3e50 !important;
+    }
+    
+    .mobile-records-table tr.member-row td:last-child {
+        background-color: #fafafa !important;
+    }
+    
+    /* Row hover effect */
+    .mobile-records-table tr:hover {
+        background-color: rgba(15, 122, 74, 0.08) !important;
+    }
+    
+    /* Household row colors */
+    .mobile-records-table tr[data-member-count="0"] { background: #ffffff !important; }
+    .mobile-records-table tr[data-member-count="1"] { background: #d4f6ff !important; }
+    .mobile-records-table tr[data-member-count="2-4"] { background: #d9ffd9 !important; }
+    .mobile-records-table tr[data-member-count="5-7"] { background: #fff7c2 !important; }
+    .mobile-records-table tr[data-member-count="8+"] { background: #ffd6d6 !important; }
+    
+    /* Member row styling */
+    .mobile-records-table tr.member-row {
+        background-color: #fafafa !important;
+    }
+    
+    .mobile-records-table tr.member-row td:first-child {
+        padding-left: 24px !important;
+    }
+    
+    /* Checkbox styling */
+    .row-select-mobile {
+        width: 16px !important;
+        height: 16px !important;
+        cursor: pointer !important;
+        accent-color: #0f7a4a !important;
+        margin: 0 !important;
+    }
+    
+    #mobileSelectAll {
+        width: 16px !important;
+        height: 16px !important;
+        cursor: pointer !important;
+        accent-color: #0f7a4a !important;
+        margin: 0 !important;
+    }
+    
+    /* Action buttons */
+    .action-btns {
+        display: flex !important;
+        gap: 8px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+    }
+    
+    .action-btns button {
+        background: none !important;
+        border: none !important;
+        cursor: pointer !important;
+        padding: 4px 6px !important;
+        border-radius: 3px !important;
+        font-size: 0.7rem !important;
+        color: white !important;
+    }
+    
+    .member-row .action-btns {
+        visibility: hidden !important;
+    }
 }
 </style>
 </head>
@@ -2744,6 +3342,22 @@ html {
     </div>
 
     <div class="records-wrapper" id="recordsWrapper"></div>
+    
+    <!-- Mobile Paginated Table Container (visible only on mobile) -->
+    <div class="mobile-table-container" style="display: none;">
+        <table class="mobile-records-table" id="mobileRecordsTable">
+            <thead id="mobileTableHeader">
+                <!-- Headers will be populated dynamically from TABLE_DISPLAY_COLUMNS -->
+            </thead>
+            <tbody id="mobileTableBody">
+                <tr>
+                    <td colspan="20" class="mobile-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading records...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
     
     <div class="mobile-pagination" id="mobilePagination" style="display: none;">
         <div class="pagination-controls-compact">
@@ -4759,8 +5373,6 @@ function setupUserDropdown() {
     }
 }
 
-// ============ UPDATED LOGOUT FUNCTIONS WITH SESSION CLEANUP ============
-
 async function performLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -4830,7 +5442,7 @@ function setupConfirmModal() {
     if (yesBtn) {
         yesBtn.onclick = async function() {
             confirmModal.style.display = 'none';
-            await performLogout();
+            await performLogout();  // ✅ Calls database cleanup + local storage
         };
     }
     
@@ -6233,7 +6845,7 @@ class VirtualScroller {
         let memberCount = household.members?.length || 0;
         
         let bg = '#ffffff';
-        if (memberCount === 0) bg = '#f0f0f0';
+        if (memberCount === 0) bg = '#ffffff';
         else if (memberCount === 1) bg = '#d4f6ff';
         else if (memberCount <= 4) bg = '#d9ffd9';
         else if (memberCount <= 7) bg = '#fff7c2';
@@ -7016,6 +7628,44 @@ async function performDelete() {
 async function onEdit(id) {
     console.log('onEdit called for ID:', id);
     
+    // ========== FIX: Ensure mobileState is accessible ==========
+    // If mobileState is not defined yet, define it
+    if (typeof mobileState === 'undefined') {
+        window.mobileState = {
+            currentPage: 1,
+            totalPages: 1,
+            totalRecords: 0,
+            recordsPerPage: 15,
+            isLoading: false,
+            currentData: []
+        };
+    }
+    // ========== END OF FIX ==========
+   
+    // Try to find household in desktop data first
+    let foundHousehold = virtualState.allHouseholds.find(h => h.id == id);
+    
+    // If not found in desktop, try mobile data
+    if (!foundHousehold && window.mobileState && window.mobileState.currentData) {
+        foundHousehold = window.mobileState.currentData.find(h => h.id == id);
+        console.log('Found household in mobile data:', foundHousehold ? 'Yes' : 'No');
+    }
+    
+    // If still not found, try to fetch directly from Supabase
+    if (!foundHousehold) {
+        console.log('Household not found in local data, fetching from Supabase...');
+        const { data, error } = await db
+            .from('households')
+            .select('id')
+            .eq('id', id)
+            .single();
+        
+        if (error || !data) {
+            showError('Record not found. Please refresh and try again.');
+            return;
+        }
+    }
+    
     // Acquire lock first
     const lock = await acquireLock(id);
     if (!lock.acquired) {
@@ -7025,12 +7675,14 @@ async function onEdit(id) {
         return;
     }
     
-    const household = virtualState.allHouseholds.find(h => h.id === id);
+    // Use foundHousehold (don't search again)
+    const household = foundHousehold;
     if (!household) {
         showError('Record not found.');
         releaseLock(id);
         return;
     }
+    // ========== END OF FIX ==========
     
     try {
         showLoading(true);
@@ -7347,16 +7999,22 @@ function populateEditFormFields(head, members) {
     if ($('edit_sitio')) $('edit_sitio').value = head['Sitio / Purok'] || '';
     if ($('edit_householdHead')) $('edit_householdHead').value = head['Name of Household Head'] || '';
     
-    // FishR/RSBSA Registration
-    const registrationValue = head['FishR & RSBSA'] || '';
-    if ($('edit_headRegisteredCheckbox')) $('edit_headRegisteredCheckbox').checked = registrationValue !== '';
-    if (registrationValue !== '') {
-        if ($('edit_headRegistrationField')) $('edit_headRegistrationField').classList.add('show');
-        if ($('edit_headRegistration')) $('edit_headRegistration').value = registrationValue;
-    } else {
-        if ($('edit_headRegistrationField')) $('edit_headRegistrationField').classList.remove('show');
-        if ($('edit_headRegistration')) $('edit_headRegistration').value = '';
-    }
+const registrationValue = head['FishR & RSBSA'] || '';
+const headRegisteredCheckbox = $('edit_headRegisteredCheckbox');
+const headRegistrationField = $('edit_headRegistrationField');
+const headRegistrationSelect = $('edit_headRegistration');
+
+if (headRegisteredCheckbox) {
+    headRegisteredCheckbox.checked = registrationValue !== '';
+}
+
+if (registrationValue !== '') {
+    if (headRegistrationField) headRegistrationField.classList.add('show');
+    if (headRegistrationSelect) headRegistrationSelect.value = registrationValue;
+} else {
+    if (headRegistrationField) headRegistrationField.classList.remove('show');
+    if (headRegistrationSelect) headRegistrationSelect.value = '';
+}
     
     // Contact and Basic Info
     if ($('edit_contactNo')) $('edit_contactNo').value = formatContactNumber(head['Contact no.'] || '');
@@ -8243,10 +8901,19 @@ function collectMemberPanelToEdit() {
     const existingId = $('#member_id')?.value || null;
     const existingMember = editMembers[memberEditIndex] || {};
     
+    // Get FishR/RSBSA registration value
+    let fishrValue = "";
+    const registeredCheckbox = $('memberRegisteredCheckbox');
+    if (registeredCheckbox && registeredCheckbox.checked) {
+        const registrationSelect = $('memberRegistration');
+        fishrValue = registrationSelect ? registrationSelect.value : "";
+    }
+    
     const obj = {
         id: existingId, // Preserve ID for update tracking
         'Name of Household Member/s': $('memberName')?.value.trim() || '',
         'Contact no.': formatContactNumber($('memberContact')?.value || ''),
+        'FishR & RSBSA': fishrValue,  // ← ADD THIS LINE
         'Gender': document.querySelector("input[name='member_gender']:checked")?.value || '',
         'Birthdate': birth_for_sheet,
         'Age': ageObj ? ageObj.display : '',
@@ -8322,7 +8989,6 @@ function collectMemberPanelToEdit() {
     const idField = $('#member_id');
     if (idField) idField.remove();
 }
-
 function memberPanelNext() {
     console.log('Member Next clicked - saving current member');
     
@@ -8706,8 +9372,14 @@ async function saveEditedHousehold(silentReload = false) {
         const headBirthForSheet = toSheetDate(bd_input);
         const headAgeInfo = computeAgeDetailed(bd_input);
         
-        let registrationValue = "";
-        if ($('edit_headRegisteredCheckbox')?.checked) registrationValue = $('edit_headRegistration')?.value || "";
+let registrationValue = "";
+if ($('edit_headRegisteredCheckbox')?.checked) {
+    registrationValue = $('edit_headRegistration')?.value || "";
+    console.log('HEAD Registration checkbox checked, value:', registrationValue);
+} else {
+    registrationValue = "";
+    console.log('HEAD Registration checkbox NOT checked');
+}
         
         let statusValue = $('edit_head_status')?.value || '';
         if (statusValue === 'Others') statusValue = $('edit_statusOthers')?.value || '';
@@ -9319,9 +9991,12 @@ function setupVirtualFilters() {
     const search = $('searchInput');
     const barangay = $('filterBarangay');
     const refresh = $('refreshBtn');
+    
     const apply = () => {
         virtualState.currentSearch = search?.value || '';
         virtualState.currentBarangay = barangay?.value || '';
+        
+        console.log('Filter applied - Search:', virtualState.currentSearch, 'Barangay:', virtualState.currentBarangay);
         
         // Clear messages before loading
         const existingNoRecords = $('noRecordsMessageRow');
@@ -9331,9 +10006,27 @@ function setupVirtualFilters() {
         const existingLoading = $('loadingMoreRow');
         if (existingLoading) existingLoading.remove();
         
-        // Pass false to NOT show loading overlay during search/filter
-        loadRecords(true, false);
+        // Check if we're on mobile
+        const isMobile = window.innerWidth <= 768;
+        
+        if (isMobile) {
+            // Reset mobile state
+            mobileState.currentPage = 1;
+            mobileState.totalPages = 1;
+            mobileState.totalRecords = 0;
+            mobileState.currentData = [];
+            
+            // Update pagination UI
+            updateMobilePaginationUI();
+            
+            // Reload mobile page with new filters
+            loadMobilePage(1);
+        } else {
+            // Desktop: use virtual scrolling
+            loadRecords(true, false);
+        }
     };
+    
     if (search) {
         let t;
         search.addEventListener('input', () => { 
@@ -9341,13 +10034,30 @@ function setupVirtualFilters() {
             t = setTimeout(apply, 500); 
         });
     }
-    if (barangay) barangay.addEventListener('change', apply);
+    
+    if (barangay) {
+        barangay.addEventListener('change', apply);
+    }
+    
     if (refresh) {
         refresh.onclick = () => {
             virtualState.currentSearch = search?.value || '';
             virtualState.currentBarangay = barangay?.value || '';
-            // Show loading overlay on manual refresh
-            loadRecords(true, true);
+            
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // Reset and reload mobile
+                mobileState.currentPage = 1;
+                mobileState.totalPages = 1;
+                mobileState.totalRecords = 0;
+                mobileState.currentData = [];
+                updateMobilePaginationUI();
+                loadMobilePage(1);
+            } else {
+                // Desktop refresh
+                loadRecords(true, true);
+            }
         };
     }
 }
@@ -9745,6 +10455,80 @@ function wireEditPanelUI() {
     setupEditCalamityConditionalFields();
     setupEditAssemblyFields();
     setupEditGovAssistanceHandlers();
+
+        // ========== ADD THIS - FishR/RSBSA Checkbox Handler for HEAD ==========
+    const headRegisteredCheckbox = document.getElementById('edit_headRegisteredCheckbox');
+    const headRegistrationField = document.getElementById('edit_headRegistrationField');
+    const headRegistrationSelect = document.getElementById('edit_headRegistration');
+    
+    if (headRegisteredCheckbox) {
+        // Remove existing listeners to avoid duplicates
+        const newCheckbox = headRegisteredCheckbox.cloneNode(true);
+        headRegisteredCheckbox.parentNode.replaceChild(newCheckbox, headRegisteredCheckbox);
+        
+        newCheckbox.addEventListener('change', function() {
+            console.log('HEAD FishR/RSBSA checkbox changed to:', this.checked);
+            if (this.checked) {
+                if (headRegistrationField) headRegistrationField.classList.add('show');
+                if (headRegistrationSelect) headRegistrationSelect.required = true;
+            } else {
+                if (headRegistrationField) headRegistrationField.classList.remove('show');
+                if (headRegistrationSelect) {
+                    headRegistrationSelect.required = false;
+                    headRegistrationSelect.value = '';
+                }
+            }
+            markEditFormChanged();
+        });
+        
+        // Trigger initial state
+        if (newCheckbox.checked) {
+            if (headRegistrationField) headRegistrationField.classList.add('show');
+        } else {
+            if (headRegistrationField) headRegistrationField.classList.remove('show');
+        }
+    }
+    // ========== END OF ADDED CODE ==========
+        // ========== ADD THIS - Other Reason Checkbox Handler for HEAD ==========
+    const headOtherCheckbox = document.getElementById('edit_displacement_other_check');
+    const headOtherField = document.getElementById('edit_displacementOtherField');
+    const headOtherInput = document.getElementById('edit_displacement_other');
+    
+    if (headOtherCheckbox) {
+        // Remove existing listeners to avoid duplicates
+        const newOtherCheckbox = headOtherCheckbox.cloneNode(true);
+        headOtherCheckbox.parentNode.replaceChild(newOtherCheckbox, headOtherCheckbox);
+        
+        newOtherCheckbox.addEventListener('change', function() {
+            console.log('HEAD Other Reason checkbox changed to:', this.checked);
+            if (this.checked) {
+                if (headOtherField) headOtherField.classList.add('show');
+                if (headOtherInput) headOtherInput.required = true;
+            } else {
+                if (headOtherField) headOtherField.classList.remove('show');
+                if (headOtherInput) {
+                    headOtherInput.required = false;
+                    headOtherInput.value = '';
+                }
+            }
+            // Also trigger displacement check to show assembly area options
+            const anyDisplacementChecked = document.querySelectorAll('.edit_displacement-reason:checked').length > 0 || this.checked;
+            const assemblyOptions = document.getElementById('edit_assemblyAreaOptions');
+            if (assemblyOptions) {
+                assemblyOptions.style.display = anyDisplacementChecked ? 'block' : 'none';
+            }
+            markEditFormChanged();
+        });
+        
+        // Trigger initial state
+        if (newOtherCheckbox.checked) {
+            if (headOtherField) headOtherField.classList.add('show');
+        } else {
+            if (headOtherField) headOtherField.classList.remove('show');
+        }
+    }
+    // ========== END OF ADDED CODE ==========
+
     setupMemberConditionalFields();
 }
 
@@ -9846,20 +10630,724 @@ document.addEventListener('DOMContentLoaded', async function() {
     $('sidebarToggle').onclick = toggleSidebar;
     
     virtualScroller = new VirtualScroller('recordsWrapper');
-    // Show loading overlay on initial load
-    await loadRecords(true, true);
+    
+    // Use the new records view that detects mobile vs desktop
+    await initRecordsView();
     
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('fresh') === 'true') {
         window.history.replaceState({}, document.title, window.location.pathname);
-        await loadRecords(true, true);
+        if (window.innerWidth <= 768) {
+            await loadMobilePage(1);
+        } else {
+            await loadRecords(true, true);
+        }
     }
+});
+
+// ============ MOBILE PAGINATION STATE ==========
+let mobileState = {
+    currentPage: 1,
+    totalPages: 1,
+    totalRecords: 0,
+    recordsPerPage: 15,
+    isLoading: false,
+    currentData: []
+};
+
+// ============ MOBILE PAGINATION FUNCTIONS ==========
+async function loadMobilePage(page) {
+    if (mobileState.isLoading) return;
+    if (page < 1) page = 1;
+    
+    mobileState.isLoading = true;
+    mobileState.currentPage = page;
+    
+    const tbody = document.getElementById('mobileTableBody');
+    if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="${TABLE_DISPLAY_COLUMNS.length + 2}" style="text-align: center; padding: 40px; background: #ffffff; color: #0f7a4a;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 1.2rem; margin-bottom: 8px; display: block;"></i>
+            Loading records...
+        <\/td><\/tr>`;
+    }
+    
+    try {
+        const from = (page - 1) * mobileState.recordsPerPage;
+        const to = from + mobileState.recordsPerPage - 1;
+        
+        let query = db
+            .from('households')
+            .select('*', { count: 'exact' })
+            .order('data_id', { ascending: false })
+            .range(from, to);
+        
+        if (virtualState.currentBarangay && virtualState.currentBarangay !== '') {
+            query = query.eq('barangay', virtualState.currentBarangay);
+        }
+        
+        if (virtualState.currentSearch && virtualState.currentSearch !== '') {
+            query = query.or(`head_name.ilike.%${virtualState.currentSearch}%,barangay.ilike.%${virtualState.currentSearch}%`);
+        }
+        
+        const { data: households, error, count } = await query;
+        if (error) throw error;
+        
+        if (households && households.length > 0) {
+            const householdIds = households.map(h => h.id);
+            
+            const [
+                { data: persons },
+                { data: livestock },
+                { data: govAssistance },
+                { data: displacementReasons },
+                { data: assemblyAreas },
+                { data: calamityDocs },
+                { data: calamityImpacts }
+            ] = await Promise.all([
+                db.from('persons').select('*').in('household_id', householdIds),
+                db.from('livestock').select('*').in('household_id', householdIds),
+                db.from('gov_assistance').select('*').in('household_id', householdIds),
+                db.from('displacement_reasons').select('*').in('household_id', householdIds),
+                db.from('assembly_areas').select('*').in('household_id', householdIds),
+                db.from('calamity_documents').select('*').in('household_id', householdIds),
+                db.from('calamity_impacts').select('*').in('household_id', householdIds)
+            ]);
+            
+            const processedHouseholds = processMobileHouseholdDataFull(households, persons || [], livestock || [], govAssistance || [], displacementReasons || [], assemblyAreas || [], calamityDocs || [], calamityImpacts || []);
+            
+            mobileState.currentData = processedHouseholds;
+            mobileState.totalRecords = count || 0;
+            mobileState.totalPages = Math.ceil(mobileState.totalRecords / mobileState.recordsPerPage);
+            mobileState.currentPage = page;
+            
+            updateMobilePaginationUI();
+            
+            if (processedHouseholds.length > 0) {
+                renderMobileTableFull(processedHouseholds);
+                
+                // ========== ADD THIS LINE ==========
+                // Add "No more records" message at the bottom if this is the last page
+                if (page === mobileState.totalPages) {
+                    showMobileNoMoreRecords();
+                }
+                // ========== END ADDED LINE ==========
+            }
+        } else {
+            showNoMobileRecordsMessage();
+        }
+    } catch (error) {
+        console.error('Error loading mobile page:', error);
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="20" class="mobile-loading" style="color: #dc2626;"><i class="fas fa-exclamation-triangle"></i> Failed to load records. <button onclick="loadMobilePage(1)" style="background: #0f7a4a; color: white; border: none; padding: 6px 12px; border-radius: 4px; margin-left: 8px; cursor: pointer;">Retry<\/button><\/td><\/tr>';
+        }
+    } finally {
+        mobileState.isLoading = false;
+        // REMOVE THIS LINE: hideMobileLoadingMore();
+    }
+}
+
+function processMobileHouseholdDataFull(households, persons, livestock, govAssistance, displacementReasons, assemblyAreas, calamityDocs, calamityImpacts) {
+    const personsByHousehold = {};
+    persons.forEach(p => {
+        if (!personsByHousehold[p.household_id]) personsByHousehold[p.household_id] = [];
+        personsByHousehold[p.household_id].push(p);
+    });
+    
+    const livestockByHousehold = {};
+    livestock.forEach(l => {
+        if (!livestockByHousehold[l.household_id]) livestockByHousehold[l.household_id] = [];
+        livestockByHousehold[l.household_id].push(l);
+    });
+    
+    const govByHousehold = {};
+    govAssistance.forEach(g => {
+        if (!govByHousehold[g.household_id]) govByHousehold[g.household_id] = [];
+        govByHousehold[g.household_id].push(g);
+    });
+    
+    const displacementByHousehold = {};
+    displacementReasons.forEach(d => {
+        if (!displacementByHousehold[d.household_id]) displacementByHousehold[d.household_id] = [];
+        displacementByHousehold[d.household_id].push(d);
+    });
+    
+    const assemblyByHousehold = {};
+    assemblyAreas.forEach(a => {
+        assemblyByHousehold[a.household_id] = a;
+    });
+    
+    const calamityDocsByHousehold = {};
+    calamityDocs.forEach(c => {
+        if (!calamityDocsByHousehold[c.household_id]) calamityDocsByHousehold[c.household_id] = [];
+        calamityDocsByHousehold[c.household_id].push(c);
+    });
+    
+    const calamityImpactsByHousehold = {};
+    calamityImpacts.forEach(i => {
+        if (!calamityImpactsByHousehold[i.household_id]) calamityImpactsByHousehold[i.household_id] = [];
+        calamityImpactsByHousehold[i.household_id].push(i);
+    });
+    
+    return households.map(household => {
+        const householdPersons = personsByHousehold[household.id] || [];
+        const headPerson = householdPersons.find(p => p.person_type === 'HEAD') || {};
+        const members = householdPersons.filter(p => p.person_type === 'MEMBER');
+        
+        const householdLivestock = livestockByHousehold[household.id] || [];
+        const livestockMap = {};
+        householdLivestock.forEach(l => { livestockMap[l.animal_type] = l; });
+        
+        const householdGov = govByHousehold[household.id] || [];
+        const govMap = {};
+        householdGov.forEach(g => { govMap[g.assistance_type] = g; });
+        
+        const householdDisplacement = displacementByHousehold[household.id] || [];
+        const displacementMap = {};
+        householdDisplacement.forEach(d => { displacementMap[d.reason_type] = d; });
+        
+        const householdAssembly = assemblyByHousehold[household.id];
+        const householdCalamityDocs = calamityDocsByHousehold[household.id] || [];
+        const headCalamityDocsMap = {};
+        householdCalamityDocs.forEach(doc => {
+            if (!doc.person_id) headCalamityDocsMap[doc.document_type] = doc;
+        });
+        
+        const householdCalamityImpacts = calamityImpactsByHousehold[household.id] || [];
+        const headCalamityImpact = householdCalamityImpacts.find(i => !i.person_id) || {};
+        
+        const membersWithFullData = members.map(member => {
+            const memberGov = householdGov.filter(g => g.person_id === member.id);
+            const memberGovMap = {};
+            memberGov.forEach(g => { memberGovMap[g.assistance_type] = g; });
+            
+            const memberDisplacement = householdDisplacement.filter(d => d.person_id === member.id);
+            const memberDisplacementMap = {};
+            memberDisplacement.forEach(d => { memberDisplacementMap[d.reason_type] = d; });
+            
+            const memberAssembly = assemblyByHousehold[household.id]?.person_id === member.id ? assemblyByHousehold[household.id] : null;
+            const memberCalamityImpact = householdCalamityImpacts.find(i => i.person_id === member.id) || {};
+            const memberCalamityDocs = householdCalamityDocs.filter(d => d.person_id === member.id);
+            const memberCalamityDocsMap = {};
+            memberCalamityDocs.forEach(doc => { memberCalamityDocsMap[doc.document_type] = doc; });
+            
+            return {
+                'Name of Household Member/s': member.name || '',
+                'Gender': member.gender || '',
+                'Birthdate': member.birthdate || '',
+                'Age': member.age || '',
+                'Stage': member.age_category || '',
+                'Contact no.': member.contact_number || '',
+                'FishR & RSBSA': member.fishr_registration || '',
+                'Solo Parenting': member.solo_parenting === true ? 'Yes' : 'No',
+                'Lactating': member.lactating === true ? 'Yes' : 'No',
+                'Pregnant': member.pregnant === true ? 'Yes' : 'No',
+                'Persons with Disability (PWD)': member.is_pwd === true ? 'Yes' : 'No',
+                'Type of Disability': member.disability_type || '',
+                'Status': member.status || '',
+                'Educational Attainment': member.educational_attainment || '',
+                'College Graduate Course': member.college_graduate_course || '',
+                'Employment': member.employment_status || '',
+                'Job Title': member.job_title || '',
+                'Overseas Filipino Worker(OFW)': member.is_ofw === true ? 'Yes' : 'No',
+                'Country': member.ofw_country || '',
+                'Taal Volcano': memberDisplacementMap['Taal Volcano'] ? 'Yes' : 'No',
+                'Typhoon': memberDisplacementMap['Typhoon'] ? 'Yes' : 'No',
+                'Flood': memberDisplacementMap['Flood'] ? 'Yes' : 'No',
+                'Landslide': memberDisplacementMap['Landslide'] ? 'Yes' : 'No',
+                'Earthquake': memberDisplacementMap['Earthquake'] ? 'Yes' : 'No',
+                'Fire': memberDisplacementMap['Fire'] ? 'Yes' : 'No',
+                'Inside Assembly Area': memberAssembly?.inside_assembly ? 'Yes' : 'No',
+                'Outside Assembly Area': memberAssembly?.outside_assembly ? 'Yes' : 'No',
+                'Pick-Up Location': memberAssembly?.pickup_location || '',
+                'Assembly Area': memberAssembly?.assembly_area_name || '',
+                'Family/Relative Host': memberAssembly?.family_host_name || '',
+                'Host_Contact': memberAssembly?.host_contact_number || '',
+                'Transportation': memberAssembly?.transportation_type || '',
+                'TUPAD': memberGovMap['TUPAD'] ? 'Yes' : 'No',
+                'Local 4Ps': memberGovMap['Local 4Ps'] ? 'Yes' : 'No',
+                'National 4Ps': memberGovMap['National 4Ps'] ? 'Yes' : 'No',
+                'Local Social Pension': memberGovMap['Local Social Pension'] ? 'Yes' : 'No',
+                'National Social Pension': memberGovMap['National Social Pension'] ? 'Yes' : 'No',
+                'Solo Parent Assistance': memberGovMap['Solo Parent Assistance'] ? 'Yes' : 'No',
+                'Relief Goods': memberGovMap['Relief Goods'] ? 'Yes' : 'No',
+                'Cash Subsidy': memberGovMap['Cash Subsidy'] ? 'Yes' : 'No',
+                'AICS': (memberGovMap['AICS - Shelter Assistance'] ? 'Shelter Assistance' : memberGovMap['AICS - Burial'] ? 'Burial' : memberGovMap['AICS - Scholarship'] ? 'Scholarship' : '') || '',
+                'Structural Damage': memberCalamityImpact.structural_damage || 'No',
+                'Household Injury': memberCalamityImpact.household_injury || 'No',
+                'Habitability': memberCalamityImpact.habitability || 'No',
+                'Loss of Livelihood': memberCalamityImpact.loss_of_livelihood || 'No',
+                'Structural Damage File Link': memberCalamityDocsMap['Structural Damage']?.file_url || '',
+                'Household Injury File Link': memberCalamityDocsMap['Household Injury']?.file_url || '',
+                'Habitability File Link': memberCalamityDocsMap['Habitability']?.file_url || '',
+                'Loss of Livelihood File Link': memberCalamityDocsMap['Loss of Livelihood']?.file_url || '',
+                'Additional Attachment File Link': memberCalamityDocsMap['Additional Attachment']?.file_url || ''
+            };
+        });
+        
+        return {
+            id: household.id,
+            data_id: household.data_id,
+            head: {
+                'Data ID': household.data_id,
+                'Barangay': household.barangay,
+                'Sitio / Purok': household.sitio_purok,
+                'Name of Household Head': household.head_name,
+                'Contact no.': household.contact_number,
+                'No. of Household Member/s': household.no_of_members,
+                'Coordinates': household.coordinate_lat && household.coordinate_lng ? `${household.coordinate_lat}, ${household.coordinate_lng}` : '',
+                'Gender': headPerson.gender || '',
+                'Birthdate': headPerson.birthdate || '',
+                'Age': headPerson.age || '',
+                'Stage': headPerson.age_category || '',
+                'FishR & RSBSA': headPerson.fishr_registration || '',
+                'Solo Parenting': headPerson.solo_parenting === true ? 'Yes' : 'No',
+                'Lactating': headPerson.lactating === true ? 'Yes' : 'No',
+                'Pregnant': headPerson.pregnant === true ? 'Yes' : 'No',
+                'Persons with Disability (PWD)': headPerson.is_pwd === true ? 'Yes' : 'No',
+                'Type of Disability': headPerson.disability_type || '',
+                'Status': headPerson.status || '',
+                'Educational Attainment': headPerson.educational_attainment || '',
+                'College Graduate Course': headPerson.college_graduate_course || '',
+                'Employment': headPerson.employment_status || '',
+                'Job Title': headPerson.job_title || '',
+                'Overseas Filipino Worker(OFW)': headPerson.is_ofw === true ? 'Yes' : 'No',
+                'Country': headPerson.ofw_country || '',
+                'Dog': livestockMap['Dog'] ? 'Yes' : 'No',
+                'Cat': livestockMap['Cat'] ? 'Yes' : 'No',
+                'Pig': livestockMap['Pig'] ? 'Yes' : 'No',
+                'Cow': livestockMap['Cow'] ? 'Yes' : 'No',
+                'Carabao': livestockMap['Carabao'] ? 'Yes' : 'No',
+                'Chicken': livestockMap['Chicken'] ? 'Yes' : 'No',
+                'Others (Animals)': livestockMap['Others']?.quantity || livestockMap['Others']?.animal_name || '',
+                'TUPAD': govMap['TUPAD'] ? 'Yes' : 'No',
+                'Local 4Ps': govMap['Local 4Ps'] ? 'Yes' : 'No',
+                'National 4Ps': govMap['National 4Ps'] ? 'Yes' : 'No',
+                'Local Social Pension': govMap['Local Social Pension'] ? 'Yes' : 'No',
+                'National Social Pension': govMap['National Social Pension'] ? 'Yes' : 'No',
+                'Solo Parent Assistance': govMap['Solo Parent Assistance'] ? 'Yes' : 'No',
+                'Relief Goods': govMap['Relief Goods'] ? 'Yes' : 'No',
+                'Cash Subsidy': govMap['Cash Subsidy'] ? 'Yes' : 'No',
+                'AICS': (govMap['AICS - Shelter Assistance'] ? 'Shelter Assistance' : govMap['AICS - Burial'] ? 'Burial' : govMap['AICS - Scholarship'] ? 'Scholarship' : '') || '',
+                'Taal Volcano': displacementMap['Taal Volcano'] ? 'Yes' : 'No',
+                'Typhoon': displacementMap['Typhoon'] ? 'Yes' : 'No',
+                'Flood': displacementMap['Flood'] ? 'Yes' : 'No',
+                'Landslide': displacementMap['Landslide'] ? 'Yes' : 'No',
+                'Earthquake': displacementMap['Earthquake'] ? 'Yes' : 'No',
+                'Fire': displacementMap['Fire'] ? 'Yes' : 'No',
+                'Inside Assembly Area': householdAssembly?.inside_assembly ? 'Yes' : 'No',
+                'Outside Assembly Area': householdAssembly?.outside_assembly ? 'Yes' : 'No',
+                'Pick-Up Location': householdAssembly?.pickup_location || '',
+                'Assembly Area': householdAssembly?.assembly_area_name || '',
+                'Family/Relative Host': householdAssembly?.family_host_name || '',
+                'Host_Contact': householdAssembly?.host_contact_number || '',
+                'Transportation': householdAssembly?.transportation_type || '',
+                'Structural Damage': headCalamityImpact.structural_damage || 'No',
+                'Household Injury': headCalamityImpact.household_injury || 'No',
+                'Habitability': headCalamityImpact.habitability || 'No',
+                'Loss of Livelihood': headCalamityImpact.loss_of_livelihood || 'No',
+                'Structural Damage File Link': headCalamityDocsMap['Structural Damage']?.file_url || '',
+                'Household Injury File Link': headCalamityDocsMap['Household Injury']?.file_url || '',
+                'Habitability File Link': headCalamityDocsMap['Habitability']?.file_url || '',
+                'Loss of Livelihood File Link': headCalamityDocsMap['Loss of Livelihood']?.file_url || '',
+                'Additional Attachment File Link': headCalamityDocsMap['Additional Attachment']?.file_url || '',
+                'Submitted By': household.submitted_by || '',
+                'Submitted On': household.submitted_on ? formatTimestampPH_(new Date(household.submitted_on)) : (household.created_at ? formatTimestampPH_(new Date(household.created_at)) : ''),
+                'Updated By': headPerson.updated_by || '',
+                'Updated On': household.updated_at ? formatTimestampPH_(new Date(household.updated_at)) : ''
+            },
+            members: membersWithFullData
+        };
+    });
+}
+function renderMobileTableFull(households) {
+        const existingLoadingMore = document.getElementById('mobileLoadingMoreRow');
+    if (existingLoadingMore) existingLoadingMore.remove();
+    const existingNoMore = document.getElementById('mobileNoMoreRow');
+    if (existingNoMore) existingNoMore.remove();
+
+    const tbody = document.getElementById('mobileTableBody');
+    const thead = document.getElementById('mobileTableHeader');
+    
+    if (!tbody) return;
+    
+    if (!households || households.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="21" class="mobile-loading"><i class="fas fa-folder-open"></i> No records found<\/td><\/tr>';
+        return;
+    }
+    
+    const columns = TABLE_DISPLAY_COLUMNS;
+    
+    // Add checkbox column to header
+    if (thead) {
+        thead.innerHTML = '<th style="width: 30px; text-align: center;"><input type="checkbox" id="mobileSelectAll" class="virtual-checkbox"></th>' + 
+            columns.map(col => `<th title="${col}">${col}</th>`).join('') + 
+            '<th style="width: 80px; text-align: center;">ACTIONS</th>';
+    }
+    
+    let html = '';
+    const searchTerm = virtualState.currentSearch;
+    
+    for (const household of households) {
+        const head = household.head;
+        const memberCount = head['No. of Household Member/s'] || 0;
+        const hasMembers = household.members && household.members.length > 0;
+        const householdId = household.id;
+        const isSelected = virtualState.selected.has(householdId);
+        
+        // Determine member count class for CSS styling
+        let memberCountClass = '';
+        if (memberCount === 0) memberCountClass = '0';
+        else if (memberCount === 1) memberCountClass = '1';
+        else if (memberCount <= 4) memberCountClass = '2-4';
+        else if (memberCount <= 7) memberCountClass = '5-7';
+        else memberCountClass = '8+';
+        
+        const escapedHeadName = escapeHtml(head['Name of Household Head'] || '');
+        const escapedBarangay = escapeHtml(head['Barangay'] || '');
+        
+        // Household row - clickable to toggle members
+        html += `<tr data-member-count="${memberCountClass}" data-id="${householdId}" class="household-row" onclick="toggleMobileMembersDesktop('${householdId}')" style="cursor: pointer;">`;
+        
+        // Checkbox cell
+        html += `<td onclick="event.stopPropagation();">
+                    <input type="checkbox" class="row-select-mobile" data-id="${householdId}" ${isSelected ? 'checked' : ''}>
+                <\/td>`;
+        
+        // Data cells
+        for (const col of columns) {
+            let val = head[col] || '';
+            let displayVal = val;
+            
+            if (col === 'Birthdate') {
+                try { const d = new Date(val); if (!isNaN(d)) displayVal = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`; } catch(e) {}
+            } else if (col === 'Submitted On' || col === 'Updated On') {
+                try { const d = new Date(val); if (!isNaN(d)) displayVal = d.toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }); } catch(e) {}
+            } else if (searchTerm && val) {
+                const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                displayVal = escapeHtml(String(val)).replace(regex, `<span class="highlight-match">$1</span>`);
+            } else {
+                displayVal = escapeHtml(String(val));
+            }
+            html += `<td title="${escapeHtml(String(val))}">${displayVal}<\/td>`;
+        }
+        
+        // Actions cell - Edit and Delete buttons only
+        html += `<td class="action-btns" onclick="event.stopPropagation();">
+                    <button class="edit-btn" onclick="onEditMobile('${householdId}')" title="Edit" style="background: none; border: none; color: white; cursor: pointer; padding: 4px 6px; border-radius: 3px;">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-btn" onclick="onDeleteMobile('${householdId}', '${escapedHeadName}', '${escapedBarangay}')" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                  <\/td><\/tr>`;
+        
+        // Member rows - hidden by default, NO checkboxes, NO action buttons
+        if (hasMembers) {
+            for (const member of household.members) {
+                html += `<tr class="member-row" style="display: none; background: #fafafa;">`;
+                // Empty checkbox cell for member row
+                html += `<td style="background: #fafafa;"><\/td>`;
+                // Member name with arrow
+                html += `<td style="padding-left: 24px;">↳ ${escapeHtml(member['Name of Household Member/s'] || '')}<\/td>`;
+                
+                let isFirstColumn = true;
+                for (const col of columns) {
+                    if (isFirstColumn) {
+                        isFirstColumn = false;
+                        continue;
+                    }
+                    let val = member[col] || '';
+                    let displayVal = val;
+                    
+                    if (col === 'Birthdate') {
+                        try { const d = new Date(val); if (!isNaN(d)) displayVal = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`; } catch(e) {}
+                    } else if (col === 'Submitted On' || col === 'Updated On') {
+                        try { const d = new Date(val); if (!isNaN(d)) displayVal = d.toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }); } catch(e) {}
+                    } else if (searchTerm && val) {
+                        const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                        displayVal = escapeHtml(String(val)).replace(regex, `<span class="highlight-match">$1</span>`);
+                    } else {
+                        displayVal = escapeHtml(String(val));
+                    }
+                    html += `<td>${displayVal}<\/td>`;
+                }
+                // Empty actions cell for member row
+                html += `<td class="action-btns" style="background: #fafafa;"><\/td>`;
+                html += `<\/tr>`;
+            }
+        }
+    }
+    
+    tbody.innerHTML = html;
+    
+    // Attach select all handler
+    const selectAllCheckbox = document.getElementById('mobileSelectAll');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.onclick = (e) => {
+            const checked = e.target.checked;
+            const allCheckboxes = document.querySelectorAll('.row-select-mobile');
+            allCheckboxes.forEach(cb => {
+                cb.checked = checked;
+                const id = cb.getAttribute('data-id');
+                if (checked) {
+                    virtualState.selected.add(id);
+                } else {
+                    virtualState.selected.delete(id);
+                }
+            });
+            updateCounts();
+        };
+    }
+    
+    // Attach individual checkbox handlers
+    document.querySelectorAll('.row-select-mobile').forEach(cb => {
+        cb.onclick = (e) => {
+            e.stopPropagation();
+            const id = cb.getAttribute('data-id');
+            if (cb.checked) {
+                virtualState.selected.add(id);
+            } else {
+                virtualState.selected.delete(id);
+            }
+            updateCounts();
+        };
+    });
+}
+
+// Toggle function - click on row to expand/collapse
+window.toggleMobileMembersDesktop = function(householdId) {
+    const householdRow = document.querySelector(`tr[data-id="${householdId}"]`);
+    if (!householdRow) return;
+    
+    // Find member rows that come after this household row
+    let memberRows = [];
+    let nextRow = householdRow.nextSibling;
+    while (nextRow && nextRow.classList && nextRow.classList.contains('member-row')) {
+        memberRows.push(nextRow);
+        nextRow = nextRow.nextSibling;
+    }
+    
+    if (memberRows.length === 0) return;
+    
+    const isHidden = memberRows[0].style.display === 'none';
+    
+    if (isHidden) {
+        memberRows.forEach(row => row.style.display = 'table-row');
+    } else {
+        memberRows.forEach(row => row.style.display = 'none');
+    }
+};
+
+function updateMobilePaginationUI() {
+    const pageInput = document.getElementById('mobilePageInput');
+    const totalPagesSpan = document.getElementById('mobileTotalPages');
+    const recordInfo = document.getElementById('mobileRecordInfo');
+    const firstBtn = document.getElementById('mobileFirstPage');
+    const prevBtn = document.getElementById('mobilePrevPage');
+    const nextBtn = document.getElementById('mobileNextPage');
+    const lastBtn = document.getElementById('mobileLastPage');
+    
+    if (pageInput) {
+        pageInput.value = mobileState.currentPage;
+        pageInput.max = mobileState.totalPages;
+    }
+    if (totalPagesSpan) totalPagesSpan.textContent = mobileState.totalPages;
+    
+    // Show clear record info
+    if (recordInfo) {
+        if (mobileState.totalRecords === 0) {
+            recordInfo.textContent = '0 households';
+        } else {
+            const start = (mobileState.currentPage - 1) * mobileState.recordsPerPage + 1;
+            const end = Math.min(start + mobileState.currentData.length - 1, mobileState.totalRecords);
+            recordInfo.textContent = `${start}-${end} of ${mobileState.totalRecords} households`;
+        }
+    }
+    
+    if (firstBtn) firstBtn.disabled = mobileState.currentPage === 1 || mobileState.totalRecords === 0;
+    if (prevBtn) prevBtn.disabled = mobileState.currentPage === 1 || mobileState.totalRecords === 0;
+    if (nextBtn) nextBtn.disabled = mobileState.currentPage === mobileState.totalPages || mobileState.totalRecords === 0;
+    if (lastBtn) lastBtn.disabled = mobileState.currentPage === mobileState.totalPages || mobileState.totalRecords === 0;
+}
+
+function setupMobilePagination() {
+    const firstBtn = document.getElementById('mobileFirstPage');
+    const prevBtn = document.getElementById('mobilePrevPage');
+    const nextBtn = document.getElementById('mobileNextPage');
+    const lastBtn = document.getElementById('mobileLastPage');
+    const pageInput = document.getElementById('mobilePageInput');
+    
+    if (firstBtn) {
+        const newFirstBtn = firstBtn.cloneNode(true);
+        firstBtn.parentNode.replaceChild(newFirstBtn, firstBtn);
+        newFirstBtn.onclick = () => loadMobilePage(1);
+    }
+    if (prevBtn) {
+        const newPrevBtn = prevBtn.cloneNode(true);
+        prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+        newPrevBtn.onclick = () => loadMobilePage(mobileState.currentPage - 1);
+    }
+    if (nextBtn) {
+        const newNextBtn = nextBtn.cloneNode(true);
+        nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+        newNextBtn.onclick = () => loadMobilePage(mobileState.currentPage + 1);
+    }
+    if (lastBtn) {
+        const newLastBtn = lastBtn.cloneNode(true);
+        lastBtn.parentNode.replaceChild(newLastBtn, lastBtn);
+        newLastBtn.onclick = () => loadMobilePage(mobileState.totalPages);
+    }
+    if (pageInput) {
+        const newPageInput = pageInput.cloneNode(true);
+        pageInput.parentNode.replaceChild(newPageInput, pageInput);
+        newPageInput.onchange = function() {
+            let page = parseInt(this.value);
+            if (isNaN(page)) page = 1;
+            page = Math.max(1, Math.min(page, mobileState.totalPages));
+            if (page !== mobileState.currentPage) loadMobilePage(page);
+        };
+    }
+}
+
+function showNoMobileRecordsMessage() {
+    const tbody = document.getElementById('mobileTableBody');
+    if (tbody) {
+        let message = '';
+        let icon = '<i class="fas fa-search"></i>';
+        
+        if (virtualState.currentSearch && virtualState.currentSearch !== '') {
+            if (virtualState.currentBarangay && virtualState.currentBarangay !== '') {
+                message = `No records found for "<strong>${escapeHtml(virtualState.currentSearch)}</strong>" in <strong>${escapeHtml(virtualState.currentBarangay)}</strong>`;
+            } else {
+                message = `No records found for "<strong>${escapeHtml(virtualState.currentSearch)}</strong>"`;
+            }
+        } else if (virtualState.currentBarangay && virtualState.currentBarangay !== '') {
+            icon = '<i class="fas fa-folder-open"></i>';
+            message = `No records found in <strong>${escapeHtml(virtualState.currentBarangay)}</strong>`;
+        } else {
+            icon = '<i class="fas fa-database"></i>';
+            message = `No records available. Click "Data Entry" to add new households.`;
+        }
+        
+        tbody.innerHTML = `<tr><td colspan="${TABLE_DISPLAY_COLUMNS.length + 2}" class="mobile-no-records" id="mobileNoRecordsMessage" style="text-align: center; padding: 60px 20px; background: #fff8e1; color: #ff7a00; font-size: 0.9rem;">${icon} ${message}<\/td><\/tr>`;
+    }
+}
+
+function showMobileLoadingMore() {
+    const tbody = document.getElementById('mobileTableBody');
+    if (tbody && !document.getElementById('mobileLoadingMoreRow')) {
+        const loadingRow = document.createElement('tr');
+        loadingRow.id = 'mobileLoadingMoreRow';
+        loadingRow.className = 'mobile-loading-more';
+        loadingRow.innerHTML = `<td colspan="${TABLE_DISPLAY_COLUMNS.length + 2}" style="text-align: center; padding: 12px; background: #ffffff; color: #0f7a4a;">
+            <i class="fas fa-spinner fa-spin"></i> Loading more records...
+        <\/td>`;
+        tbody.appendChild(loadingRow);
+    }
+}
+
+function hideMobileLoadingMore() {
+    const loadingRow = document.getElementById('mobileLoadingMoreRow');
+    if (loadingRow) loadingRow.remove();
+}
+
+function showMobileNoMoreRecords() {
+    const tbody = document.getElementById('mobileTableBody');
+    if (tbody && !document.getElementById('mobileNoMoreRow')) {
+        const noMoreRow = document.createElement('tr');
+        noMoreRow.id = 'mobileNoMoreRow';
+        noMoreRow.className = 'mobile-no-more';
+        noMoreRow.innerHTML = `<td colspan="${TABLE_DISPLAY_COLUMNS.length + 2}" style="text-align: center; padding: 12px; background: #f9f9f9; color: #6c757d;">
+            <i class="fas fa-check-circle"></i> No more records to load
+        <\/td>`;
+        tbody.appendChild(noMoreRow);
+    }
+}
+
+async function onEditMobile(id) {
+    console.log('onEditMobile called with ID:', id);
+    
+    if (!id) {
+        showError('Invalid household ID');
+        return;
+    }
+    
+    // Find the household in the current mobile data
+    const household = mobileState.currentData.find(h => h.id == id);
+    if (!household) {
+        showError('Record not found. Please refresh and try again.');
+        return;
+    }
+    
+    // Call the main onEdit function with the ID
+    if (typeof onEdit === 'function') {
+        await onEdit(id);
+    } else {
+        showError('Edit function not available');
+    }
+}
+
+function onDeleteMobile(id, headName, barangay) {
+    if (typeof showDeleteConfirmation === 'function') {
+        showDeleteConfirmation(id, headName, barangay);
+    } else if (confirm(`Delete "${headName}"?`)) {
+        performMobileDelete(id);
+    }
+}
+
+async function performMobileDelete(id) {
+    try {
+        const { error } = await db.from('households').delete().eq('id', id);
+        if (error) throw error;
+        showSuccess('Household deleted successfully');
+        loadMobilePage(mobileState.currentPage);
+    } catch (err) {
+        showError('Failed to delete household');
+    }
+}
+
+async function initRecordsView() {
+    const isMobile = window.innerWidth <= 768;
+    const mobileTableContainer = document.querySelector('.mobile-table-container');
+    const recordsWrapper = document.querySelector('.records-wrapper');
+    const mobilePagination = document.getElementById('mobilePagination');
+    
+    if (isMobile) {
+        console.log('📱 Mobile detected - using pagination mode');
+        if (recordsWrapper) recordsWrapper.style.display = 'none';
+        if (mobileTableContainer) mobileTableContainer.style.display = 'block';
+        if (mobilePagination) mobilePagination.style.display = 'flex';
+        setupMobilePagination();
+        await loadMobilePage(1);
+    } else {
+        console.log('💻 Desktop detected - using virtual scrolling mode');
+        if (recordsWrapper) recordsWrapper.style.display = 'block';
+        if (mobileTableContainer) mobileTableContainer.style.display = 'none';
+        if (mobilePagination) mobilePagination.style.display = 'none';
+        if (virtualState.allHouseholds.length === 0 && typeof loadRecords === 'function') {
+            await loadRecords(true, true);
+        } else if (virtualScroller) {
+            virtualScroller.refresh();
+        }
+    }
+}
+
+let resizeTimeout;
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        const isMobile = window.innerWidth <= 768;
+        const isCurrentlyMobile = document.querySelector('.mobile-table-container')?.style.display === 'block';
+        if (isMobile !== isCurrentlyMobile) location.reload();
+    }, 250);
 });
 
 // Expose functions for global access
 window.openImageViewer = openImageViewer;
 window.openPdfViewer = openPdfViewer;
 window.getCalamityThumbnailsForCell = getCalamityThumbnailsForCell;
+window.onEditMobile = onEditMobile;
+window.onDeleteMobile = onDeleteMobile;
 </script>
 </body>
 </html>
