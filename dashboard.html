@@ -1197,6 +1197,26 @@ body.guest-user .mobile-nav-item.mobile-nav-dashboard {
     flex: 1 !important;
     width: 100% !important;
 }
+/* Guest User - Hide restricted navigation items */
+body.guest-user .sidebar li a[href="dataForm.html"],
+body.guest-user .sidebar li a[href="records.html"],
+body.guest-user .sidebar li a[href="charts.html"],
+body.guest-user .sidebar li a[href="users.html"] {
+    display: none !important;
+}
+
+body.guest-user .mobile-nav-item[href="dataForm.html"],
+body.guest-user .mobile-nav-item[href="records.html"],
+body.guest-user .mobile-nav-item[href="charts.html"],
+body.guest-user .mobile-nav-item[href="users.html"] {
+    display: none !important;
+}
+
+/* Make Dashboard tab full width for guest on mobile */
+body.guest-user .mobile-nav-item[href="dashboard.html"] {
+    flex: 1 !important;
+    width: 100% !important;
+}
 </style>
 </head>
 
@@ -1610,10 +1630,49 @@ if (isGuest) {
         localStorage.setItem('userRole', 'guest');
     }
     
+    // HIDE navigation items for guest users (Desktop Sidebar)
+    const desktopNavItems = document.querySelectorAll('.sidebar li a');
+    desktopNavItems.forEach(item => {
+        const linkText = item.querySelector('.menu-text')?.innerText || item.innerText;
+        // Hide Data Entry, Records & Management, Charts & Analytics, User Management
+        if (linkText.includes('Data Entry') || 
+            linkText.includes('Records & Management') || 
+            linkText.includes('Charts & Analytics') || 
+            linkText.includes('User Management')) {
+            item.parentElement.style.display = 'none';
+        }
+    });
+    
+    // HIDE navigation items for guest users (Mobile Bottom Navigation)
+    const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+    mobileNavItems.forEach(item => {
+        const navText = item.querySelector('.mobile-nav-text')?.innerText || '';
+        // Hide Data Entry, Records, Charts, Users
+        if (navText === 'Data Entry' || 
+            navText === 'Records' || 
+            navText === 'Charts' || 
+            navText === 'Users') {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Also hide any admin-only items
+    document.querySelectorAll('.admin-only').forEach(el => {
+        el.style.display = 'none';
+        el.classList.remove('admin-visible');
+    });
+    
     // DO NOT redirect - stay on dashboard
 } else if (loggedIn) {
     console.log("✅ Regular logged in user - allowing access");
     // Regular user - proceed normally
+    // Make sure all navigation items are visible for regular users
+    document.querySelectorAll('.sidebar li a').forEach(item => {
+        item.parentElement.style.display = '';
+    });
+    document.querySelectorAll('.mobile-nav-item').forEach(item => {
+        item.style.display = '';
+    });
 } else {
     console.log("❌ No valid session, redirecting to login");
     window.location.href = 'index.html';
