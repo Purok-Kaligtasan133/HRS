@@ -1275,14 +1275,37 @@ body.guest-user .mobile-nav-item.mobile-nav-dashboard {
   <h3><i class="fas fa-database"></i> Alitagtag Data Overview</h3>
 </div>
 <div class="dashboard-cards">
+  <!-- FIRST CARD: Both Household Heads and Members together -->
   <div class="card">
-    <h3>Total Household Heads</h3>
-    <div id="totalHeads" class="card-value">0</div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 style="margin: 0;">Household Summary</h3>
+      <i class="fas fa-users" style="color: var(--accent2); font-size: 1.2rem;"></i>
+    </div>
+    <div style="display: flex; justify-content: space-between; gap: 16px;">
+      <div style="flex: 1; text-align: center; padding: 8px; background: var(--light-green); border-radius: var(--radius-sm);">
+        <div style="font-size: 11px; color: var(--muted); font-weight: 600;">HOUSEHOLD HEADS</div>
+        <div id="totalHeads" class="card-value" style="font-size: 24px; margin: 4px 0 0 0;">0</div>
+      </div>
+      <div style="flex: 1; text-align: center; padding: 8px; background: var(--light-green); border-radius: var(--radius-sm);">
+        <div style="font-size: 11px; color: var(--muted); font-weight: 600;">HOUSEHOLD MEMBERS</div>
+        <div id="totalMembers" class="card-value" style="font-size: 24px; margin: 4px 0 0 0;">0</div>
+      </div>
+    </div>
   </div>
-  <div class="card">
-    <h3>Total Household Members</h3>
-    <div id="totalMembers" class="card-value">0</div>
+
+  <!-- SECOND CARD: Total Population with Year (Light Green Background, No Border) -->
+  <div class="card" style="background: var(--light-green);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 style="margin: 0; color: var(--accent1);">Total Population</h3>
+      <i class="fas fa-chart-line" style="color: var(--accent2); font-size: 1.2rem;"></i>
+    </div>
+    <div id="totalPopulation" class="card-value" style="color: var(--accent1); font-size: 32px; text-align: center; font-weight: 800;">0</div>
+    <div class="mini" style="color: var(--muted); text-align: center; margin-top: 8px;">
+      <i class="fas fa-calendar-alt"></i> As of <span id="currentYear"></span>
+    </div>
   </div>
+
+  <!-- THIRD CARD: Recent Activity (unchanged) -->
   <div class="card" id="lastUpdatedCard" style="padding: 12px;">
     <h3 style="margin: 0 0 10px 0; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
       <i class="fas fa-history" style="font-size: 0.75rem;"></i> Recent Activity
@@ -1817,7 +1840,7 @@ async function updateRecentActivities() {
     container.innerHTML = activities.map(log => formatActivityMessage(log)).join('');
 }
 
-function processDashboardData(data) {
+async function processDashboardData(data) {
     const { households, persons, livestock, govAssistance, calamityImpacts } = data;
     
     // Create lookup maps for O(1) access
@@ -2177,9 +2200,50 @@ function processDashboardData(data) {
         }
     }
     
-    // Update top cards
-    document.getElementById('totalHeads').innerText = totalHeads;
-    document.getElementById('totalMembers').innerText = totalMembers;
+// Update top cards - First card shows both Heads and Members
+document.getElementById('totalHeads').innerText = totalHeads;
+document.getElementById('totalMembers').innerText = totalMembers;
+
+// Second card: Total Population = Heads + Members
+const totalPopulation = totalHeads + totalMembers;
+document.getElementById('totalPopulation').innerText = totalPopulation;
+
+// Get formatted date (Month Day, Year) from most recent CREATE or UPDATE activity
+// Get formatted date from most recent activity (any action)
+async function getLatestActivityDate() {
+    if (!supabaseClient) return null;
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('audit_logs')
+            .select('created_at')
+            .order('created_at', { ascending: false })
+            .limit(1);
+        
+        if (error || !data || data.length === 0) {
+            return null;
+        }
+        
+        const activityDate = new Date(data[0].created_at);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return activityDate.toLocaleDateString('en-US', options);
+        
+    } catch (err) {
+        console.error('Error fetching latest activity date:', err);
+        return null;
+    }
+}
+
+// Set formatted date based on latest CREATE/UPDATE activity
+const latestDate = await getLatestActivityDate();
+const currentYearSpan = document.getElementById('currentYear');
+if (currentYearSpan) {
+    if (latestDate) {
+        currentYearSpan.innerText = latestDate;
+    } else {
+        currentYearSpan.innerText = 'No records yet';
+    }
+}
     
     // Demographics Section
     const demographicsDiv = document.getElementById('demographicsStats');
