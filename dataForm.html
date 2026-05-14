@@ -4698,8 +4698,6 @@ function setupUserDropdown() {
     }
 }
 
-// ============ UPDATED LOGOUT FUNCTIONS WITH SESSION CLEANUP ============
-
 async function performLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -4769,7 +4767,7 @@ function setupConfirmModal() {
     if (yesBtn) {
         yesBtn.onclick = async function() {
             confirmModal.style.display = 'none';
-            await performLogout();
+            await performLogout();  // ✅ Calls database cleanup + local storage
         };
     }
     
