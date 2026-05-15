@@ -3671,8 +3671,8 @@ textarea.validation-error:focus {
               <option value="No Formal Education">No Formal Education</option>
               <option value="Elementary Level">Elementary Level</option>
               <option value="Elementary Graduate">Elementary Graduate</option>
-              <option value="High School Level">High School Level</option>
-              <option value="High School Graduate">High School Graduate</option>
+              <option value="High School Level">Junior High School Level</option>
+              <option value="High School Graduate">Junior High School Graduate</option>
               <option value="Senior High School Level">Senior High School Level</option>
               <option value="Senior High School Graduate">Senior High School Graduate</option>
               <option value="Alternative Learning System (ALS) Graduate">Alternative Learning System (ALS) Graduate</option>
@@ -5305,8 +5305,26 @@ function collectMemberDataFromPanel() {
         "Relief Goods_Date": document.getElementById("member_relief_date_input").value ? toSheetDateFormat(document.getElementById("member_relief_date_input").value) : "",
         "Cash Subsidy": document.getElementById("member_cash").checked ? "Yes" : "No",
         "Cash Subsidy_Date": document.getElementById("member_cash_date_input").value ? toSheetDateFormat(document.getElementById("member_cash_date_input").value) : "",
-        "AICS": document.getElementById("memberAics").value || "",
-        "AICS_Date": document.getElementById("member_aics_date_input").value ? toSheetDateFormat(document.getElementById("member_aics_date_input").value) : "",
+"AICS": (function() {
+    const aicsSelect = document.getElementById("memberAics");
+    const aicsValue = aicsSelect ? aicsSelect.value : "";
+    console.log('🔍 Collecting AICS value:', aicsValue);
+    if (!aicsValue || aicsValue === "None" || aicsValue === "") {
+        return "";
+    }
+    return aicsValue;
+})(),
+"AICS_Date": (function() {
+    const aicsDateInput = document.getElementById("member_aics_date_input");
+    const aicsDate = aicsDateInput ? aicsDateInput.value : "";
+    console.log('🔍 Collecting AICS date:', aicsDate);
+    if (aicsDate && aicsDate !== "") {
+        const formattedDate = toSheetDateFormat(aicsDate);
+        console.log('🔍 Formatted AICS date:', formattedDate);
+        return formattedDate;
+    }
+    return "";
+})(),
         "Structural Damage": document.querySelector('input[name="member_damage"]:checked')?.value || "No",
         "Structural Damage Details": document.getElementById('member_damage_details')?.value || "",
         "Household Injury": document.querySelector('input[name="member_injury"]:checked')?.value || "No",
@@ -5891,28 +5909,48 @@ async function submitHeadAndMembers() {
             
             memberGovPrograms.forEach(prog => {
                 if (prog.isReceived) {
+                    const dateValue = member[prog.dateField];
                     memberGovAssistance.push({
                         person_id: memberPerson.id,
                         household_id: household.id,
                         assistance_type: prog.name,
                         is_received: true,
-                        received_date: member[prog.dateField] || null
+                        received_date: dateValue && dateValue !== "" ? dateValue : null
                     });
                 }
             });
             
-            if (member["AICS"] && member["AICS"] !== "" && member["AICS"] !== "None") {
+            // FIXED: AICS for member - ensure it's saved with correct format
+            const memberAicsValue = member["AICS"];
+            const memberAicsDate = member["AICS_Date"];
+            
+            console.log('🔍 Saving member AICS:', memberAicsValue, 'Date:', memberAicsDate);
+            
+            if (memberAicsValue && memberAicsValue !== "" && memberAicsValue !== "None") {
+                // Format the assistance type with prefix if not already
+                let assistanceType = memberAicsValue;
+                if (!assistanceType.includes('AICS')) {
+                    assistanceType = 'AICS - ' + assistanceType;
+                }
+                
                 memberGovAssistance.push({
                     person_id: memberPerson.id,
                     household_id: household.id,
-                    assistance_type: member["AICS"],
+                    assistance_type: assistanceType,
                     is_received: true,
-                    received_date: member["AICS_Date"] || null
+                    received_date: memberAicsDate && memberAicsDate !== "" ? memberAicsDate : null
                 });
+                console.log('✅ AICS saved:', assistanceType, 'Date:', memberAicsDate);
+            } else {
+                console.log('⚠️ No AICS to save');
             }
+            
+            // Debug log to verify
+            console.log('Total member gov assistance records:', memberGovAssistance.length);
             
             if (memberGovAssistance.length > 0) {
                 await supabaseClient.from('gov_assistance').insert(memberGovAssistance);
+                console.log('✅ Member gov assistance saved successfully');
             }
             
             // Member calamity impacts (with person_id)
@@ -7220,3 +7258,5 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 });
 </script>
+</body>
+</html>
