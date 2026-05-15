@@ -1532,6 +1532,23 @@ body.guest-user .mobile-nav-item[href="dashboard.html"] {
           <tbody></tbody>
         </table>
       </div>
+
+            <!-- 14. Post-Calamity Impact Summary per Barangay -->
+      <div class="breakdown-table-container">
+        <h4><i class="fas fa-tornado"></i> Post-Calamity Impact Summary per Barangay</h4>
+        <table class="breakdown-table" id="tblCalamityImpact">
+          <thead>
+            <tr>
+              <th>Barangay</th>
+              <th>Structural Damage</th>
+              <th>Household Injury</th>
+              <th>Habitability</th>
+              <th>Loss of Livelihood</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </main>
 </div>
@@ -1921,10 +1938,19 @@ async function processDashboardData(data) {
         govByHousehold[g.household_id].push(g);
     });
     
-    const calamityByHousehold = {};
-    calamityImpacts.forEach(c => {
-        calamityByHousehold[c.household_id] = c;
-    });
+const calamityByHousehold = {};
+calamityImpacts.forEach(c => {
+    // If this household already has a record, accumulate the Yes counts
+    if (calamityByHousehold[c.household_id]) {
+        const existing = calamityByHousehold[c.household_id];
+        if (c.structural_damage === 'Yes') existing.structural_damage = 'Yes';
+        if (c.household_injury === 'Yes') existing.household_injury = 'Yes';
+        if (c.habitability === 'Yes') existing.habitability = 'Yes';
+        if (c.loss_of_livelihood === 'Yes') existing.loss_of_livelihood = 'Yes';
+    } else {
+        calamityByHousehold[c.household_id] = { ...c };
+    }
+});
     
     let totalHeads = 0;
     let totalMembers = 0;
@@ -1980,7 +2006,8 @@ async function processDashboardData(data) {
                 employment: { employed: 0, unemployed: 0 },
                 fishr: { fishrRegistered: 0, rbisRegistered: 0, bothRegistered: 0, notRegistered: 0 },
                 ofw: { saudiArabia: 0, uae: 0, qatar: 0, kuwait: 0, bahrain: 0, oman: 0, hongKong: 0, singapore: 0, japan: 0, taiwan: 0, malaysia: 0, australia: 0, newZealand: 0, italy: 0, uk: 0, germany: 0, cyprus: 0, canada: 0, usa: 0, libya: 0 },
-                livestock: { dog: 0, cat: 0, pig: 0, cow: 0, carabao: 0, chicken: 0 }
+                livestock: { dog: 0, cat: 0, pig: 0, cow: 0, carabao: 0, chicken: 0 },
+                calamityImpacts: { structuralDamage: 0, householdInjury: 0, habitability: 0, lossOfLivelihood: 0 }
             };
         }
         
@@ -2081,21 +2108,23 @@ async function processDashboardData(data) {
                 b.ageBuckets[ageBucket] = (b.ageBuckets[ageBucket] || 0) + 1;
             }
             
-            // Educational Attainment
-            const educationField = (person.educational_attainment || '').toLowerCase();
+            // Educational Attainment - COMBINE both naming conventions
+            const educationField = (person.educational_attainment || '').trim();
             if (educationField) {
-                if (educationField.includes('no formal')) { overallEducation.noFormalEducation++; b.education.noFormalEducation++; }
-                else if (educationField.includes('elementary level')) { overallEducation.elementaryLevel++; b.education.elementaryLevel++; }
-                else if (educationField.includes('elementary graduate')) { overallEducation.elementaryGraduate++; b.education.elementaryGraduate++; }
-                else if (educationField.includes('junior high school level') || educationField.includes('junior high level')) { overallEducation.juniorHighSchoolLevel++; b.education.juniorHighSchoolLevel++; }
-                else if (educationField.includes('junior high school graduate') || educationField.includes('junior high graduate')) { overallEducation.juniorHighSchoolGraduate++; b.education.juniorHighSchoolGraduate++; }
-                else if (educationField.includes('senior high school level') || educationField.includes('senior high level')) { overallEducation.seniorHighSchoolLevel++; b.education.seniorHighSchoolLevel++; }
-                else if (educationField.includes('senior high school graduate') || educationField.includes('senior high graduate')) { overallEducation.seniorHighSchoolGraduate++; b.education.seniorHighSchoolGraduate++; }
-                else if (educationField.includes('alternative learning system') || educationField.includes('als graduate')) { overallEducation.alsGraduate++; b.education.alsGraduate++; }
-                else if (educationField.includes('special education') || educationField.includes('sped graduate')) { overallEducation.spedGraduate++; b.education.spedGraduate++; }
-                else if (educationField.includes('vocational') || educationField.includes('technical graduate')) { overallEducation.vocationalGraduate++; b.education.vocationalGraduate++; }
-                else if (educationField.includes('college level')) { overallEducation.collegeLevel++; b.education.collegeLevel++; }
-                else if (educationField.includes('college graduate')) { overallEducation.collegeGraduate++; b.education.collegeGraduate++; }
+                if (educationField === 'No Formal Education') { overallEducation.noFormalEducation++; b.education.noFormalEducation++; }
+                else if (educationField === 'Elementary Level') { overallEducation.elementaryLevel++; b.education.elementaryLevel++; }
+                else if (educationField === 'Elementary Graduate') { overallEducation.elementaryGraduate++; b.education.elementaryGraduate++; }
+                // JHS LEVEL - combines "High School Level" AND "JHS Level"
+                else if (educationField === 'High School Level' || educationField === 'JHS Level') { overallEducation.juniorHighSchoolLevel++; b.education.juniorHighSchoolLevel++; }
+                // JHS GRAD - combines "High School Graduate" AND "JHS Grad"
+                else if (educationField === 'High School Graduate' || educationField === 'JHS Grad') { overallEducation.juniorHighSchoolGraduate++; b.education.juniorHighSchoolGraduate++; }
+                else if (educationField === 'Senior High School Level') { overallEducation.seniorHighSchoolLevel++; b.education.seniorHighSchoolLevel++; }
+                else if (educationField === 'Senior High School Graduate') { overallEducation.seniorHighSchoolGraduate++; b.education.seniorHighSchoolGraduate++; }
+                else if (educationField === 'Alternative Learning System (ALS) Graduate') { overallEducation.alsGraduate++; b.education.alsGraduate++; }
+                else if (educationField === 'Special Education (SPED) Graduate') { overallEducation.spedGraduate++; b.education.spedGraduate++; }
+                else if (educationField === 'Vocational/Technical Graduate') { overallEducation.vocationalGraduate++; b.education.vocationalGraduate++; }
+                else if (educationField === 'College Level') { overallEducation.collegeLevel++; b.education.collegeLevel++; }
+                else if (educationField === 'College Graduate') { overallEducation.collegeGraduate++; b.education.collegeGraduate++; }
             }
             
             // Employment Status
@@ -2220,12 +2249,12 @@ async function processDashboardData(data) {
                 b.support[assistanceType]++;
             }
         }
-        
-        // Post-Calamity Impacts
-        if (householdCalamity.structural_damage === 'Yes') calamityImpactStats.structuralDamage++;
-        if (householdCalamity.household_injury === 'Yes') calamityImpactStats.householdInjury++;
-        if (householdCalamity.habitability === 'Yes') calamityImpactStats.habitability++;
-        if (householdCalamity.loss_of_livelihood === 'Yes') calamityImpactStats.lossOfLivelihood++;
+
+                // Post-Calamity Impacts per Barangay - Add to barangay totals
+        if (householdCalamity.structural_damage === 'Yes') b.calamityImpacts.structuralDamage++;
+        if (householdCalamity.household_injury === 'Yes') b.calamityImpacts.householdInjury++;
+        if (householdCalamity.habitability === 'Yes') b.calamityImpacts.habitability++;
+        if (householdCalamity.loss_of_livelihood === 'Yes') b.calamityImpacts.lossOfLivelihood++;
         
         // Sitio/Purok (from household) - COUNT PERSONS (HEAD + MEMBERS)
         const sitioRaw = (household.sitio_purok || '').trim();
@@ -2258,6 +2287,14 @@ async function processDashboardData(data) {
             b.sitio[sitioKey] = (b.sitio[sitioKey] || 0) + totalPersons;
         }
     }
+
+            // Post-Calamity Impacts - Count ALL records, not just unique households
+calamityImpacts.forEach(impact => {
+    if (impact.structural_damage === 'Yes') calamityImpactStats.structuralDamage++;
+    if (impact.household_injury === 'Yes') calamityImpactStats.householdInjury++;
+    if (impact.habitability === 'Yes') calamityImpactStats.habitability++;
+    if (impact.loss_of_livelihood === 'Yes') calamityImpactStats.lossOfLivelihood++;
+});
     
 // Update top cards - First card shows both Heads and Members
 document.getElementById('totalHeads').innerText = totalHeads;
@@ -2591,7 +2628,17 @@ if (currentYearSpan) {
     const ofwKeys = ['saudiArabia', 'uae', 'qatar', 'kuwait', 'bahrain', 'oman', 'hongKong', 'singapore', 'japan', 'taiwan', 'malaysia', 'australia', 'newZealand', 'italy', 'uk', 'germany', 'cyprus', 'canada', 'usa', 'libya'];
     populateTable('#tblBarangayOFW tbody', (l, s) => `<tr><td style="text-align:left">${l}</td>${ofwKeys.map(k => `<td>${s.ofw[k]||0}</td>`).join('')}</tr>`);
     
+     // 14. Post-Calamity Impact Summary per Barangay
+    populateTable('#tblCalamityImpact tbody', (l, s) => {
+        return `<tr><td style="text-align:left">${l}</td>
+                <td>${s.calamityImpacts.structuralDamage || 0}</td>
+                <td>${s.calamityImpacts.householdInjury || 0}</td>
+                <td>${s.calamityImpacts.habitability || 0}</td>
+                <td>${s.calamityImpacts.lossOfLivelihood || 0}</td>
+            </tr>`;
+    });
     console.log("✅ Dashboard rendering complete!");
+
 }
 
 // ============ REFRESH FUNCTION ============
@@ -2761,7 +2808,7 @@ function setupConfirmModal() {
     if (yesBtn) {
         yesBtn.onclick = async function() {
             confirmModal.style.display = 'none';
-            await performLogout();
+            await performLogout();  // ✅ Calls database cleanup + local storage
         };
     }
     
