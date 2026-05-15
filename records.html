@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="css/uniform-styles.css">
 <link rel="stylesheet" href="css/header-styles.css">
 <link rel="stylesheet" href="css/records-style.css">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <script src="js/force-logout.js"></script>
 <script src="js/session-check.js"></script>
 <style>
@@ -1795,7 +1796,7 @@ body {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     body {
         padding-bottom: 70px;
     }
@@ -2563,12 +2564,12 @@ body {
     color: var(--muted);
     white-space: nowrap;
 }
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .mobile-pagination {
         display: flex !important;
     }
 }
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
     .mobile-pagination {
         display: none !important;
     }
@@ -2616,8 +2617,8 @@ html {
     overflow-y: scroll;
 }
 /* ============ MOBILE TABLE - EXACTLY LIKE DESKTOP ============ */
-@media (max-width: 768px) {
-    /* Hide virtual scroller on mobile */
+@media (max-width: 1024px) {
+    /* Hide virtual scroller on mobile/tablet */
     .virtual-scroll-container {
         display: none !important;
     }
@@ -2916,7 +2917,7 @@ html {
     box-shadow: none !important;
 }
 /* ============ MOBILE FEEDBACK MESSAGES ============ */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     /* No records message */
     .mobile-no-records,
     #mobileNoRecordsMessage {
@@ -2964,7 +2965,7 @@ html {
     }
 }
 /* Permanent gap fix - keep columns wide enough */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .mobile-records-table {
         table-layout: auto !important;
     }
@@ -2993,8 +2994,8 @@ html {
     }
 }
 /* ============ UPDATED MOBILE TABLE CSS - NO GAPS ============ */
-@media (max-width: 768px) {
-    /* Hide virtual scroller on mobile */
+@media (max-width: 1024px) {
+    /* Hide virtual scroller on mobile/tablet */
     .virtual-scroll-container {
         display: none !important;
     }
@@ -3587,8 +3588,8 @@ html {
         <option value="No Formal Education">No Formal Education</option>
         <option value="Elementary Level">Elementary Level</option>
         <option value="Elementary Graduate">Elementary Graduate</option>
-        <option value="High School Level">High School Level</option>
-        <option value="High School Graduate">High School Graduate</option>
+        <option value="High School Level">Junior High School Level</option>
+        <option value="High School Graduate">Junior High School Graduate</option>
         <option value="Senior High School Level">Senior High School Level</option>
         <option value="Senior High School Graduate">Senior High School Graduate</option>
         <option value="Alternative Learning System (ALS) Graduate">Alternative Learning System (ALS) Graduate</option>
@@ -4295,8 +4296,8 @@ html {
         <option value="No Formal Education">No Formal Education</option>
         <option value="Elementary Level">Elementary Level</option>
         <option value="Elementary Graduate">Elementary Graduate</option>
-        <option value="High School Level">High School Level</option>
-        <option value="High School Graduate">High School Graduate</option>
+        <option value="High School Level">Junior High School Level</option>
+        <option value="High School Graduate">Junior High School Graduate</option>
         <option value="Senior High School Level">Senior High School Level</option>
         <option value="Senior High School Graduate">Senior High School Graduate</option>
         <option value="Alternative Learning System (ALS) Graduate">Alternative Learning System (ALS) Graduate</option>
@@ -5220,6 +5221,16 @@ const TABLE_DISPLAY_COLUMNS = [
     'Structural Damage', 'Household Injury', 'Habitability', 'Loss of Livelihood',
     'Calamity Documents', 'Submitted By', 'Submitted On', 'Updated By', 'Updated On'
 ];
+
+// ========== ADD THIS - MOBILE STATE DECLARATION ==========
+let mobileState = {
+    currentPage: 1,
+    totalPages: 1,
+    totalRecords: 0,
+    recordsPerPage: 15,
+    isLoading: false,
+    currentData: []
+};
 
 /* ============ HELPER FUNCTIONS ============ */
 const $ = id => document.getElementById(id);
@@ -7543,9 +7554,19 @@ function removeAllMessages() {
 }
 
 function updateCounts() {
-    if ($('rowCount')) $('rowCount').innerText = virtualState.totalHouseholds;
-    if ($('matchCount')) $('matchCount').innerText = virtualState.totalHouseholds;
-    if ($('selectedCount')) $('selectedCount').innerText = virtualState.selected.size;
+    const usePagination = window.innerWidth <= 1024;
+    
+    if (usePagination) {
+        // Tablet/Mobile view - use mobileState data
+        if ($('rowCount')) $('rowCount').innerText = mobileState.totalRecords || 0;
+        if ($('matchCount')) $('matchCount').innerText = mobileState.totalRecords || 0;
+        if ($('selectedCount')) $('selectedCount').innerText = virtualState.selected.size;
+    } else {
+        // Desktop view - use virtualState data
+        if ($('rowCount')) $('rowCount').innerText = virtualState.totalHouseholds;
+        if ($('matchCount')) $('matchCount').innerText = virtualState.totalHouseholds;
+        if ($('selectedCount')) $('selectedCount').innerText = virtualState.selected.size;
+    }
 }
 
 function toggleMembers(id) {
@@ -7556,6 +7577,7 @@ function toggleMembers(id) {
 
 /* ============ DELETE HOUSEHOLD ============ */
 function showDeleteConfirmation(id, headName = '', barangay = '') {
+    console.log('showDeleteConfirmation called with ID:', id);
     deletePendingId = id;
     deletePendingHeadName = headName;
     deletePendingBarangay = barangay;
@@ -7569,15 +7591,14 @@ async function performDelete() {
     const confirmDeleteBtn = $('confirmDelete');
     const originalContent = confirmDeleteBtn ? confirmDeleteBtn.innerHTML : '';
     
-    // Show loading state
+    // Show loading state on button only
     if (confirmDeleteBtn) {
         confirmDeleteBtn.disabled = true;
         confirmDeleteBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Deleting...';
     }
     
     try {
-        // Show global loading overlay
-        showLoading(true);
+        // Removed showLoading(true) - no full screen overlay
         
         const { error } = await db.from('households').delete().eq('id', deletePendingId);
         if (error) throw error;
@@ -7589,12 +7610,12 @@ async function performDelete() {
             details: `Deleted household ${deletePendingHeadName} from ${deletePendingBarangay}`
         }]);
 
-                    // ========== AUDIT LOGGING - DELETE RECORD ==========
-            await logAuditAction('DELETE', 'household', deletePendingId, {
-                head_name: deletePendingHeadName,
-                barangay: deletePendingBarangay,
-                description: `Deleted household record of ${deletePendingHeadName} from ${deletePendingBarangay}`
-            });
+        // ========== AUDIT LOGGING - DELETE RECORD ==========
+        await logAuditAction('DELETE', 'household', deletePendingId, {
+            head_name: deletePendingHeadName,
+            barangay: deletePendingBarangay,
+            description: `Deleted household record of ${deletePendingHeadName} from ${deletePendingBarangay}`
+        });
         
         showSuccess(`Household "${deletePendingHeadName}" deleted successfully.`);
         
@@ -7616,7 +7637,7 @@ async function performDelete() {
         console.error("Delete error:", err);
         showError("Failed to delete household. Please try again.");
     } finally {
-        showLoading(false);
+        // Removed showLoading(false) - no full screen overlay
         if (confirmDeleteBtn) {
             confirmDeleteBtn.disabled = false;
             confirmDeleteBtn.innerHTML = originalContent;
@@ -7627,32 +7648,18 @@ async function performDelete() {
 /* ============ EDIT HOUSEHOLD ============ */
 async function onEdit(id) {
     console.log('onEdit called for ID:', id);
-    
-    // ========== FIX: Ensure mobileState is accessible ==========
-    // If mobileState is not defined yet, define it
-    if (typeof mobileState === 'undefined') {
-        window.mobileState = {
-            currentPage: 1,
-            totalPages: 1,
-            totalRecords: 0,
-            recordsPerPage: 15,
-            isLoading: false,
-            currentData: []
-        };
-    }
-    // ========== END OF FIX ==========
    
     // Try to find household in desktop data first
-    let foundHousehold = virtualState.allHouseholds.find(h => h.id == id);
+    let household = virtualState.allHouseholds.find(h => h.id == id);
     
     // If not found in desktop, try mobile data
-    if (!foundHousehold && window.mobileState && window.mobileState.currentData) {
-        foundHousehold = window.mobileState.currentData.find(h => h.id == id);
-        console.log('Found household in mobile data:', foundHousehold ? 'Yes' : 'No');
+    if (!household && mobileState && mobileState.currentData) {
+        household = mobileState.currentData.find(h => h.id == id);
+        console.log('Found household in mobile data:', household ? 'Yes' : 'No');
     }
     
     // If still not found, try to fetch directly from Supabase
-    if (!foundHousehold) {
+    if (!household) {
         console.log('Household not found in local data, fetching from Supabase...');
         const { data, error } = await db
             .from('households')
@@ -7675,14 +7682,11 @@ async function onEdit(id) {
         return;
     }
     
-    // Use foundHousehold (don't search again)
-    const household = foundHousehold;
     if (!household) {
         showError('Record not found.');
         releaseLock(id);
         return;
     }
-    // ========== END OF FIX ==========
     
     try {
         showLoading(true);
@@ -7726,9 +7730,6 @@ async function onEdit(id) {
         const livestock = data.livestock || [];
         const govAssistance = data.gov_assistance || [];
         const displacementReasons = data.displacement_reasons || [];
-        console.log('=== ONEDIT DEBUG ===');
-console.log('Displacement reasons from DB:', displacementReasons);
-console.log('Members:', members);
         const assemblyAreas = data.assembly_areas || [];
         const calamityDocs = data.calamity_documents || [];
         const calamityImpacts = data.calamity_impacts || [];
@@ -7762,7 +7763,6 @@ console.log('Members:', members);
         
         // Build editHead object with ALL fields
         editHead = {
-            // Basic Info
             'Data ID': data.data_id,
             'Barangay': data.barangay,
             'Sitio / Purok': data.sitio_purok,
@@ -7770,8 +7770,6 @@ console.log('Members:', members);
             'Contact no.': data.contact_number,
             'No. of Household Member/s': data.no_of_members,
             'Coordinates': data.coordinate_lat && data.coordinate_lng ? `${data.coordinate_lat}, ${data.coordinate_lng}` : '',
-            
-            // Personal Info from headPerson
             'Gender': headPerson.gender || '',
             'Birthdate': headPerson.birthdate || '',
             'Age': headPerson.age || '',
@@ -7783,16 +7781,12 @@ console.log('Members:', members);
             'Persons with Disability (PWD)': headPerson.is_pwd ? 'Yes' : 'No',
             'Type of Disability': headPerson.disability_type || '',
             'Status': headPerson.status || '',
-            
-            // Educational & Economic
             'Educational Attainment': headPerson.educational_attainment || '',
             'College Graduate Course': headPerson.college_graduate_course || '',
             'Employment': headPerson.employment_status || '',
             'Job Title': headPerson.job_title || '',
             'Overseas Filipino Worker(OFW)': headPerson.is_ofw ? 'Yes' : 'No',
             'Country': headPerson.ofw_country || '',
-            
-            // Livestock
             'Dog': livestockMap['Dog'] ? 'Yes' : 'No',
             'Dog Qty.': livestockMap['Dog']?.quantity || '',
             'Cat': livestockMap['Cat'] ? 'Yes' : 'No',
@@ -7806,8 +7800,6 @@ console.log('Members:', members);
             'Chicken': livestockMap['Chicken'] ? 'Yes' : 'No',
             'Chicken Qty.': livestockMap['Chicken']?.quantity || '',
             'Others (Animals)': livestockMap['Others']?.quantity || livestockMap['Others']?.animal_name || '',
-            
-            // Government Assistance
             'TUPAD': govMap['TUPAD'] ? 'Yes' : 'No',
             'TUPAD_Date': govMap['TUPAD']?.received_date || '',
             'Local 4Ps': govMap['Local 4Ps'] ? 'Yes' : 'No',
@@ -7830,8 +7822,6 @@ console.log('Members:', members);
             'AICS_Date': (govMap['AICS - Shelter Assistance']?.received_date || 
                           govMap['AICS - Burial']?.received_date || 
                           govMap['AICS - Scholarship']?.received_date || ''),
-            
-            // Displacement Reasons
             'Taal Volcano': displacementMap['Taal Volcano'] ? 'Yes' : 'No',
             'Typhoon': displacementMap['Typhoon'] ? 'Yes' : 'No',
             'Flood': displacementMap['Flood'] ? 'Yes' : 'No',
@@ -7839,8 +7829,6 @@ console.log('Members:', members);
             'Earthquake': displacementMap['Earthquake'] ? 'Yes' : 'No',
             'Fire': displacementMap['Fire'] ? 'Yes' : 'No',
             'Other Reasons': displacementMap['Other']?.other_reason_text || '',
-            
-            // Assembly Area
             'Inside Assembly Area': headAssembly.inside_assembly ? 'Yes' : 'No',
             'Outside Assembly Area': headAssembly.outside_assembly ? 'Yes' : 'No',
             'Pick-Up Location': headAssembly.pickup_location || '',
@@ -7848,8 +7836,6 @@ console.log('Members:', members);
             'Family/Relative Host': headAssembly.family_host_name || '',
             'Host_Contact': headAssembly.host_contact_number || '',
             'Transportation': headAssembly.transportation_type || '',
-            
-            // Calamity Impacts
             'Structural Damage': headCalamityImpact.structural_damage || 'No',
             'Structural Damage Details': headCalamityImpact.structural_damage_details || '',
             'Household Injury': headCalamityImpact.household_injury || 'No',
@@ -7859,121 +7845,108 @@ console.log('Members:', members);
             'Loss of Livelihood': headCalamityImpact.loss_of_livelihood || 'No',
             'Livelihood Details': headCalamityImpact.livelihood_details || '',
             'Additional Details': headCalamityImpact.additional_details || '',
-            
-            // Calamity Documents (file links)
             'Structural Damage File Link': headCalamityDocs['Structural Damage']?.file_url || '',
             'Household Injury File Link': headCalamityDocs['Household Injury']?.file_url || '',
             'Habitability File Link': headCalamityDocs['Habitability']?.file_url || '',
             'Loss of Livelihood File Link': headCalamityDocs['Loss of Livelihood']?.file_url || '',
             'Additional Attachment File Link': headCalamityDocs['Additional Attachment']?.file_url || '',
-            
-            // Timestamps
             'Submitted By': data.submitted_by || '',
             'Submitted On': data.submitted_on ? formatTimestampPH_(new Date(data.submitted_on)) : '',
             'Updated By': headPerson.updated_by || '',
             'Updated On': data.updated_at ? formatTimestampPH_(new Date(data.updated_at)) : '',
         };
         
-        // Build FULL editMembers array with ALL member fields including Transportation, Gov Assistance, Displacement
-        editMembers = members.map(member => {
-            // Get member-specific data using person_id
-            const memberAssembly = assemblyMap[member.id] || {};
-            const memberCalamityImpact = calamityImpactsMap[member.id] || {};
-            const memberCalamityDocs = calamityDocsMap[member.id] || {};
-            
-            // Get member-specific gov assistance
-            const memberGov = govAssistance.filter(g => g.person_id === member.id);
-            const memberGovMap = {};
-            memberGov.forEach(g => { memberGovMap[g.assistance_type] = g; });
-            
-            // Get member-specific displacement reasons
-            const memberDisplacement = displacementReasons.filter(d => d.person_id === member.id);
-            const memberDisplacementMap = {};
-            memberDisplacement.forEach(d => { memberDisplacementMap[d.reason_type] = d; });
-            
-            return {
-                'Name of Household Member/s': member.name || '',
-                'Gender': member.gender || '',
-                'Birthdate': member.birthdate || '',
-                'Age': member.age || '',
-                'Stage': member.age_category || '',
-                'Contact no.': member.contact_number || '',
-                'FishR & RSBSA': member.fishr_registration || '',
-                'Solo Parenting': member.solo_parenting === 'Yes' ? 'Yes' : (member.solo_parenting === true ? 'Yes' : 'No'),
-                'Lactating': member.lactating === 'Yes' ? 'Yes' : (member.lactating === true ? 'Yes' : 'No'),
-                'Pregnant': member.pregnant === 'Yes' ? 'Yes' : (member.pregnant === true ? 'Yes' : 'No'),
-                'Persons with Disability (PWD)': member.is_pwd ? 'Yes' : 'No',
-                'Type of Disability': member.disability_type || '',
-                'Status': member.status || '',
-                'Educational Attainment': member.educational_attainment || '',
-                'College Graduate Course': member.college_graduate_course || '',
-                'Employment': member.employment_status || '',
-                'Job Title': member.job_title || '',
-                'Overseas Filipino Worker(OFW)': member.is_ofw ? 'Yes' : 'No',
-                'Country': member.ofw_country || '',
-                
-                // ========== ADDED: Displacement Reasons for Members ==========
-                'Taal Volcano (Within 14-15 KM Danger Zone)': (memberDisplacementMap['Taal Volcano'] || memberDisplacementMap['Taal Volcano (Within 14-15 KM Danger Zone)']) ? 'Yes' : 'No',
-                'Taal Volcano': (memberDisplacementMap['Taal Volcano'] || memberDisplacementMap['Taal Volcano (Within 14-15 KM Danger Zone)']) ? 'Yes' : 'No',
-                'Typhoon': memberDisplacementMap['Typhoon'] ? 'Yes' : 'No',
-                'Flood': memberDisplacementMap['Flood'] ? 'Yes' : 'No',
-                'Landslide': memberDisplacementMap['Landslide'] ? 'Yes' : 'No',
-                'Earthquake': memberDisplacementMap['Earthquake'] ? 'Yes' : 'No',
-                'Fire': memberDisplacementMap['Fire'] ? 'Yes' : 'No',
-                'Other Reasons': (memberDisplacementMap['Other'] ? memberDisplacementMap['Other'].other_reason_text : '') || '',
-                
-                // ========== ADDED: Assembly Area for Members ==========
-                'Inside Assembly Area': memberAssembly.inside_assembly ? 'Yes' : 'No',
-                'Outside Assembly Area': memberAssembly.outside_assembly ? 'Yes' : 'No',
-                'Pick-Up Location': memberAssembly.pickup_location || '',
-                'Assembly Area': memberAssembly.assembly_area_name || '',
-                'Family/Relative Host': memberAssembly.family_host_name || '',
-                'Host_Contact': memberAssembly.host_contact_number || '',
-                'Transportation': memberAssembly.transportation_type || '',
-                
-                // ========== ADDED: Government Assistance for Members ==========
-                'TUPAD': memberGovMap['TUPAD'] ? 'Yes' : 'No',
-                'TUPAD_Date': memberGovMap['TUPAD']?.received_date || '',
-                'Local 4Ps': memberGovMap['Local 4Ps'] ? 'Yes' : 'No',
-                'Local 4Ps_Date': memberGovMap['Local 4Ps']?.received_date || '',
-                'National 4Ps': memberGovMap['National 4Ps'] ? 'Yes' : 'No',
-                'National 4Ps_Date': memberGovMap['National 4Ps']?.received_date || '',
-                'Local Social Pension': memberGovMap['Local Social Pension'] ? 'Yes' : 'No',
-                'Local Social Pension_Date': memberGovMap['Local Social Pension']?.received_date || '',
-                'National Social Pension': memberGovMap['National Social Pension'] ? 'Yes' : 'No',
-                'National Social Pension_Date': memberGovMap['National Social Pension']?.received_date || '',
-                'Solo Parent Assistance': memberGovMap['Solo Parent Assistance'] ? 'Yes' : 'No',
-                'Solo Parent Assistance_Date': memberGovMap['Solo Parent Assistance']?.received_date || '',
-                'Relief Goods': memberGovMap['Relief Goods'] ? 'Yes' : 'No',
-                'Relief Goods_Date': memberGovMap['Relief Goods']?.received_date || '',
-                'Cash Subsidy': memberGovMap['Cash Subsidy'] ? 'Yes' : 'No',
-                'Cash Subsidy_Date': memberGovMap['Cash Subsidy']?.received_date || '',
-                'AICS': (memberGovMap['AICS - Shelter Assistance'] ? 'Shelter Assistance' : 
-                         memberGovMap['AICS - Burial'] ? 'Burial' : 
-                         memberGovMap['AICS - Scholarship'] ? 'Scholarship' : '') || '',
-                'AICS_Date': (memberGovMap['AICS - Shelter Assistance']?.received_date || 
-                              memberGovMap['AICS - Burial']?.received_date || 
-                              memberGovMap['AICS - Scholarship']?.received_date || ''),
-                
-                // ========== ADDED: Calamity Impacts for Members ==========
-                'Structural Damage': memberCalamityImpact.structural_damage || 'No',
-                'Structural Damage Details': memberCalamityImpact.structural_damage_details || '',
-                'Structural Damage File Link': memberCalamityDocs['Structural Damage']?.file_url || '',
-                'Household Injury': memberCalamityImpact.household_injury || 'No',
-                'Injury Details': memberCalamityImpact.injury_details || '',
-                'Household Injury File Link': memberCalamityDocs['Household Injury']?.file_url || '',
-                'Habitability': memberCalamityImpact.habitability || 'No',
-                'Habitability Details': memberCalamityImpact.habitability_details || '',
-                'Habitability File Link': memberCalamityDocs['Habitability']?.file_url || '',
-                'Loss of Livelihood': memberCalamityImpact.loss_of_livelihood || 'No',
-                'Livelihood Details': memberCalamityImpact.livelihood_details || '',
-                'Loss of Livelihood File Link': memberCalamityDocs['Loss of Livelihood']?.file_url || '',
-                'Additional Details': memberCalamityImpact.additional_details || '',
-                'Additional Attachment File Link': memberCalamityDocs['Additional Attachment']?.file_url || '',
-                
-                'Submitted By': member.submitted_by || '',
-            };
-        });
+// Build editMembers array
+editMembers = members.map(member => {
+    const memberAssembly = assemblyMap[member.id] || {};
+    const memberCalamityImpact = calamityImpactsMap[member.id] || {};
+    const memberCalamityDocs = calamityDocsMap[member.id] || {};
+    const memberGov = govAssistance.filter(g => g.person_id === member.id);
+    const memberGovMap = {};
+    memberGov.forEach(g => { memberGovMap[g.assistance_type] = g; });
+    const memberDisplacement = displacementReasons.filter(d => d.person_id === member.id);
+    const memberDisplacementMap = {};
+    memberDisplacement.forEach(d => { memberDisplacementMap[d.reason_type] = d; });
+    
+    return {
+        'Name of Household Member/s': member.name || '',
+        'Gender': member.gender || '',
+        'Birthdate': member.birthdate || '',
+        'Age': member.age || '',
+        'Stage': member.age_category || '',
+        'Contact no.': member.contact_number || '',
+        'FishR & RSBSA': member.fishr_registration || '',
+        'Solo Parenting': member.solo_parenting === 'Yes' ? 'Yes' : (member.solo_parenting === true ? 'Yes' : 'No'),
+        'Lactating': member.lactating === 'Yes' ? 'Yes' : (member.lactating === true ? 'Yes' : 'No'),
+        'Pregnant': member.pregnant === 'Yes' ? 'Yes' : (member.pregnant === true ? 'Yes' : 'No'),
+        'Persons with Disability (PWD)': member.is_pwd ? 'Yes' : 'No',
+        'Type of Disability': member.disability_type || '',
+        'Status': member.status || '',
+        'Educational Attainment': member.educational_attainment || '',
+        'College Graduate Course': member.college_graduate_course || '',
+        'Employment': member.employment_status || '',
+        'Job Title': member.job_title || '',
+        'Overseas Filipino Worker(OFW)': member.is_ofw ? 'Yes' : 'No',
+        'Country': member.ofw_country || '',
+        'Taal Volcano (Within 14-15 KM Danger Zone)': (memberDisplacementMap['Taal Volcano'] || memberDisplacementMap['Taal Volcano (Within 14-15 KM Danger Zone)']) ? 'Yes' : 'No',
+        'Typhoon': memberDisplacementMap['Typhoon'] ? 'Yes' : 'No',
+        'Flood': memberDisplacementMap['Flood'] ? 'Yes' : 'No',
+        'Landslide': memberDisplacementMap['Landslide'] ? 'Yes' : 'No',
+        'Earthquake': memberDisplacementMap['Earthquake'] ? 'Yes' : 'No',
+        'Fire': memberDisplacementMap['Fire'] ? 'Yes' : 'No',
+        'Other Reasons': (memberDisplacementMap['Other'] ? memberDisplacementMap['Other'].other_reason_text : '') || '',
+        'Inside Assembly Area': memberAssembly.inside_assembly ? 'Yes' : 'No',
+        'Outside Assembly Area': memberAssembly.outside_assembly ? 'Yes' : 'No',
+        'Pick-Up Location': memberAssembly.pickup_location || '',
+        'Assembly Area': memberAssembly.assembly_area_name || '',
+        'Family/Relative Host': memberAssembly.family_host_name || '',
+        'Host_Contact': memberAssembly.host_contact_number || '',
+        'Transportation': memberAssembly.transportation_type || '',
+        
+        // Government Assistance WITH DATES
+        'TUPAD': memberGovMap['TUPAD'] ? 'Yes' : 'No',
+        'TUPAD_Date': memberGovMap['TUPAD']?.received_date || '',
+        'Local 4Ps': memberGovMap['Local 4Ps'] ? 'Yes' : 'No',
+        'Local 4Ps_Date': memberGovMap['Local 4Ps']?.received_date || '',
+        'National 4Ps': memberGovMap['National 4Ps'] ? 'Yes' : 'No',
+        'National 4Ps_Date': memberGovMap['National 4Ps']?.received_date || '',
+        'Local Social Pension': memberGovMap['Local Social Pension'] ? 'Yes' : 'No',
+        'Local Social Pension_Date': memberGovMap['Local Social Pension']?.received_date || '',
+        'National Social Pension': memberGovMap['National Social Pension'] ? 'Yes' : 'No',
+        'National Social Pension_Date': memberGovMap['National Social Pension']?.received_date || '',
+        'Solo Parent Assistance': memberGovMap['Solo Parent Assistance'] ? 'Yes' : 'No',
+        'Solo Parent Assistance_Date': memberGovMap['Solo Parent Assistance']?.received_date || '',
+        'Relief Goods': memberGovMap['Relief Goods'] ? 'Yes' : 'No',
+        'Relief Goods_Date': memberGovMap['Relief Goods']?.received_date || '',
+        'Cash Subsidy': memberGovMap['Cash Subsidy'] ? 'Yes' : 'No',
+        'Cash Subsidy_Date': memberGovMap['Cash Subsidy']?.received_date || '',
+        'AICS': (memberGovMap['AICS - Shelter Assistance'] ? 'Shelter Assistance' : 
+                 memberGovMap['AICS - Burial'] ? 'Burial' : 
+                 memberGovMap['AICS - Scholarship'] ? 'Scholarship' : '') || '',
+        'AICS_Date': (memberGovMap['AICS - Shelter Assistance']?.received_date || 
+                      memberGovMap['AICS - Burial']?.received_date || 
+                      memberGovMap['AICS - Scholarship']?.received_date || ''),
+        
+        'Structural Damage': memberCalamityImpact.structural_damage || 'No',
+        'Structural Damage Details': memberCalamityImpact.structural_damage_details || '',
+        'Household Injury': memberCalamityImpact.household_injury || 'No',
+        'Injury Details': memberCalamityImpact.injury_details || '',
+        'Habitability': memberCalamityImpact.habitability || 'No',
+        'Habitability Details': memberCalamityImpact.habitability_details || '',
+        'Loss of Livelihood': memberCalamityImpact.loss_of_livelihood || 'No',
+        'Livelihood Details': memberCalamityImpact.livelihood_details || '',
+        'Additional Details': memberCalamityImpact.additional_details || '',
+        
+        // Calamity File Links
+        'Structural Damage File Link': memberCalamityDocs['Structural Damage']?.file_url || '',
+        'Household Injury File Link': memberCalamityDocs['Household Injury']?.file_url || '',
+        'Habitability File Link': memberCalamityDocs['Habitability']?.file_url || '',
+        'Loss of Livelihood File Link': memberCalamityDocs['Loss of Livelihood']?.file_url || '',
+        'Additional Attachment File Link': memberCalamityDocs['Additional Attachment']?.file_url || '',
+        
+        'Submitted By': member.submitted_by || '',
+    };
+});
         
         // Populate the form
         populateEditFormFields(editHead, editMembers);
@@ -8732,38 +8705,113 @@ if (otherReasons && otherReasons.trim() !== '') {
         if (outsideTransportSelect) outsideTransportSelect.value = '';
     }
     
-    // ========== GOVERNMENT ASSISTANCE ==========
-    const setMemberGov = (checkboxId, dateInputId, dateFieldId, value, dateValue) => {
-        const checkbox = $(checkboxId);
-        const dateInput = $(dateInputId);
-        const dateField = $(dateFieldId);
-        if (checkbox) checkbox.checked = value === 'Yes';
-        if (dateInput) dateInput.value = toInputDate(dateValue || '');
-        if (dateField) {
-            if (value === 'Yes' && dateValue) dateField.classList.add('show');
-            else dateField.classList.remove('show');
-        }
-    };
+// ========== GOVERNMENT ASSISTANCE ==========
+console.log('=== MEMBER GOV ASSISTANCE DEBUG ===');
+console.log('TUPAD:', m['TUPAD'], 'TUPAD_Date:', m['TUPAD_Date']);
+console.log('Local 4Ps:', m['Local 4Ps'], 'Local 4Ps_Date:', m['Local 4Ps_Date']);
+console.log('National 4Ps:', m['National 4Ps'], 'National 4Ps_Date:', m['National 4Ps_Date']);
+console.log('AICS:', m['AICS'], 'AICS_Date:', m['AICS_Date']);
+
+const setMemberGov = (checkboxId, dateInputId, dateFieldId, value, dateValue) => {
+    const checkbox = $(checkboxId);
+    const dateInput = $(dateInputId);
+    const dateField = $(dateFieldId);
     
-    setMemberGov('member_tupad', 'member_tupad_date_input', 'member_tupad_date', m['TUPAD'], m['TUPAD_Date']);
-    setMemberGov('member_local4ps', 'member_local4ps_date_input', 'member_local4ps_date', m['Local 4Ps'], m['Local 4Ps_Date']);
-    setMemberGov('member_intl4ps', 'member_intl4ps_date_input', 'member_intl4ps_date', m['National 4Ps'], m['National 4Ps_Date']);
-    setMemberGov('member_locsp', 'member_locsp_date_input', 'member_locsp_date', m['Local Social Pension'], m['Local Social Pension_Date']);
-    setMemberGov('member_intlsp', 'member_intlsp_date_input', 'member_intlsp_date', m['National Social Pension'], m['National Social Pension_Date']);
-    setMemberGov('member_solo', 'member_solo_date_input', 'member_solo_date', m['Solo Parent Assistance'], m['Solo Parent Assistance_Date']);
-    setMemberGov('member_relief', 'member_relief_date_input', 'member_relief_date', m['Relief Goods'], m['Relief Goods_Date']);
-    setMemberGov('member_cash', 'member_cash_date_input', 'member_cash_date', m['Cash Subsidy'], m['Cash Subsidy_Date']);
-    
-    const hasAICS = m['AICS'] && m['AICS'] !== '';
-    const memberAicsSelect = $('memberAics');
-    const memberAicsDateInput = $('member_aics_date_input');
-    const memberAicsDateField = $('member_aics_date');
-    if (memberAicsSelect) memberAicsSelect.value = m['AICS'] || '';
-    if (memberAicsDateInput) memberAicsDateInput.value = toInputDate(m['AICS_Date'] || '');
-    if (memberAicsDateField) {
-        if (hasAICS && m['AICS_Date']) memberAicsDateField.classList.add('show');
-        else memberAicsDateField.classList.remove('show');
+    // Set checkbox state
+    if (checkbox) {
+        checkbox.checked = value === 'Yes';
     }
+    
+    // Set date input value - direct assignment
+    if (dateInput && dateValue) {
+        // Extract just the date part if it's a full timestamp
+        let dateStr = dateValue;
+        if (dateStr.includes('T')) {
+            dateStr = dateStr.split('T')[0];
+        }
+        dateInput.value = dateStr;
+        console.log(`Setting ${checkboxId} date to:`, dateStr);
+    } else if (dateInput) {
+        dateInput.value = '';
+    }
+    
+    // Show date field if there's a date value OR checkbox is checked
+    if (dateField) {
+        if ((dateValue && dateValue !== '') || value === 'Yes') {
+            dateField.classList.add('show');
+            console.log(`Showing date field for ${checkboxId}`);
+        } else {
+            dateField.classList.remove('show');
+        }
+    }
+    
+    // Add change event listener for user interaction
+    if (checkbox) {
+        const newCheckbox = checkbox.cloneNode(true);
+        checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+        newCheckbox.addEventListener('change', function() {
+            const dateFieldElem = $(dateFieldId);
+            const dateInputElem = $(dateInputId);
+            if (this.checked) {
+                if (dateFieldElem) dateFieldElem.classList.add('show');
+            } else {
+                if (dateFieldElem) dateFieldElem.classList.remove('show');
+                if (dateInputElem) dateInputElem.value = '';
+            }
+            markMemberFormChanged();
+        });
+    }
+};
+
+setMemberGov('member_tupad', 'member_tupad_date_input', 'member_tupad_date', m['TUPAD'], m['TUPAD_Date']);
+setMemberGov('member_local4ps', 'member_local4ps_date_input', 'member_local4ps_date', m['Local 4Ps'], m['Local 4Ps_Date']);
+setMemberGov('member_intl4ps', 'member_intl4ps_date_input', 'member_intl4ps_date', m['National 4Ps'], m['National 4Ps_Date']);
+setMemberGov('member_locsp', 'member_locsp_date_input', 'member_locsp_date', m['Local Social Pension'], m['Local Social Pension_Date']);
+setMemberGov('member_intlsp', 'member_intlsp_date_input', 'member_intlsp_date', m['National Social Pension'], m['National Social Pension_Date']);
+setMemberGov('member_solo', 'member_solo_date_input', 'member_solo_date', m['Solo Parent Assistance'], m['Solo Parent Assistance_Date']);
+setMemberGov('member_relief', 'member_relief_date_input', 'member_relief_date', m['Relief Goods'], m['Relief Goods_Date']);
+setMemberGov('member_cash', 'member_cash_date_input', 'member_cash_date', m['Cash Subsidy'], m['Cash Subsidy_Date']);
+
+// AICS Section
+const memberAicsSelect = $('memberAics');
+const memberAicsDateInput = $('member_aics_date_input');
+const memberAicsDateField = $('member_aics_date');
+
+if (memberAicsSelect) {
+    memberAicsSelect.value = m['AICS'] || '';
+    
+    // Add change event listener
+    const newAicsSelect = memberAicsSelect.cloneNode(true);
+    memberAicsSelect.parentNode.replaceChild(newAicsSelect, memberAicsSelect);
+    newAicsSelect.addEventListener('change', function() {
+        const dateFieldElem = $('member_aics_date');
+        const dateInputElem = $('member_aics_date_input');
+        if (this.value && this.value !== '' && this.value !== 'None') {
+            if (dateFieldElem) dateFieldElem.classList.add('show');
+        } else {
+            if (dateFieldElem) dateFieldElem.classList.remove('show');
+            if (dateInputElem) dateInputElem.value = '';
+        }
+        markMemberFormChanged();
+    });
+}
+
+if (memberAicsDateInput && m['AICS_Date']) {
+    let aicsDateStr = m['AICS_Date'];
+    if (aicsDateStr.includes('T')) {
+        aicsDateStr = aicsDateStr.split('T')[0];
+    }
+    memberAicsDateInput.value = aicsDateStr;
+    console.log('Setting AICS date to:', aicsDateStr);
+}
+
+if (memberAicsDateField) {
+    if ((m['AICS_Date'] && m['AICS_Date'] !== '') || (m['AICS'] && m['AICS'] !== '')) {
+        memberAicsDateField.classList.add('show');
+    } else {
+        memberAicsDateField.classList.remove('show');
+    }
+}
     
     // ========== CALAMITY IMPACTS (Yes/No + Details) ==========
     const calamityCategories = ['damage', 'injury', 'habitability', 'livelihood'];
@@ -9864,40 +9912,55 @@ if ($('edit_headRegisteredCheckbox')?.checked) {
             });
             console.log(`Saved calamity impacts`);
             
-            // ============================================
-            // 5. MEMBER CALAMITY DOCUMENTS (Uploaded Files)
-            // ============================================
-            const memberCalamityDocs = [];
-            const docTypes = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
-            const docTypeNames = {
-                damage: 'Structural Damage',
-                injury: 'Household Injury',
-                habitability: 'Habitability',
-                livelihood: 'Loss of Livelihood',
-                additional: 'Additional Attachment'
-            };
-            
-            // Get uploaded URLs for this member
-            const uploadedUrls = memberUploadedUrls[i] || {};
-            
-            docTypes.forEach(type => {
-                if (uploadedUrls[type]) {
-                    memberCalamityDocs.push({
-                        person_id: memberRecord.id,
-                        household_id: householdId,
-                        document_type: docTypeNames[type],
-                        file_url: uploadedUrls[type],
-                        details: member[`${type === 'damage' ? 'Structural Damage' : type === 'injury' ? 'Household Injury' : type === 'habitability' ? 'Habitability' : type === 'livelihood' ? 'Loss of Livelihood' : 'Additional'} Details`] || '',
-                        uploaded_by: userFullName,
-                        uploaded_at: now
-                    });
-                }
-            });
-            
-            if (memberCalamityDocs.length > 0) {
-                await db.from('calamity_documents').insert(memberCalamityDocs);
-                console.log(`Saved ${memberCalamityDocs.length} calamity documents`);
-            }
+// ============================================
+// 5. MEMBER CALAMITY DOCUMENTS (Preserve existing + add new)
+// ============================================
+const memberCalamityDocs = [];
+const docTypes = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
+const docTypeNames = {
+    damage: 'Structural Damage',
+    injury: 'Household Injury',
+    habitability: 'Habitability',
+    livelihood: 'Loss of Livelihood',
+    additional: 'Additional Attachment'
+};
+
+// Get uploaded URLs for this member
+const uploadedUrls = memberUploadedUrls[i] || {};
+
+docTypes.forEach(type => {
+    // Get newly uploaded URL (if any)
+    const newFileUrl = uploadedUrls[type] || '';
+    // Get existing file URL from the member object (to preserve if no new file)
+    const existingFileUrl = member[`${type === 'damage' ? 'Structural Damage' : type === 'injury' ? 'Household Injury' : type === 'habitability' ? 'Habitability' : type === 'livelihood' ? 'Loss of Livelihood' : 'Additional Attachment'} File Link`] || '';
+    
+    // Use new file if uploaded, otherwise keep existing file
+    const fileUrl = newFileUrl || existingFileUrl;
+    
+    // Only save if there's a file URL
+    if (fileUrl && fileUrl !== '') {
+        memberCalamityDocs.push({
+            person_id: memberRecord.id,
+            household_id: householdId,
+            document_type: docTypeNames[type],
+            file_url: fileUrl,
+            details: member[`${type === 'damage' ? 'Structural Damage' : type === 'injury' ? 'Household Injury' : type === 'habitability' ? 'Habitability' : type === 'livelihood' ? 'Loss of Livelihood' : 'Additional'} Details`] || '',
+            uploaded_by: userFullName,
+            uploaded_at: now
+        });
+    }
+});
+
+if (memberCalamityDocs.length > 0) {
+    // First delete existing documents for this member to avoid duplicates
+    await db.from('calamity_documents')
+        .delete()
+        .eq('person_id', memberRecord.id);
+    
+    // Then insert the preserved/updated documents
+    await db.from('calamity_documents').insert(memberCalamityDocs);
+    console.log(`Saved ${memberCalamityDocs.length} calamity documents for member`);
+}
         }
         
         // Clear the member files array after successful save
@@ -9947,7 +10010,7 @@ if ($('edit_headRegisteredCheckbox')?.checked) {
     }
 }
 
-// Helper function to build calamity documents array
+// Helper function to build calamity documents array for HEAD
 function buildCalamityDocsArray(uploadedUrls, editHead, householdId, userFullName, now) {
     const calamityDocs = [];
     const docTypes = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
@@ -9960,11 +10023,20 @@ function buildCalamityDocsArray(uploadedUrls, editHead, householdId, userFullNam
     };
     
     docTypes.forEach(type => {
-        if (uploadedUrls[type]) {
+        // Get newly uploaded file URL (if any)
+        const newFileUrl = uploadedUrls[type] || '';
+        // Get existing file URL from editHead (to preserve if no new file)
+        const existingFileUrl = editHead[`${type === 'damage' ? 'Structural Damage' : type === 'injury' ? 'Household Injury' : type === 'habitability' ? 'Habitability' : type === 'livelihood' ? 'Loss of Livelihood' : 'Additional Attachment'} File Link`] || '';
+        
+        // Use new file if uploaded, otherwise keep existing file
+        const fileUrl = newFileUrl || existingFileUrl;
+        
+        // Only save if there's a file URL
+        if (fileUrl && fileUrl !== '') {
             calamityDocs.push({
                 household_id: householdId,
                 document_type: typeNames[type],
-                file_url: uploadedUrls[type],
+                file_url: fileUrl,
                 details: $(`edit_head_${type}_details`)?.value || '',
                 calamity_response: type !== 'additional' ? document.querySelector(`input[name="edit_head_${type}"]:checked`)?.value || 'No' : null,
                 uploaded_by: userFullName,
@@ -10006,10 +10078,10 @@ function setupVirtualFilters() {
         const existingLoading = $('loadingMoreRow');
         if (existingLoading) existingLoading.remove();
         
-        // Check if we're on mobile
-        const isMobile = window.innerWidth <= 768;
+        // Check if we're on tablet or mobile (1024px and below)
+        const usePagination = window.innerWidth <= 1024;
         
-        if (isMobile) {
+        if (usePagination) {
             // Reset mobile state
             mobileState.currentPage = 1;
             mobileState.totalPages = 1;
@@ -10044,9 +10116,9 @@ function setupVirtualFilters() {
             virtualState.currentSearch = search?.value || '';
             virtualState.currentBarangay = barangay?.value || '';
             
-            const isMobile = window.innerWidth <= 768;
+            const usePagination = window.innerWidth <= 1024;
             
-            if (isMobile) {
+            if (usePagination) {
                 // Reset and reload mobile
                 mobileState.currentPage = 1;
                 mobileState.totalPages = 1;
@@ -10073,23 +10145,40 @@ function setupBarangayFilterRestriction() {
         virtualState.currentBarangay = userBarangay;
     }
 }
-
-function setupModalHandlers() {
-    // Delete Household Modal
-    const deleteModal = $('deleteConfirmationModal');
-    const cancelDeleteBtn = $('cancelDelete');
-    const confirmDeleteBtn = $('confirmDelete');
-    if (deleteModal) {
-        if (cancelDeleteBtn) {
-            cancelDeleteBtn.onclick = () => hideModal('deleteConfirmationModal');
-        }
-        if (confirmDeleteBtn) {
-            confirmDeleteBtn.onclick = performDelete;
-        }
-        deleteModal.onclick = (e) => {
-            if (e.target === deleteModal) hideModal('deleteConfirmationModal');
+function setupModalHandlers() { 
+// Delete Household Modal
+const deleteModal = $('deleteConfirmationModal');
+const cancelDeleteBtn = $('cancelDelete');
+const confirmDeleteBtn = $('confirmDelete');
+if (deleteModal) {
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.onclick = () => hideModal('deleteConfirmationModal');
+    }
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.onclick = () => {
+            const usePagination = window.innerWidth <= 1024;
+            if (usePagination && deletePendingId) {
+                if (typeof performMobileDelete === 'function') {
+                    performMobileDelete(deletePendingId);
+                } else {
+                    console.error('performMobileDelete not defined');
+                    showError('Delete function not available');
+                }
+            } else if (deletePendingId) {
+                if (typeof performDelete === 'function') {
+                    performDelete();
+                } else {
+                    console.error('performDelete not defined');
+                    showError('Delete function not available');
+                }
+            }
+            hideModal('deleteConfirmationModal');
         };
     }
+    deleteModal.onclick = (e) => {
+        if (e.target === deleteModal) hideModal('deleteConfirmationModal');
+    };
+}
     
     // Edit Lock Modal
     const editLockModal = $('editLockModal');
@@ -10273,54 +10362,239 @@ function setupModalHandlers() {
     }
 }
 
+
 function setupExportButtons() {
     const exportBtn = $('exportBtn');
     const exportDropdown = $('exportDropdown');
     const exportAllOption = $('exportAllOption');
     const exportSelectedOption = $('exportSelectedOption');
+    
     if (exportBtn && exportDropdown) {
         exportBtn.onclick = (e) => { e.stopPropagation(); exportDropdown.classList.toggle('hidden'); };
         document.addEventListener('click', (e) => {
             if (!exportBtn.contains(e.target) && !exportDropdown.contains(e.target)) exportDropdown.classList.add('hidden');
         });
     }
-    if (exportAllOption) exportAllOption.onclick = () => exportToCSV(virtualState.allHouseholds, 'all_households');
-    if (exportSelectedOption) exportSelectedOption.onclick = () => {
-        const selected = virtualState.allHouseholds.filter(h => virtualState.selected.has(h.id));
-        exportToCSV(selected, 'selected_households');
-    };
+    
+    if (exportAllOption) {
+        exportAllOption.onclick = async () => {
+            const usePagination = window.innerWidth <= 1024;
+            if (usePagination) {
+                // On tablet/mobile, fetch ALL data from Supabase
+                const allData = await fetchAllHouseholdsForExport();
+                exportToExcel(allData, 'all_households');
+            } else {
+                // On desktop, export all virtual data
+                exportToExcel(virtualState.allHouseholds, 'all_households');
+            }
+        };
+    }
+    
+    if (exportSelectedOption) {
+        exportSelectedOption.onclick = async () => {
+            // Selected items - need to fetch full data for selected IDs
+            const selectedIds = Array.from(virtualState.selected);
+            if (selectedIds.length === 0) {
+                showError('No records selected. Please check the checkboxes first.');
+                return;
+            }
+            
+            const usePagination = window.innerWidth <= 1024;
+            if (usePagination) {
+                // On tablet/mobile, fetch full data for selected IDs
+                const selectedData = await fetchSelectedHouseholdsForExport(selectedIds);
+                exportToExcel(selectedData, 'selected_households');
+            } else {
+                // On desktop, use virtualState data
+                const selected = virtualState.allHouseholds.filter(h => virtualState.selected.has(h.id));
+                exportToExcel(selected, 'selected_households');
+            }
+        };
+    }
 }
 
-function exportToCSV(households, filename) {
-    if (!households || households.length === 0) { showError('No data to export.'); return; }
-    const headers = new Set();
+function exportToExcel(households, filename) {
+    if (!households || households.length === 0) { 
+        const usePagination = window.innerWidth <= 1024;
+        if (usePagination && mobileState.currentData && mobileState.currentData.length > 0) {
+            households = mobileState.currentData;
+        } else {
+            showError('No data to export.');
+            return;
+        }
+    }
+    
+    // Helper function to format date consistently
+    function formatExportDate(dateStr) {
+        if (!dateStr) return '';
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return dateStr;
+            return date.toLocaleString('en-PH', {
+                timeZone: 'Asia/Manila',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+        } catch(e) {
+            return dateStr;
+        }
+    }
+    
+    // Define the exact column order for export
+    const orderedColumns = [
+        'Barangay', 'Sitio / Purok', 'Name of Household Head', 'No. of Household Member/s',
+        'Name of Household Member/s', 'Contact no.', 'Coordinates', 'Gender', 'Birthdate',
+        'Age', 'Stage', 'FishR & RSBSA', 'Solo Parenting', 'Lactating', 'Pregnant',
+        'Persons with Disability (PWD)', 'Type of Disability', 'Status', 'Educational Attainment',
+        'College Graduate Course', 'Employment', 'Job Title', 'Overseas Filipino Worker(OFW)',
+        'Country', 'Dog', 'Cat', 'Pig', 'Cow', 'Carabao', 'Chicken', 'Others (Animals)',
+        'TUPAD', 'TUPAD_Date', 'Local 4Ps', 'Local 4Ps_Date', 'National 4Ps', 'National 4Ps_Date',
+        'Local Social Pension', 'Local Social Pension_Date', 'National Social Pension',
+        'National Social Pension_Date', 'Solo Parent Assistance', 'Solo Parent Assistance_Date',
+        'Relief Goods', 'Relief Goods_Date', 'Cash Subsidy', 'Cash Subsidy_Date', 'AICS', 'AICS_Date',
+        'Taal Volcano', 'Typhoon', 'Flood', 'Landslide', 'Earthquake', 'Fire', 'Other Reasons',
+        'Inside Assembly Area', 'Outside Assembly Area', 'Pick-Up Location', 'Assembly Area',
+        'Family/Relative Host', 'Host_Contact', 'Transportation', 'Structural Damage',
+        'Structural Damage Details', 'Household Injury', 'Injury Details', 'Habitability',
+        'Habitability Details', 'Loss of Livelihood', 'Livelihood Details', 'Additional Details',
+        'Submitted By', 'Submitted On', 'Updated By', 'Updated On'
+    ];
+    
+    // Build headers (UPPERCASE)
+    const headers = [];
+    for (const col of orderedColumns) {
+        let exists = false;
+        for (const household of households) {
+            if (household.head && household.head.hasOwnProperty(col)) {
+                exists = true;
+                break;
+            }
+            if (household.members && household.members.length > 0) {
+                for (const member of household.members) {
+                    if (member.hasOwnProperty(col)) {
+                        exists = true;
+                        break;
+                    }
+                }
+            }
+            if (exists) break;
+        }
+        if (exists) headers.push(col.toUpperCase());
+    }
+    
+    // Prepare worksheet data
+    const worksheetData = [headers];
+    
     households.forEach(household => {
-        if (household.head) Object.keys(household.head).forEach(key => headers.add(key));
-        if (household.members) household.members.forEach(member => Object.keys(member).forEach(key => headers.add(key)));
-    });
-    const headerArray = Array.from(headers);
-    const rows = [headerArray.map(h => `"${String(h).replace(/"/g, '""')}"`).join(',')];
-    households.forEach(household => {
-        const headRow = headerArray.map(header => `"${String(household.head[header] || '').replace(/"/g, '""')}"`);
-        rows.push(headRow.join(','));
+        // HEAD row
+        const headRow = headers.map(header => {
+            const originalCol = orderedColumns.find(c => c.toUpperCase() === header);
+            let value = household.head[originalCol] || '';
+            if (originalCol === 'Birthdate' && value) {
+                try { const d = new Date(value); if (!isNaN(d)) value = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`; } catch(e) {}
+            } else if (originalCol === 'Submitted On' || originalCol === 'Updated On') {
+                value = formatExportDate(value);
+            } else if (originalCol && originalCol.includes('_Date') && value) {
+                try { const d = new Date(value); if (!isNaN(d)) value = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`; } catch(e) {}
+            }
+            return value;
+        });
+        worksheetData.push(headRow);
+        
+        // MEMBER rows
         if (household.members && household.members.length > 0) {
             household.members.forEach(member => {
-                const memberRow = headerArray.map(header => `"${String(member[header] || '').replace(/"/g, '""')}"`);
-                rows.push(memberRow.join(','));
+                const memberRow = headers.map(header => {
+                    const originalCol = orderedColumns.find(c => c.toUpperCase() === header);
+                    let value = member[originalCol] || '';
+                    if (originalCol === 'Birthdate' && value) {
+                        try { const d = new Date(value); if (!isNaN(d)) value = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`; } catch(e) {}
+                    } else if (originalCol === 'Submitted On' || originalCol === 'Updated On') {
+                        value = formatExportDate(value);
+                    } else if (originalCol && originalCol.includes('_Date') && value) {
+                        try { const d = new Date(value); if (!isNaN(d)) value = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`; } catch(e) {}
+                    }
+                    return value;
+                });
+                worksheetData.push(memberRow);
             });
         }
     });
-    const csvContent = rows.join('\n');
-    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.href = url;
+    
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+    
+    // Auto-fit column widths
+    const colWidths = [];
+    for (let i = 0; i < headers.length; i++) {
+        let maxLen = headers[i].length;
+        for (let j = 1; j < worksheetData.length; j++) {
+            const cellValue = worksheetData[j][i] || '';
+            const cellLen = String(cellValue).length;
+            if (cellLen > maxLen) maxLen = Math.min(cellLen, 50);
+        }
+        colWidths.push({ wch: maxLen + 2 });
+    }
+    ws['!cols'] = colWidths;
+    
+    // Apply styling to header row (row 0)
+    const headerCellAddress = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } });
+    
+    // Style for header cells
+    for (let C = 0; C < headers.length; C++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+        if (!ws[cellAddress]) ws[cellAddress] = { v: headers[C] };
+        ws[cellAddress].s = {
+            fill: {
+                patternType: "solid",
+                fgColor: { rgb: "D9FFD9" }
+            },
+            font: {
+                bold: true,
+                sz: 11,
+                color: { rgb: "000000" }
+            },
+            alignment: {
+                horizontal: "center",
+                vertical: "center"
+            },
+            border: {
+                top: { style: "thin", color: { rgb: "000000" } },
+                bottom: { style: "thin", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            }
+        };
+    }
+    
+    // Apply borders to all data cells (rows 1 to end)
+    for (let R = 1; R < worksheetData.length; R++) {
+        for (let C = 0; C < headers.length; C++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+            if (!ws[cellAddress]) ws[cellAddress] = { v: worksheetData[R][C] || '' };
+            if (!ws[cellAddress].s) ws[cellAddress].s = {};
+            ws[cellAddress].s.border = {
+                top: { style: "thin", color: { rgb: "000000" } },
+                bottom: { style: "thin", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            };
+            ws[cellAddress].s.alignment = { vertical: "center" };
+        }
+    }
+    
+    // Create workbook and save
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Household Records");
+    
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    link.download = `${filename}_${timestamp}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    XLSX.writeFile(wb, `${filename}_${timestamp}.xlsx`);
+    
     showSuccess(`Exported ${households.length} household(s).`);
 }
 
@@ -10645,16 +10919,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// ============ MOBILE PAGINATION STATE ==========
-let mobileState = {
-    currentPage: 1,
-    totalPages: 1,
-    totalRecords: 0,
-    recordsPerPage: 15,
-    isLoading: false,
-    currentData: []
-};
-
 // ============ MOBILE PAGINATION FUNCTIONS ==========
 async function loadMobilePage(page) {
     if (mobileState.isLoading) return;
@@ -10720,6 +10984,8 @@ async function loadMobilePage(page) {
             mobileState.totalPages = Math.ceil(mobileState.totalRecords / mobileState.recordsPerPage);
             mobileState.currentPage = page;
             
+            updateCounts(); 
+
             updateMobilePaginationUI();
             
             if (processedHouseholds.length > 0) {
@@ -10747,6 +11013,7 @@ async function loadMobilePage(page) {
 }
 
 function processMobileHouseholdDataFull(households, persons, livestock, govAssistance, displacementReasons, assemblyAreas, calamityDocs, calamityImpacts) {
+    // Organize data by household_id
     const personsByHousehold = {};
     persons.forEach(p => {
         if (!personsByHousehold[p.household_id]) personsByHousehold[p.household_id] = [];
@@ -10815,7 +11082,86 @@ function processMobileHouseholdDataFull(households, persons, livestock, govAssis
         const householdCalamityImpacts = calamityImpactsByHousehold[household.id] || [];
         const headCalamityImpact = householdCalamityImpacts.find(i => !i.person_id) || {};
         
-        const membersWithFullData = members.map(member => {
+        // Build HEAD with ALL columns
+        const headObj = {
+            'Data ID': household.data_id,
+            'Barangay': household.barangay,
+            'Sitio / Purok': household.sitio_purok,
+            'Name of Household Head': household.head_name,
+            'Contact no.': household.contact_number,
+            'No. of Household Member/s': household.no_of_members,
+            'Coordinates': household.coordinate_lat && household.coordinate_lng ? `${household.coordinate_lat}, ${household.coordinate_lng}` : '',
+            'Gender': headPerson.gender || '',
+            'Birthdate': headPerson.birthdate || '',
+            'Age': headPerson.age || '',
+            'Stage': headPerson.age_category || '',
+            'FishR & RSBSA': headPerson.fishr_registration || '',
+            'Solo Parenting': headPerson.solo_parenting === true ? 'Yes' : 'No',
+            'Lactating': headPerson.lactating === true ? 'Yes' : 'No',
+            'Pregnant': headPerson.pregnant === true ? 'Yes' : 'No',
+            'Persons with Disability (PWD)': headPerson.is_pwd === true ? 'Yes' : 'No',
+            'Type of Disability': headPerson.disability_type || '',
+            'Status': headPerson.status || '',
+            'Educational Attainment': headPerson.educational_attainment || '',
+            'College Graduate Course': headPerson.college_graduate_course || '',
+            'Employment': headPerson.employment_status || '',
+            'Job Title': headPerson.job_title || '',
+            'Overseas Filipino Worker(OFW)': headPerson.is_ofw === true ? 'Yes' : 'No',
+            'Country': headPerson.ofw_country || '',
+            'Dog': livestockMap['Dog'] ? 'Yes' : 'No',
+            'Cat': livestockMap['Cat'] ? 'Yes' : 'No',
+            'Pig': livestockMap['Pig'] ? 'Yes' : 'No',
+            'Cow': livestockMap['Cow'] ? 'Yes' : 'No',
+            'Carabao': livestockMap['Carabao'] ? 'Yes' : 'No',
+            'Chicken': livestockMap['Chicken'] ? 'Yes' : 'No',
+            'Others (Animals)': livestockMap['Others']?.quantity || livestockMap['Others']?.animal_name || '',
+            'TUPAD': govMap['TUPAD'] ? 'Yes' : 'No',
+            'Local 4Ps': govMap['Local 4Ps'] ? 'Yes' : 'No',
+            'National 4Ps': govMap['National 4Ps'] ? 'Yes' : 'No',
+            'Local Social Pension': govMap['Local Social Pension'] ? 'Yes' : 'No',
+            'National Social Pension': govMap['National Social Pension'] ? 'Yes' : 'No',
+            'Solo Parent Assistance': govMap['Solo Parent Assistance'] ? 'Yes' : 'No',
+            'Relief Goods': govMap['Relief Goods'] ? 'Yes' : 'No',
+            'Cash Subsidy': govMap['Cash Subsidy'] ? 'Yes' : 'No',
+            'AICS': (govMap['AICS - Shelter Assistance'] ? 'Shelter Assistance' : 
+                     govMap['AICS - Burial'] ? 'Burial' : 
+                     govMap['AICS - Scholarship'] ? 'Scholarship' : '') || '',
+            'Taal Volcano': displacementMap['Taal Volcano'] ? 'Yes' : 'No',
+            'Typhoon': displacementMap['Typhoon'] ? 'Yes' : 'No',
+            'Flood': displacementMap['Flood'] ? 'Yes' : 'No',
+            'Landslide': displacementMap['Landslide'] ? 'Yes' : 'No',
+            'Earthquake': displacementMap['Earthquake'] ? 'Yes' : 'No',
+            'Fire': displacementMap['Fire'] ? 'Yes' : 'No',
+            'Other Reasons': displacementMap['Other']?.other_reason_text || '',
+            'Inside Assembly Area': householdAssembly?.inside_assembly ? 'Yes' : 'No',
+            'Outside Assembly Area': householdAssembly?.outside_assembly ? 'Yes' : 'No',
+            'Pick-Up Location': householdAssembly?.pickup_location || '',
+            'Assembly Area': householdAssembly?.assembly_area_name || '',
+            'Family/Relative Host': householdAssembly?.family_host_name || '',
+            'Host_Contact': householdAssembly?.host_contact_number || '',
+            'Transportation': householdAssembly?.transportation_type || '',
+            'Structural Damage': headCalamityImpact.structural_damage || 'No',
+            'Structural Damage Details': headCalamityImpact.structural_damage_details || '',
+            'Household Injury': headCalamityImpact.household_injury || 'No',
+            'Injury Details': headCalamityImpact.injury_details || '',
+            'Habitability': headCalamityImpact.habitability || 'No',
+            'Habitability Details': headCalamityImpact.habitability_details || '',
+            'Loss of Livelihood': headCalamityImpact.loss_of_livelihood || 'No',
+            'Livelihood Details': headCalamityImpact.livelihood_details || '',
+            'Additional Details': headCalamityImpact.additional_details || '',
+            'Structural Damage File Link': headCalamityDocsMap['Structural Damage']?.file_url || '',
+            'Household Injury File Link': headCalamityDocsMap['Household Injury']?.file_url || '',
+            'Habitability File Link': headCalamityDocsMap['Habitability']?.file_url || '',
+            'Loss of Livelihood File Link': headCalamityDocsMap['Loss of Livelihood']?.file_url || '',
+            'Additional Attachment File Link': headCalamityDocsMap['Additional Attachment']?.file_url || '',
+            'Submitted By': household.submitted_by || '',
+            'Submitted On': household.submitted_on ? formatTimestampPH_(new Date(household.submitted_on)) : (household.created_at ? formatTimestampPH_(new Date(household.created_at)) : ''),
+            'Updated By': headPerson.updated_by || '',
+            'Updated On': household.updated_at ? formatTimestampPH_(new Date(household.updated_at)) : ''
+        };
+        
+        // Build members with ALL columns
+        const membersArray = members.map(member => {
             const memberGov = householdGov.filter(g => g.person_id === member.id);
             const memberGovMap = {};
             memberGov.forEach(g => { memberGovMap[g.assistance_type] = g; });
@@ -10871,7 +11217,9 @@ function processMobileHouseholdDataFull(households, persons, livestock, govAssis
                 'Solo Parent Assistance': memberGovMap['Solo Parent Assistance'] ? 'Yes' : 'No',
                 'Relief Goods': memberGovMap['Relief Goods'] ? 'Yes' : 'No',
                 'Cash Subsidy': memberGovMap['Cash Subsidy'] ? 'Yes' : 'No',
-                'AICS': (memberGovMap['AICS - Shelter Assistance'] ? 'Shelter Assistance' : memberGovMap['AICS - Burial'] ? 'Burial' : memberGovMap['AICS - Scholarship'] ? 'Scholarship' : '') || '',
+                'AICS': (memberGovMap['AICS - Shelter Assistance'] ? 'Shelter Assistance' : 
+                         memberGovMap['AICS - Burial'] ? 'Burial' : 
+                         memberGovMap['AICS - Scholarship'] ? 'Scholarship' : '') || '',
                 'Structural Damage': memberCalamityImpact.structural_damage || 'No',
                 'Household Injury': memberCalamityImpact.household_injury || 'No',
                 'Habitability': memberCalamityImpact.habitability || 'No',
@@ -10887,78 +11235,144 @@ function processMobileHouseholdDataFull(households, persons, livestock, govAssis
         return {
             id: household.id,
             data_id: household.data_id,
-            head: {
-                'Data ID': household.data_id,
-                'Barangay': household.barangay,
-                'Sitio / Purok': household.sitio_purok,
-                'Name of Household Head': household.head_name,
-                'Contact no.': household.contact_number,
-                'No. of Household Member/s': household.no_of_members,
-                'Coordinates': household.coordinate_lat && household.coordinate_lng ? `${household.coordinate_lat}, ${household.coordinate_lng}` : '',
-                'Gender': headPerson.gender || '',
-                'Birthdate': headPerson.birthdate || '',
-                'Age': headPerson.age || '',
-                'Stage': headPerson.age_category || '',
-                'FishR & RSBSA': headPerson.fishr_registration || '',
-                'Solo Parenting': headPerson.solo_parenting === true ? 'Yes' : 'No',
-                'Lactating': headPerson.lactating === true ? 'Yes' : 'No',
-                'Pregnant': headPerson.pregnant === true ? 'Yes' : 'No',
-                'Persons with Disability (PWD)': headPerson.is_pwd === true ? 'Yes' : 'No',
-                'Type of Disability': headPerson.disability_type || '',
-                'Status': headPerson.status || '',
-                'Educational Attainment': headPerson.educational_attainment || '',
-                'College Graduate Course': headPerson.college_graduate_course || '',
-                'Employment': headPerson.employment_status || '',
-                'Job Title': headPerson.job_title || '',
-                'Overseas Filipino Worker(OFW)': headPerson.is_ofw === true ? 'Yes' : 'No',
-                'Country': headPerson.ofw_country || '',
-                'Dog': livestockMap['Dog'] ? 'Yes' : 'No',
-                'Cat': livestockMap['Cat'] ? 'Yes' : 'No',
-                'Pig': livestockMap['Pig'] ? 'Yes' : 'No',
-                'Cow': livestockMap['Cow'] ? 'Yes' : 'No',
-                'Carabao': livestockMap['Carabao'] ? 'Yes' : 'No',
-                'Chicken': livestockMap['Chicken'] ? 'Yes' : 'No',
-                'Others (Animals)': livestockMap['Others']?.quantity || livestockMap['Others']?.animal_name || '',
-                'TUPAD': govMap['TUPAD'] ? 'Yes' : 'No',
-                'Local 4Ps': govMap['Local 4Ps'] ? 'Yes' : 'No',
-                'National 4Ps': govMap['National 4Ps'] ? 'Yes' : 'No',
-                'Local Social Pension': govMap['Local Social Pension'] ? 'Yes' : 'No',
-                'National Social Pension': govMap['National Social Pension'] ? 'Yes' : 'No',
-                'Solo Parent Assistance': govMap['Solo Parent Assistance'] ? 'Yes' : 'No',
-                'Relief Goods': govMap['Relief Goods'] ? 'Yes' : 'No',
-                'Cash Subsidy': govMap['Cash Subsidy'] ? 'Yes' : 'No',
-                'AICS': (govMap['AICS - Shelter Assistance'] ? 'Shelter Assistance' : govMap['AICS - Burial'] ? 'Burial' : govMap['AICS - Scholarship'] ? 'Scholarship' : '') || '',
-                'Taal Volcano': displacementMap['Taal Volcano'] ? 'Yes' : 'No',
-                'Typhoon': displacementMap['Typhoon'] ? 'Yes' : 'No',
-                'Flood': displacementMap['Flood'] ? 'Yes' : 'No',
-                'Landslide': displacementMap['Landslide'] ? 'Yes' : 'No',
-                'Earthquake': displacementMap['Earthquake'] ? 'Yes' : 'No',
-                'Fire': displacementMap['Fire'] ? 'Yes' : 'No',
-                'Inside Assembly Area': householdAssembly?.inside_assembly ? 'Yes' : 'No',
-                'Outside Assembly Area': householdAssembly?.outside_assembly ? 'Yes' : 'No',
-                'Pick-Up Location': householdAssembly?.pickup_location || '',
-                'Assembly Area': householdAssembly?.assembly_area_name || '',
-                'Family/Relative Host': householdAssembly?.family_host_name || '',
-                'Host_Contact': householdAssembly?.host_contact_number || '',
-                'Transportation': householdAssembly?.transportation_type || '',
-                'Structural Damage': headCalamityImpact.structural_damage || 'No',
-                'Household Injury': headCalamityImpact.household_injury || 'No',
-                'Habitability': headCalamityImpact.habitability || 'No',
-                'Loss of Livelihood': headCalamityImpact.loss_of_livelihood || 'No',
-                'Structural Damage File Link': headCalamityDocsMap['Structural Damage']?.file_url || '',
-                'Household Injury File Link': headCalamityDocsMap['Household Injury']?.file_url || '',
-                'Habitability File Link': headCalamityDocsMap['Habitability']?.file_url || '',
-                'Loss of Livelihood File Link': headCalamityDocsMap['Loss of Livelihood']?.file_url || '',
-                'Additional Attachment File Link': headCalamityDocsMap['Additional Attachment']?.file_url || '',
-                'Submitted By': household.submitted_by || '',
-                'Submitted On': household.submitted_on ? formatTimestampPH_(new Date(household.submitted_on)) : (household.created_at ? formatTimestampPH_(new Date(household.created_at)) : ''),
-                'Updated By': headPerson.updated_by || '',
-                'Updated On': household.updated_at ? formatTimestampPH_(new Date(household.updated_at)) : ''
-            },
-            members: membersWithFullData
+            head: headObj,
+            members: membersArray,
+            calamity_documents: householdCalamityDocs.map(doc => ({
+                document_type: doc.document_type,
+                file_url: doc.file_url,
+                file_name: doc.file_name || doc.document_type,
+                details: doc.details
+            }))
         };
     });
 }
+
+async function fetchAllHouseholdsForExport() {
+    showLoading(true);
+    try {
+        const { data: households, error } = await db
+            .from('households')
+            .select('*, persons(*), livestock(*), gov_assistance(*), displacement_reasons(*), assembly_areas(*), calamity_documents(*), calamity_impacts(*)')
+            .order('data_id', { ascending: false });
+        
+        if (error) throw error;
+        
+        // Get all related data
+        const householdIds = households.map(h => h.id);
+        
+        const [
+            { data: persons },
+            { data: livestock },
+            { data: govAssistance },
+            { data: displacementReasons },
+            { data: assemblyAreas },
+            { data: calamityDocs },
+            { data: calamityImpacts }
+        ] = await Promise.all([
+            db.from('persons').select('*').in('household_id', householdIds),
+            db.from('livestock').select('*').in('household_id', householdIds),
+            db.from('gov_assistance').select('*').in('household_id', householdIds),
+            db.from('displacement_reasons').select('*').in('household_id', householdIds),
+            db.from('assembly_areas').select('*').in('household_id', householdIds),
+            db.from('calamity_documents').select('*').in('household_id', householdIds),
+            db.from('calamity_impacts').select('*').in('household_id', householdIds)
+        ]);
+        
+        return processMobileHouseholdDataFull(households, persons || [], livestock || [], govAssistance || [], displacementReasons || [], assemblyAreas || [], calamityDocs || [], calamityImpacts || []);
+    } catch (error) {
+        console.error('Export fetch error:', error);
+        throw error;
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function fetchSelectedHouseholdsForExport(selectedIds) {
+    showLoading(true);
+    try {
+        const { data: households, error } = await db
+            .from('households')
+            .select('*, persons(*), livestock(*), gov_assistance(*), displacement_reasons(*), assembly_areas(*), calamity_documents(*), calamity_impacts(*)')
+            .in('id', selectedIds)
+            .order('data_id', { ascending: false });
+        
+        if (error) throw error;
+        
+        const householdIds = households.map(h => h.id);
+        
+        const [
+            { data: persons },
+            { data: livestock },
+            { data: govAssistance },
+            { data: displacementReasons },
+            { data: assemblyAreas },
+            { data: calamityDocs },
+            { data: calamityImpacts }
+        ] = await Promise.all([
+            db.from('persons').select('*').in('household_id', householdIds),
+            db.from('livestock').select('*').in('household_id', householdIds),
+            db.from('gov_assistance').select('*').in('household_id', householdIds),
+            db.from('displacement_reasons').select('*').in('household_id', householdIds),
+            db.from('assembly_areas').select('*').in('household_id', householdIds),
+            db.from('calamity_documents').select('*').in('household_id', householdIds),
+            db.from('calamity_impacts').select('*').in('household_id', householdIds)
+        ]);
+        
+        return processMobileHouseholdDataFull(households, persons || [], livestock || [], govAssistance || [], displacementReasons || [], assemblyAreas || [], calamityDocs || [], calamityImpacts || []);
+    } catch (error) {
+        console.error('Export fetch error:', error);
+        throw error;
+    } finally {
+        showLoading(false);
+    }
+}
+
+
+// Helper function to fetch selected households for export
+async function fetchSelectedHouseholdsForExport(selectedIds) {
+    // Get selected households
+    const { data: households, error } = await db
+        .from('households')
+        .select('id, data_id')
+        .in('id', selectedIds)
+        .order('data_id', { ascending: false });
+    
+    if (error) throw error;
+    
+    const householdIds = households.map(h => h.id);
+    
+    // Fetch all related data for selected households
+    const [
+        { data: persons },
+        { data: livestock },
+        { data: govAssistance },
+        { data: displacementReasons },
+        { data: assemblyAreas },
+        { data: calamityDocs },
+        { data: calamityImpacts }
+    ] = await Promise.all([
+        db.from('persons').select('*').in('household_id', householdIds),
+        db.from('livestock').select('*').in('household_id', householdIds),
+        db.from('gov_assistance').select('*').in('household_id', householdIds),
+        db.from('displacement_reasons').select('*').in('household_id', householdIds),
+        db.from('assembly_areas').select('*').in('household_id', householdIds),
+        db.from('calamity_documents').select('*').in('household_id', householdIds),
+        db.from('calamity_impacts').select('*').in('household_id', householdIds)
+    ]);
+    
+    // Process into the same format
+    return processMobileHouseholdDataFull(
+        households, 
+        persons || [], 
+        livestock || [], 
+        govAssistance || [], 
+        displacementReasons || [], 
+        assemblyAreas || [], 
+        calamityDocs || [], 
+        calamityImpacts || []
+    );
+}
+
 function renderMobileTableFull(households) {
         const existingLoadingMore = document.getElementById('mobileLoadingMoreRow');
     if (existingLoadingMore) existingLoadingMore.remove();
@@ -10972,6 +11386,7 @@ function renderMobileTableFull(households) {
     
     if (!households || households.length === 0) {
         tbody.innerHTML = '<tr><td colspan="21" class="mobile-loading"><i class="fas fa-folder-open"></i> No records found<\/td><\/tr>';
+        updateCounts();
         return;
     }
     
@@ -11296,24 +11711,43 @@ function onDeleteMobile(id, headName, barangay) {
 }
 
 async function performMobileDelete(id) {
+    console.log('performMobileDelete called for ID:', id);
+    
+    const confirmDeleteBtn = $('confirmDelete');
+    const originalContent = confirmDeleteBtn ? confirmDeleteBtn.innerHTML : '';
+    
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.disabled = true;
+        confirmDeleteBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Deleting...';
+    }
+    
     try {
         const { error } = await db.from('households').delete().eq('id', id);
         if (error) throw error;
         showSuccess('Household deleted successfully');
-        loadMobilePage(mobileState.currentPage);
+        
+        await loadMobilePage(mobileState.currentPage);
+        
     } catch (err) {
+        console.error('Delete error:', err);
         showError('Failed to delete household');
+    } finally {
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.disabled = false;
+            confirmDeleteBtn.innerHTML = originalContent;
+        }
     }
 }
 
 async function initRecordsView() {
-    const isMobile = window.innerWidth <= 768;
+    // Use pagination for devices 1024px and below (tablets + phones)
+    const usePagination = window.innerWidth <= 1024;
     const mobileTableContainer = document.querySelector('.mobile-table-container');
     const recordsWrapper = document.querySelector('.records-wrapper');
     const mobilePagination = document.getElementById('mobilePagination');
     
-    if (isMobile) {
-        console.log('📱 Mobile detected - using pagination mode');
+    if (usePagination) {
+        console.log('📱 Tablet/Mobile detected - using pagination mode');
         if (recordsWrapper) recordsWrapper.style.display = 'none';
         if (mobileTableContainer) mobileTableContainer.style.display = 'block';
         if (mobilePagination) mobilePagination.style.display = 'flex';
@@ -11336,9 +11770,9 @@ let resizeTimeout;
 window.addEventListener('resize', function() {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
-        const isMobile = window.innerWidth <= 768;
-        const isCurrentlyMobile = document.querySelector('.mobile-table-container')?.style.display === 'block';
-        if (isMobile !== isCurrentlyMobile) location.reload();
+        const usePagination = window.innerWidth <= 1024;
+        const isCurrentlyPagination = document.querySelector('.mobile-table-container')?.style.display === 'block';
+        if (usePagination !== isCurrentlyPagination) location.reload();
     }, 250);
 });
 
