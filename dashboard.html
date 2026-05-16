@@ -1535,7 +1535,7 @@ body.guest-user .mobile-nav-item[href="dashboard.html"] {
 
             <!-- 14. Post-Calamity Impact Summary per Barangay -->
       <div class="breakdown-table-container">
-        <h4><i class="fas fa-tornado"></i> Post-Calamity Impact Summary</h4>
+        <h4><i class="fas fa-tornado"></i> Post-Calamity Impact Summary per Barangay</h4>
         <table class="breakdown-table" id="tblCalamityImpact">
           <thead>
             <tr>
@@ -2114,10 +2114,8 @@ calamityImpacts.forEach(c => {
                 if (educationField === 'No Formal Education') { overallEducation.noFormalEducation++; b.education.noFormalEducation++; }
                 else if (educationField === 'Elementary Level') { overallEducation.elementaryLevel++; b.education.elementaryLevel++; }
                 else if (educationField === 'Elementary Graduate') { overallEducation.elementaryGraduate++; b.education.elementaryGraduate++; }
-                // JHS LEVEL - combines "High School Level" AND "JHS Level"
-                else if (educationField === 'High School Level' || educationField === 'JHS Level') { overallEducation.juniorHighSchoolLevel++; b.education.juniorHighSchoolLevel++; }
-                // JHS GRAD - combines "High School Graduate" AND "JHS Grad"
-                else if (educationField === 'High School Graduate' || educationField === 'JHS Grad') { overallEducation.juniorHighSchoolGraduate++; b.education.juniorHighSchoolGraduate++; }
+                else if (educationField === 'Junior High School Level' || educationField === 'High School Level' || educationField === 'JHS Level') { overallEducation.juniorHighSchoolLevel++; b.education.juniorHighSchoolLevel++; }
+                else if (educationField === 'Junior High School Graduate' || educationField === 'High School Graduate' || educationField === 'JHS Grad') { overallEducation.juniorHighSchoolGraduate++; b.education.juniorHighSchoolGraduate++; }
                 else if (educationField === 'Senior High School Level') { overallEducation.seniorHighSchoolLevel++; b.education.seniorHighSchoolLevel++; }
                 else if (educationField === 'Senior High School Graduate') { overallEducation.seniorHighSchoolGraduate++; b.education.seniorHighSchoolGraduate++; }
                 else if (educationField === 'Alternative Learning System (ALS) Graduate') { overallEducation.alsGraduate++; b.education.alsGraduate++; }
