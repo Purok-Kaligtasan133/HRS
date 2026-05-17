@@ -6,6 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; connect-src *;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+<script src="js/security.js"></script>
     <title>Login — Purok Kaligtasan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -355,7 +356,7 @@
 
 <button type="submit" class="login-btn" id="loginButton">
     <i class="fas fa-sign-in-alt"></i>
-    <span class="btn-text">Login to System</span>
+    <span class="btn-text">Login</span>
 </button>
                 <div style="margin-top: 15px; text-align: center;">
                     <button type="button" id="guestLoginBtn" class="guest-login-btn">
@@ -375,28 +376,38 @@
         </div>
     </div>
 
-    <!-- MODAL 1: Force Logout Request (Device A - Already Logged In) -->
-    <div id="forceLogoutModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
-        <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
-            <div style="padding: 20px 20px 12px 20px; text-align: center;">
-                <div style="margin-bottom: 8px;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
-                </div>
-                <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600; letter-spacing: -0.01em;">Force Logout Request</h3>
-                <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; font-weight: 400;">Someone is trying to log in to your account from another device.</p>
-                <p style="margin: 0; color: #1e293b; font-size: 0.8rem; font-weight: 500;">Do you want to allow force logout?</p>
-                <div style="margin-top: 8px; font-size: 0.7rem; color: #ff7a00;" id="requestTimer">This request will expire in 30 seconds</div>
+<!-- MODAL 1: Force Logout Request with Take Over Button -->
+<div id="forceLogoutModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 340px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
             </div>
-            <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
-                <button id="denyForceLogoutBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
-                    <i class="fas fa-times"></i> Deny
-                </button>
-                <button id="allowForceLogoutBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
-                    <i class="fas fa-check"></i> Allow
-                </button>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Active Session Detected</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                This account is already logged in on another device.
+            </p>
+            <div style="background: #fff8e1; padding: 8px; border-radius: 8px; margin-top: 8px;">
+                <p style="margin: 0; font-size: 0.7rem; color: #ff7a00;">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Take Over:</strong> Immediate logout of other device<br>
+                    <strong>Request:</strong> Ask other device to logout (30 sec)
+                </p>
             </div>
         </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="denyForceLogoutBtn" style="flex: 1; padding: 8px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #ef4444; background: transparent; color: #ef4444; white-space: nowrap;">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button id="takeOverBtn" style="flex: 1; padding: 8px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #ff7a00; background: #ff7a00; color: white; white-space: nowrap;">
+                <i class="fas fa-exchange-alt"></i> Take Over
+            </button>
+            <button id="allowForceLogoutBtn" style="flex: 1; padding: 8px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a; white-space: nowrap;">
+                <i class="fas fa-paper-plane"></i> Request
+            </button>
+        </div>
     </div>
+</div>
 
     <!-- MODAL 2: Waiting for Approval (Device B) -->
     <div id="waitingModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
@@ -475,6 +486,73 @@
         </div>
     </div>
 
+        <!-- Custom Confirm Modal -->
+    <div id="customConfirmModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10002; padding: 16px;">
+        <div style="background: white; border-radius: 12px; max-width: 320px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+            <div style="padding: 20px 20px 12px 20px; text-align: center;">
+                <div style="margin-bottom: 8px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+                </div>
+                <h3 id="confirmTitle" style="margin: 0 0 8px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Confirm Action</h3>
+                <p id="confirmMessage" style="margin: 0; color: #64748b; font-size: 0.85rem; line-height: 1.4;">Are you sure?</p>
+            </div>
+            <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+                <button id="confirmCancelBtn" style="flex: 1; padding: 8px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button id="confirmOkBtn" style="flex: 1; padding: 8px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                    <i class="fas fa-check"></i> Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+<!-- Take Over Warning Modal (Device B) - Matching style -->
+<div id="takeOverWarningModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10003; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Take Over Warning</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                Taking over will immediately log out the other device.
+            </p>
+            <p style="margin: 0; color: #dc2626; font-size: 0.75rem; font-weight: 500;">
+                Any unsaved work on the other device may be lost.
+            </p>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="cancelTakeOverBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button id="confirmTakeOverBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Take Over
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Session Taken Over Modal (Device A) - Matching style -->
+<div id="sessionTakenOverModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10003; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exchange-alt" style="font-size: 1.6rem; color: #dc2626; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Session Taken Over!</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                Another device has taken over this account.
+            </p>
+            <div style="margin-top: 12px; background: #fef2f2; padding: 8px; border-radius: 8px;">
+                <div style="font-size: 0.7rem; color: #dc2626; font-weight: 500;">You will be logged out in</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #dc2626;" id="takeOverCountdown">5</div>
+                <div style="font-size: 0.7rem; color: var(--text-light);">seconds</div>
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- MODAL 6: Session Recovery (Browser closed without logout) -->
     <div id="sessionRecoveryModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px;">
         <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
@@ -488,7 +566,7 @@
                 </p>
                 <div style="margin-top: 12px; background: #f0fdf4; padding: 8px; border-radius: 8px;">
                     <div style="font-size: 0.7rem; color: var(--primary-green); font-weight: 500;">Please wait</div>
-                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-green);" id="cooldownTimer">60</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-green);" id="cooldownTimer">10</div>
                     <div style="font-size: 0.7rem; color: var(--text-light);">seconds before retry</div>
                 </div>
             </div>
@@ -520,6 +598,53 @@
 const SUPABASE_URL = 'https://opibntxwagnjazpbtxrv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_UwyTZU3BYj41z0D7beu9Hg_pIZcLeWN';
 let supabaseClient;
+
+// ============ COOKIE FUNCTIONS (for cross-browser detection) ============
+function setSessionCookie(sessionId) {
+    // Set cookie that expires in 8 hours, accessible across subdomains
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (8 * 60 * 60 * 1000));
+    document.cookie = `session_id=${sessionId}; expires=${expires.toUTCString()}; path=/; SameSite=Lax; Secure`;
+    console.log('🍪 Session cookie set');
+}
+
+function getSessionCookie() {
+    const name = "session_id=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function deleteSessionCookie() {
+    document.cookie = "session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    console.log('🍪 Session cookie deleted');
+}
+
+// ============ DEVICE ID MANAGEMENT ============
+function getDeviceId() {
+    // Check if device ID already exists in localStorage
+    let deviceId = localStorage.getItem('deviceId');
+    
+    if (!deviceId) {
+        // Generate a new persistent device ID
+        deviceId = crypto.randomUUID();
+        localStorage.setItem('deviceId', deviceId);
+        console.log('🆕 New Device ID generated:', deviceId);
+    } else {
+        console.log('🆔 Existing Device ID:', deviceId);
+    }
+    
+    return deviceId;
+}
 
 // ============ QUEUE SYSTEM (For 70 concurrent users) ============
 class LoginQueue {
@@ -619,6 +744,61 @@ const ModalManager = {
     }
 };
 
+// ============ CUSTOM CONFIRM FUNCTION ============
+function showConfirm(message, title = "Confirm Action") {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('customConfirmModal');
+        const titleEl = document.getElementById('confirmTitle');
+        const messageEl = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmOkBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        
+        if (!modal) {
+            // Fallback to native confirm if modal doesn't exist
+            resolve(confirm(message));
+            return;
+        }
+        
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        modal.style.display = 'flex';
+        
+        const handleConfirm = () => {
+            modal.style.display = 'none';
+            cleanup();
+            resolve(true);
+        };
+        
+        const handleCancel = () => {
+            modal.style.display = 'none';
+            cleanup();
+            resolve(false);
+        };
+        
+        const cleanup = () => {
+            confirmBtn.removeEventListener('click', handleConfirm);
+            cancelBtn.removeEventListener('click', handleCancel);
+        };
+        
+        // Remove old listeners to prevent duplicates
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newConfirmBtn.addEventListener('click', handleConfirm);
+        newCancelBtn.addEventListener('click', handleCancel);
+        
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                cleanup();
+                resolve(false);
+            }
+        });
+    });
+}
+
 // ============ OPTIMIZED INIT ============
 async function init() {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -643,6 +823,8 @@ async function hashPassword(password) {
 
 // ============ OPTIMIZED CREATE SESSION ============
 async function createSession(userId, sessionId) {
+    const deviceId = getDeviceId(); // Get persistent device ID
+    
     // Deactivate existing sessions first
     await supabaseClient
         .from('user_sessions')
@@ -652,6 +834,7 @@ async function createSession(userId, sessionId) {
     const { error } = await supabaseClient.from('user_sessions').insert({
         user_id: userId,
         session_id: sessionId,
+        device_id: deviceId,  // ✅ Save device ID
         is_active: true,
         logged_in_at: new Date().toISOString(),
         last_activity: new Date().toISOString()
@@ -667,17 +850,20 @@ async function createSession(userId, sessionId) {
 // ============ OPTIMIZED SESSION CHECK (with cache for 70 concurrent) ============
 let sessionCache = { userId: null, hasActive: false, sessionId: null, timestamp: 0 };
 
-async function checkActiveSession(userId) {
-    // Cache for 500ms to handle concurrent requests
-    if (sessionCache.userId === userId && Date.now() - sessionCache.timestamp < 500) {
+async function checkActiveSession(userId, forceRefresh = false) {
+    // Skip cache if force refresh is true (for force logout scenarios)
+    if (!forceRefresh && sessionCache.userId === userId && Date.now() - sessionCache.timestamp < 500) {
         return { hasActiveSession: sessionCache.hasActive, sessionId: sessionCache.sessionId };
     }
     
+    // Always get the most recent active session (ordered by creation date)
     const { data } = await supabaseClient
         .from('user_sessions')
-        .select('session_id')
+        .select('session_id, created_at')
         .eq('user_id', userId)
         .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
     
     const hasActive = data !== null;
@@ -718,31 +904,50 @@ function showWaitingModal() {
     const interval = setInterval(() => {
         timeLeft--;
         timer.textContent = `Waiting (${timeLeft}s)`;
-        if (timeLeft <= 0) {
-            clearInterval(interval);
-            modal.style.display = 'none';
-        }
+        // DO NOT auto-hide or reset button here - let the timeout handler do it
     }, 1000);
     return interval;
 }
-
 function hideWaitingModal() {
-    document.getElementById('waitingModal').style.display = 'none';
+    const modal = document.getElementById('waitingModal');
+    if (modal) modal.style.display = 'none';
 }
 
 function showDeniedModal() {
-    document.getElementById('deniedModal').style.display = 'flex';
+    const modal = document.getElementById('deniedModal');
+    if (modal) modal.style.display = 'flex';
 }
 
 // ============ OPTIMIZED PERFORM LOGIN ============
 async function performLogin(user, roleToStore, isDefaultPassword = false) {
     const sessionId = crypto.randomUUID();
+    const now = new Date().toISOString();
     
     try {
-        // ✅ FIX: First, clean up any orphaned sessions for this user
+        // ✅ CRITICAL FIX: Update last_login in users table FIRST
+        console.log('🟢 Updating last_login for user:', user.username);
+        
+        const { error: updateError } = await supabaseClient
+            .from('users')
+            .update({ 
+                last_login: now,
+                last_activity: now,
+                updated_at: now
+            })
+            .eq('id', user.id);
+        
+        if (updateError) {
+            console.error('Failed to update last_login:', updateError);
+            ModalManager.showInfo('Login Failed', 'Unable to update login time. Please try again.', 'error');
+            return false;
+        }
+        
+        console.log('✅ last_login updated successfully at:', now);
+        
+        // Clean up any orphaned sessions for this user
         await supabaseClient
             .from('user_sessions')
-            .update({ is_active: false, terminated_at: new Date().toISOString() })
+            .update({ is_active: false, terminated_at: now })
             .eq('user_id', user.id)
             .eq('is_active', true);
         
@@ -755,6 +960,13 @@ async function performLogin(user, roleToStore, isDefaultPassword = false) {
         }
         
         localStorage.clear();
+        
+        // ✅ CLEAR THE CLEANUP FLAG ON SUCCESSFUL LOGIN
+        sessionStorage.removeItem('cleanup_attempted');
+        
+        // ✅ Set a flag that we have a session (for browser closure detection)
+        sessionStorage.setItem('had_session', 'true');
+        
         localStorage.setItem('loggedIn', 'true');
         localStorage.setItem('userId', user.id);
         localStorage.setItem('username', user.username);
@@ -763,6 +975,9 @@ async function performLogin(user, roleToStore, isDefaultPassword = false) {
         localStorage.setItem('assignedBarangay', user.assigned_barangay || '');
         localStorage.setItem('loginTime', Date.now().toString());
         localStorage.setItem('sessionId', sessionId);
+        
+        // Set cookie for cross-browser detection
+        setSessionCookie(sessionId);
         
         sessionStorage.setItem('session_active', 'true');
         
@@ -789,73 +1004,275 @@ async function performLogin(user, roleToStore, isDefaultPassword = false) {
     }
 }
 
-// ============ FORCE LOGOUT FLOW ============
+// ============ FORCE LOGOUT FLOW WITH TAKE OVER BUTTON ============
 async function requestForceLogout(user, roleToStore, existingSessionId, loginBtn, originalText, isDefaultPassword) {
-    ModalManager.showConfirm(
-        'Active Session Detected',
-        'This account is already logged in on another device.\n\nWould you like to request force logout? The other device has 30 seconds to respond.',
-        async () => {
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Requesting...';
-            try {
-                const request = await createForceLogoutRequest(user.id, existingSessionId);
-                const timerInterval = showWaitingModal();
+    // Show custom modal with Take Over button
+    const modal = document.getElementById('forceLogoutModal');
+    const takeOverBtn = document.getElementById('takeOverBtn');
+    const allowBtn = document.getElementById('allowForceLogoutBtn');
+    const denyBtn = document.getElementById('denyForceLogoutBtn');
+    
+    // Update modal content for Active Session
+    const modalTitle = modal.querySelector('h3');
+    const modalMessage = modal.querySelector('p');
+    const timerEl = document.getElementById('requestTimer');
+    
+    if (modalTitle) modalTitle.textContent = 'Active Session Detected';
+    if (modalMessage) modalMessage.innerHTML = 'This account is already logged in on another device.';
+    if (timerEl) timerEl.style.display = 'none';
+    
+    // Hide the original timer display
+    const timerDiv = modal.querySelector('#requestTimer');
+    if (timerDiv) timerDiv.style.display = 'none';
+    
+    modal.style.display = 'flex';
+    
+    // ============ TAKE OVER - Immediate force takeover ============
+const handleTakeOver = async () => {
+    console.log('🔴 Take Over button clicked');
+    
+    // Show warning modal
+    const warningModal = document.getElementById('takeOverWarningModal');
+    if (!warningModal) {
+        console.error('Warning modal not found!');
+        // Fallback to confirm
+        const confirmed = confirm('⚠️ WARNING: Taking over will immediately log out the other device. Any unsaved work may be lost. Do you want to continue?');
+        if (!confirmed) {
+            modal.style.display = 'flex';
+            return;
+        }
+    } else {
+        warningModal.style.display = 'flex';
+        
+        // Wait for user response
+        const result = await new Promise((resolve) => {
+            const cancelBtn = document.getElementById('cancelTakeOverBtn');
+            const confirmBtn = document.getElementById('confirmTakeOverBtn');
+            
+            const cleanup = () => {
+                cancelBtn.removeEventListener('click', cancelHandler);
+                confirmBtn.removeEventListener('click', confirmHandler);
+                warningModal.style.display = 'none';
+            };
+            
+            const cancelHandler = () => {
+                cleanup();
+                resolve(false);
+            };
+            
+            const confirmHandler = () => {
+                cleanup();
+                resolve(true);
+            };
+            
+            cancelBtn.onclick = cancelHandler;
+            confirmBtn.onclick = confirmHandler;
+        });
+        
+        if (!result) {
+            modal.style.display = 'flex';
+            return;
+        }
+    }
+    
+    console.log('🚀 User confirmed TAKE OVER');
+    modal.style.display = 'none';
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Taking over...';
+    
+    try {
+        await supabaseClient
+            .from('force_logout_requests')
+            .insert({
+                user_id: user.id,
+                request_session_id: crypto.randomUUID(),
+                target_session_id: existingSessionId,
+                status: 'approved',
+                expires_at: new Date(Date.now() + 5000).toISOString()
+            });
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        await supabaseClient
+            .from('user_sessions')
+            .update({ 
+                is_active: false, 
+                terminated_at: new Date().toISOString(),
+                terminated_reason: 'take_over'
+            })
+            .eq('user_id', user.id)
+            .eq('is_active', true);
+        
+        console.log('✅ All sessions terminated via Take Over');
+        
+        localStorage.removeItem('sessionId');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('loggedIn');
+        
+        setTimeout(async () => {
+            await performLogin(user, roleToStore, isDefaultPassword);
+        }, 100);
+        
+    } catch (err) {
+        console.error('Take over error:', err);
+        ModalManager.showInfo('Take Over Failed', 'Unable to take over. Please try again.', 'error');
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = originalText;
+        modal.style.display = 'none';
+    }
+};
+    
+// ============ REQUEST FORCE LOGOUT (Original flow) ============
+const handleRequest = async () => {
+    console.log('📢 User chose REQUEST - sending force logout request');
+    modal.style.display = 'none';
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Requesting...';
+    
+    // Flag to track if request was cancelled by user
+    let wasCancelled = false;
+    
+    try {
+        const request = await createForceLogoutRequest(user.id, existingSessionId);
+        
+        // Show waiting modal
+        const waitModal = document.getElementById('waitingModal');
+        const timer = document.getElementById('waitingTimer');
+        let timeLeft = 30;
+        waitModal.style.display = 'flex';
+        
+        let timerInterval = setInterval(() => {
+            timeLeft--;
+            timer.textContent = `Waiting (${timeLeft}s)`;
+            // Don't auto-hide
+        }, 1000);
+        
+        // Handle cancel button
+        const cancelBtn = document.getElementById('cancelWaitBtn');
+        const cancelHandler = () => {
+            wasCancelled = true;
+            console.log('❌ User cancelled the force logout request');
+            clearInterval(timerInterval);
+            if (timeoutHandler) clearTimeout(timeoutHandler);
+            if (responseChannel) supabaseClient.removeChannel(responseChannel);
+            waitModal.style.display = 'none';
+            // Reset login button WITHOUT showing denied modal
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = originalText;
+            // Clean up the pending request in database
+            supabaseClient
+                .from('force_logout_requests')
+                .update({ status: 'cancelled', responded_at: new Date().toISOString() })
+                .eq('id', request.id)
+                .then(() => console.log('Request cancelled in database'))
+                .catch(err => console.error('Failed to cancel request:', err));
+        };
+        
+        // Remove old listener and add new one
+        cancelBtn.removeEventListener('click', cancelHandler);
+        cancelBtn.addEventListener('click', cancelHandler);
+        
+        let responseChannel = null;
+        let timeoutHandler = null;
+        
+        console.log('Created request:', request);
+        console.log('Request session ID:', request.request_session_id);
+        
+        responseChannel = supabaseClient
+            .channel(`force_logout_response_${request.request_session_id}`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'force_logout_requests',
+                filter: `request_session_id=eq.${request.request_session_id}`
+            }, async (payload) => {
+                // Don't process if cancelled
+                if (wasCancelled) return;
                 
-                let realtimeChannel = null;
-                let timeoutHandler = null;
+                console.log('📡 Response received on Device B:', payload);
+                console.log('New status:', payload.new.status);
                 
-                realtimeChannel = supabaseClient
-                    .channel(`force_logout_response_${request.request_session_id}`)
-                    .on('postgres_changes', {
-                        event: 'UPDATE',
-                        schema: 'public',
-                        table: 'force_logout_requests',
-                        filter: `request_session_id=eq.${request.request_session_id}`
-                    }, async (payload) => {
-                        if (payload.new.status === 'approved') {
-                            if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
-                            clearInterval(timerInterval);
-                            clearTimeout(timeoutHandler);
-                            hideWaitingModal();
-                            await performLogin(user, roleToStore, isDefaultPassword);
-                        } else if (payload.new.status === 'denied') {
-                            if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
-                            clearInterval(timerInterval);
-                            clearTimeout(timeoutHandler);
-                            hideWaitingModal();
-                            showDeniedModal();
-                            loginBtn.disabled = false;
-                            loginBtn.innerHTML = originalText;
-                        }
-                    })
-                    .subscribe();
-                
-                timeoutHandler = setTimeout(() => {
-                    if (document.getElementById('waitingModal').style.display === 'flex') {
-                        if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
-                        clearInterval(timerInterval);
-                        hideWaitingModal();
-                        ModalManager.showInfo('Timed Out', 'Force logout request timed out.', 'error');
-                        loginBtn.disabled = false;
-                        loginBtn.innerHTML = originalText;
+                if (payload.new.status === 'approved') {
+                    console.log('✅ Force logout approved by other device');
+                    if (responseChannel) supabaseClient.removeChannel(responseChannel);
+                    clearInterval(timerInterval);
+                    clearTimeout(timeoutHandler);
+                    waitModal.style.display = 'none';
+                    
+                    localStorage.removeItem('sessionId');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('loggedIn');
+                    
+                    await supabaseClient
+                        .from('user_sessions')
+                        .update({ is_active: false, terminated_at: new Date().toISOString() })
+                        .eq('session_id', existingSessionId);
+                    
+                    await performLogin(user, roleToStore, isDefaultPassword);
+                } else if (payload.new.status === 'denied') {
+                    console.log('❌ Force logout denied by other device');
+                    if (responseChannel) supabaseClient.removeChannel(responseChannel);
+                    clearInterval(timerInterval);
+                    clearTimeout(timeoutHandler);
+                    waitModal.style.display = 'none';
+                    // Only show denied modal if not cancelled
+                    if (!wasCancelled) {
+                        showDeniedModal();
                     }
-                }, 31000);
-            } catch (err) {
-                hideWaitingModal();
-                ModalManager.showInfo('Request Failed', 'Unable to send force logout request.', 'error');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = originalText;
+                }
+            })
+            .subscribe((status) => {
+                console.log('📡 Force logout response subscription status:', status);
+            });
+        
+        timeoutHandler = setTimeout(() => {
+            console.log('⏰ Force logout request timed out - wasCancelled:', wasCancelled);
+            if (!wasCancelled) {
+                // Make sure modal is hidden
+                waitModal.style.display = 'none';
+                clearInterval(timerInterval);
+                if (responseChannel) supabaseClient.removeChannel(responseChannel);
+                // Show denied modal
+                showDeniedModal();
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = originalText;
             }
-        },
-        () => {
-            ModalManager.showInfo('Cancelled', 'Login cancelled.', 'info');
-            loginBtn.disabled = false;
-            loginBtn.innerHTML = originalText;
-        }
-    );
+        }, 31000);
+        
+    } catch (err) {
+        console.error('Force logout error:', err);
+        const waitModal = document.getElementById('waitingModal');
+        if (waitModal) waitModal.style.display = 'none';
+        ModalManager.showInfo('Request Failed', 'Unable to send force logout request.', 'error');
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = originalText;
+    }
+};
+    
+    // ============ CANCEL ============
+    const handleCancel = () => {
+        console.log('❌ User cancelled login');
+        modal.style.display = 'none';
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = originalText;
+        ModalManager.showInfo('Cancelled', 'Login cancelled.', 'info');
+    };
+    
+    // Remove old event listeners and add new ones
+    const newTakeOverBtn = takeOverBtn.cloneNode(true);
+    const newAllowBtn = allowBtn.cloneNode(true);
+    const newDenyBtn = denyBtn.cloneNode(true);
+    takeOverBtn.parentNode.replaceChild(newTakeOverBtn, takeOverBtn);
+    allowBtn.parentNode.replaceChild(newAllowBtn, allowBtn);
+    denyBtn.parentNode.replaceChild(newDenyBtn, denyBtn);
+    
+    newTakeOverBtn.onclick = handleTakeOver;
+    newAllowBtn.onclick = handleRequest;
+    newDenyBtn.onclick = handleCancel;
 }
-
-// ============ MAIN LOGIN HANDLER ============
+// ============ MAIN LOGIN HANDLER (WITH COOKIE DETECTION) ============
 async function handleLogin(event) {
     event.preventDefault();
     const username = document.getElementById('username').value.trim();
@@ -873,7 +1290,7 @@ async function handleLogin(event) {
     
     try {
         await loginQueue.enqueue(async () => {
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
             
             const hashedPassword = await hashPassword(password);
             const { data: users, error } = await supabaseClient
@@ -897,27 +1314,45 @@ async function handleLogin(event) {
             
             const roleToStore = (user.role || '').toLowerCase() === 'admin' ? 'admin' : 'staff';
             
-            // CHECK: Browser closure detection
-            const hadSessionBefore = localStorage.getItem('sessionId') !== null;
+            // ============ GET SESSION INFO ============
+            const cookieSessionId = getSessionCookie();
+            const hasCookie = cookieSessionId !== "";
+            const hasLocalSessionId = localStorage.getItem('sessionId') !== null;
             const wasSessionActive = sessionStorage.getItem('session_active') === 'true';
+            const hadSessionFlag = sessionStorage.getItem('had_session') === 'true';
             sessionStorage.removeItem('session_active');
             
-            if (hadSessionBefore && wasSessionActive === false) {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = originalText;
+            // Check for active session in database
+            const { hasActiveSession, sessionId: existingSessionId } = await checkActiveSession(user.id, true);
+            
+            // ============ STEP 1: BROWSER CLOSURE (Same device, same browser) ============
+            const isBrowserClosure = hasCookie && hasLocalSessionId && !wasSessionActive && !hadSessionFlag;
+            
+            if (isBrowserClosure) {
+                console.log('🔄 Browser closure detected - showing session recovery modal (10s)');
+                
+                const enteredUsername = username;
+                const enteredPassword = password;
                 
                 await supabaseClient
                     .from('user_sessions')
-                    .update({ is_active: false })
-                    .eq('user_id', user.id)
-                    .eq('is_active', true);
+                    .update({ is_active: false, terminated_at: new Date().toISOString() })
+                    .eq('session_id', cookieSessionId);
+                
+                localStorage.clear();
+                sessionStorage.clear();
+                deleteSessionCookie();
+                
+                document.getElementById('username').value = enteredUsername;
+                document.getElementById('password').value = enteredPassword;
                 
                 const modal = document.getElementById('sessionRecoveryModal');
                 const timerEl = document.getElementById('cooldownTimer');
                 const okBtn = document.getElementById('recoveryOkBtn');
-                let countdown = 60;
+                let countdown = 10;
                 timerEl.textContent = countdown;
                 modal.style.display = 'flex';
+                
                 const interval = setInterval(() => {
                     countdown--;
                     timerEl.textContent = countdown;
@@ -926,49 +1361,173 @@ async function handleLogin(event) {
                         okBtn.disabled = false;
                         okBtn.style.opacity = '1';
                         okBtn.style.pointerEvents = 'auto';
-                        okBtn.innerHTML = '<i class="fas fa-check"></i> Login Now';
+                        okBtn.innerHTML = '<i class="fas fa-check"></i> Login';
+                        
                         okBtn.onclick = async () => {
                             modal.style.display = 'none';
-                            loginBtn.disabled = true;
-                            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-                            await performLogin(user, roleToStore, isDefaultPassword);
+                            loginBtn.disabled = false;
+                            loginBtn.innerHTML = originalText;
+                            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
                         };
                     }
                 }, 1000);
+                
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalText;
                 return;
             }
             
-// Check for existing active session (another device)
-const { hasActiveSession, sessionId: existingSessionId } = await checkActiveSession(user.id);
-
+            // ============ STEP 2: SAME DEVICE, DIFFERENT BROWSER ============
+            // Cookie exists but no localStorage - same device, different browser (Messenger → Chrome)
+            if (hasCookie && !hasLocalSessionId && !wasSessionActive) {
+                console.log('🔄 Same device, different browser detected - showing session recovery modal (10s)');
+                
+                const enteredUsername = username;
+                const enteredPassword = password;
+                
+                await supabaseClient
+                    .from('user_sessions')
+                    .update({ is_active: false, terminated_at: new Date().toISOString() })
+                    .eq('session_id', cookieSessionId);
+                
+                localStorage.clear();
+                deleteSessionCookie();
+                sessionStorage.clear();
+                
+                document.getElementById('username').value = enteredUsername;
+                document.getElementById('password').value = enteredPassword;
+                
+                const modal = document.getElementById('sessionRecoveryModal');
+                const timerEl = document.getElementById('cooldownTimer');
+                const okBtn = document.getElementById('recoveryOkBtn');
+                let countdown = 10;
+                timerEl.textContent = countdown;
+                modal.style.display = 'flex';
+                
+                const interval = setInterval(() => {
+                    countdown--;
+                    timerEl.textContent = countdown;
+                    if (countdown <= 0) {
+                        clearInterval(interval);
+                        okBtn.disabled = false;
+                        okBtn.style.opacity = '1';
+                        okBtn.style.pointerEvents = 'auto';
+                        okBtn.innerHTML = '<i class="fas fa-check"></i> Login';
+                        
+                        okBtn.onclick = async () => {
+                            modal.style.display = 'none';
+                            loginBtn.disabled = false;
+                            loginBtn.innerHTML = originalText;
+                            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+                        };
+                    }
+                }, 1000);
+                
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalText;
+                return;
+            }
+            
+// ============ STEP 3: CHECK BY DEVICE ID (UPDATED: 45 seconds) ============
 if (hasActiveSession) {
-    // Check how old the existing session is
+    const currentDeviceId = getDeviceId();
+    
+    // Get the existing session's device ID and age
     const { data: existingSession } = await supabaseClient
         .from('user_sessions')
-        .select('created_at')
+        .select('device_id, created_at')
         .eq('session_id', existingSessionId)
-        .maybeSingle();
+        .single();
     
-    const sessionAge = existingSession ? Date.now() - new Date(existingSession.created_at).getTime() : Infinity;
-    const isVeryRecent = sessionAge < 30 * 1000; // Less than 30 seconds old
+    const isSameDevice = existingSession?.device_id === currentDeviceId;
+    const sessionAge = existingSession ? Date.now() - new Date(existingSession.created_at).getTime() : 0;
+    const isRecentSession = sessionAge < 45000; // ✅ CHANGED: 45 seconds (was 120000)
     
-    // ONLY auto-replace for VERY recent sessions (within 30 seconds)
-    if (isVeryRecent) {
-        console.log('🔄 Auto-replacing very recent session (Messenger -> Chrome)');
+    // SAME DEVICE, different browser (Messenger → Chrome)
+    if (isSameDevice && isRecentSession) {
+        console.log('🔄 Same device, different browser detected - showing session recovery modal (10s)');
+        console.log('Session age:', Math.round(sessionAge / 1000), 'seconds (within 45s window)');
         
+        const enteredUsername = username;
+        const enteredPassword = password;
+        
+        // Clean up the old session
         await supabaseClient
             .from('user_sessions')
             .update({ is_active: false, terminated_at: new Date().toISOString() })
             .eq('session_id', existingSessionId);
         
-        await performLogin(user, roleToStore, isDefaultPassword);
+        localStorage.clear();
+        deleteSessionCookie();
+        sessionStorage.clear();
         
-    } else {
-        await requestForceLogout(user, roleToStore, existingSessionId, loginBtn, originalText, isDefaultPassword);
+        document.getElementById('username').value = enteredUsername;
+        document.getElementById('password').value = enteredPassword;
+        
+        const modal = document.getElementById('sessionRecoveryModal');
+        const timerEl = document.getElementById('cooldownTimer');
+        const okBtn = document.getElementById('recoveryOkBtn');
+        let countdown = 10;
+        timerEl.textContent = countdown;
+        modal.style.display = 'flex';
+        
+        const interval = setInterval(() => {
+            countdown--;
+            timerEl.textContent = countdown;
+            if (countdown <= 0) {
+                clearInterval(interval);
+                okBtn.disabled = false;
+                okBtn.style.opacity = '1';
+                okBtn.style.pointerEvents = 'auto';
+                okBtn.innerHTML = '<i class="fas fa-check"></i> Login';
+                
+                okBtn.onclick = async () => {
+                    modal.style.display = 'none';
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = originalText;
+                    document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+                };
+            }
+        }, 1000);
+        
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = originalText;
+        return;
     }
-} else {
-    await performLogin(user, roleToStore, isDefaultPassword);
+    
+    // DIFFERENT DEVICE (or session older than 45 seconds)
+    if (!isSameDevice || !isRecentSession) {
+        console.log('🔔 Different device or old session detected - showing force logout modal (30s)');
+        if (!isSameDevice) console.log('  - Different device ID');
+        if (!isRecentSession) console.log('  - Session age:', Math.round(sessionAge / 1000), 'seconds (exceeded 45s window)');
+        await requestForceLogout(user, roleToStore, existingSessionId, loginBtn, originalText, isDefaultPassword);
+        return;
+    }
+    
+    // Fallback for other cases
+    const cleanupAttempted = sessionStorage.getItem('cleanup_attempted') === 'true';
+    
+    if (cleanupAttempted) {
+        console.log('⚠️ Cleanup already attempted, forcing normal login');
+        await performLogin(user, roleToStore, isDefaultPassword);
+        return;
+    }
+    
+    const currentSessionId = localStorage.getItem('sessionId');
+    const isSameSession = currentSessionId && currentSessionId === existingSessionId;
+    
+    if (isSameSession) {
+        console.log('🔄 Same session detected - user probably refreshed the page');
+        await performLogin(user, roleToStore, isDefaultPassword);
+        return;
+    }
+    
+    await requestForceLogout(user, roleToStore, existingSessionId, loginBtn, originalText, isDefaultPassword);
+    return;
 }
+            
+            // ============ NO ISSUES - NORMAL LOGIN ============
+            await performLogin(user, roleToStore, isDefaultPassword);
         });
     } catch (err) {
         ModalManager.showInfo('Login Failed', err.message || 'An error occurred.', 'error');
@@ -999,18 +1558,9 @@ function guestLogin() {
     
     // Try to redirect to dashboard
     console.log("🔄 Attempting to redirect to dashboard.html");
-    
-    // Method 1: Direct redirect
     window.location.href = 'dashboard.html';
-    
-    // Method 2 (fallback if above doesn't work - uncomment if needed):
-    // setTimeout(function() {
-    //     if (window.location.pathname.indexOf('dashboard.html') === -1) {
-    //         console.log("⚠️ Redirect failed, trying alternative");
-    //         window.location.replace('dashboard.html');
-    //     }
-    // }, 100);
 }
+
 function setupPasswordToggle() {
     const toggleBtn = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
@@ -1024,15 +1574,32 @@ function setupPasswordToggle() {
     }
 }
 
+// ============ ALSO UPDATE LOGOUT TO DELETE COOKIE ============
+// Add this function to be called from force-logout.js
+window.deleteSessionCookie = deleteSessionCookie;
+
 document.addEventListener('DOMContentLoaded', async function() {
     await init();
     setupPasswordToggle();
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
     document.getElementById('guestLoginBtn').addEventListener('click', guestLogin);
-    document.getElementById('cancelWaitBtn').onclick = () => hideWaitingModal();
-    document.getElementById('closeDeniedBtn').onclick = () => {
-        document.getElementById('deniedModal').style.display = 'none';
-    };
+    document.getElementById('cancelWaitBtn').onclick = () => {
+    hideWaitingModal();
+    // Reset the login button
+    const loginBtn = document.getElementById('loginButton');
+    const originalText = loginBtn.innerHTML;
+    // Check if it's stuck in requesting state
+    if (loginBtn.innerHTML.includes('Requesting') || loginBtn.innerHTML.includes('spinner')) {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+    }
+    // Also reset any pending request flags
+    sessionStorage.removeItem('cleanup_attempted');
+};
+document.getElementById('closeDeniedBtn').onclick = () => {
+    document.getElementById('deniedModal').style.display = 'none';
+    // Optional: Clear any pending state
+};
     document.getElementById('infoOkBtn').onclick = () => {
         document.getElementById('infoModal').style.display = 'none';
     };
