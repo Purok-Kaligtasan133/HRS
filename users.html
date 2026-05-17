@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="css/user-style.css">
 <script src="js/force-logout.js"></script>
 <script src="js/session-check.js"></script>
+<script src="js/security.js"></script>
 <style>
    :root{
     --bg:#f6f8f7;
@@ -1425,14 +1426,17 @@ li.admin-only.admin-visible {
         </div>
       </div>
       
-      <div class="toolbar-row-2">
+    <div class="toolbar-row-2">
+        <button id="forceLogoutAllBtn" class="btn btn-secondary" style="border-color: #dc2626; color: #dc2626;">
+            <i class="fas fa-users-slash"></i> Logout All
+        </button>
         <button id="viewLogsBtn" class="btn btn-secondary">
-          <i class="fas fa-history"></i> View Logs
+            <i class="fas fa-history"></i> View Logs
         </button>
         <button id="openAddUser" class="btn">
-          <i class="fas fa-user-plus"></i> Add User
+            <i class="fas fa-user-plus"></i> Add User
         </button>
-      </div>
+    </div>
     </div>
 
     <!-- Stats Cards -->
@@ -1454,15 +1458,15 @@ li.admin-only.admin-visible {
     <!-- Users Table -->
     <div class="users-table-wrap">
       <table class="users-table" id="usersTable">
-        <thead>
-          <tr>
-            <th>Username</th>
-            <th>Full Name</th>
-            <th>Role</th>
-            <th>Barangay</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+<thead>
+  <tr>
+    <th style="text-transform: uppercase; color: #4a5568; font-size: 0.75rem;">Username</th>
+    <th style="text-transform: uppercase; color: #4a5568; font-size: 0.75rem;">Full Name</th>
+    <th style="text-transform: uppercase; color: #4a5568; font-size: 0.75rem;">Role</th>
+    <th style="text-transform: uppercase; color: #4a5568; font-size: 0.75rem;">Barangay</th>
+    <th style="text-transform: uppercase; color: #4a5568; font-size: 0.75rem;">Actions</th>
+  </tr>
+</thead>
         <tbody id="usersBody">
           <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading users...
         </tbody>
@@ -1529,7 +1533,7 @@ li.admin-only.admin-visible {
         <div class="form-group">
           <label for="user_barangay">Assigned Barangay</label>
           <select id="user_barangay" class="form-control">
-            <option value="">ALL</option>
+            <option value="">All</option>
             <option>Balagbag</option><option>Concepcion</option><option>Concordia</option>
             <option>Dalipit East</option><option>Dalipit West</option>
             <option>Dominador East</option><option>Dominador West</option>
@@ -1846,7 +1850,7 @@ li.admin-only.admin-visible {
               <tr>
                 <th style="width: 20%;">Timestamp</th>
                 <th style="width: 15%;">Action</th>
-                <th style="width: 15%;">Actor</th>
+                <th style="width: 15%;">User</th>
                 <th style="width: 15%;">Target</th>
                 <th style="width: 35%; text-align: left;">Details</th>
               </tr>
@@ -1859,6 +1863,72 @@ li.admin-only.admin-visible {
       </div>
     </div>
   </div>
+</div>
+
+<!-- Take Over Warning Modal (Device B) - Matching style -->
+<div id="takeOverWarningModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10003; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Take Over Warning</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                Taking over will immediately log out the other device.
+            </p>
+            <p style="margin: 0; color: #dc2626; font-size: 0.75rem; font-weight: 500;">
+                Any unsaved work on the other device may be lost.
+            </p>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="cancelTakeOverBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button id="confirmTakeOverBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Take Over
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Session Taken Over Modal (Device A) - Matching style -->
+<div id="sessionTakenOverModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10003; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exchange-alt" style="font-size: 1.6rem; color: #dc2626; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Session Taken Over!</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                Another device has taken over this account.
+            </p>
+            <div style="margin-top: 12px; background: #fef2f2; padding: 8px; border-radius: 8px;">
+                <div style="font-size: 0.7rem; color: #dc2626; font-weight: 500;">You will be logged out in</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #dc2626;" id="takeOverCountdown">5</div>
+                <div style="font-size: 0.7rem; color: var(--text-light);">seconds</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Force Logout Modal -->
+<div id="adminForceLogoutModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10004; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-user-shield" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Account Logged Out by Admin</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                An administrator has logged you out from all devices.
+            </p>
+            <div style="margin-top: 12px; background: #fff8e1; padding: 8px; border-radius: 8px;">
+                <div style="font-size: 0.7rem; color: #ff7a00; font-weight: 500;">You will be redirected to login</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #ff7a00;" id="adminForceLogoutCountdown">5</div>
+                <div style="font-size: 0.7rem; color: var(--text-light);">seconds</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Confirmation Modal for Logout -->
@@ -2109,7 +2179,7 @@ async function loadUsers() {
         Username: user.username,
         FullName: user.full_name || '',
         Role: roleDisplay,
-        AssignedBarangay: user.assigned_barangay || '',
+        AssignedBarangay: user.assigned_barangay || 'All',
         Email: user.email || '',
         IsActive: user.is_active,
         LastLogin: user.last_login,
@@ -2118,7 +2188,9 @@ async function loadUsers() {
       };
     });
     
-    renderUsers();
+    // ✅ Preserve current search and filter during auto-refresh
+    const currentSearch = document.getElementById('filterUser')?.value || '';
+    renderUsers(currentSearch, CURRENT_ROLE_FILTER);
     updateStats();
     
   } catch(err) {
@@ -2151,9 +2223,9 @@ function renderUsers(filter = "", roleFilter = CURRENT_ROLE_FILTER) {
   }
   
   if (filtered.length === 0) {
-    tbody.innerHTML = `<td><td colspan="5" style="text-align: center; padding: 40px 20px; color: var(--muted); font-style: italic;">
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 40px 20px; color: var(--muted); font-style: italic;">
       No users found. Total users in system: ${ALL_USERS.length}
-      </td></tr>`;
+      </table></tr>`;
     return;
   }
   
@@ -2170,6 +2242,9 @@ function renderUsers(filter = "", roleFilter = CURRENT_ROLE_FILTER) {
         <button class="icon-btn" disabled title="Protected admin password cannot be reset" style="opacity: 0.5; cursor: not-allowed;">
           <i class="fas fa-key" style="color: #ccc;"></i>
         </button>
+        <button class="icon-btn" disabled title="Protected admin cannot be force logged out" style="opacity: 0.5; cursor: not-allowed;">
+          <i class="fas fa-sign-out-alt" style="color: #ccc;"></i>
+        </button>
         <button class="icon-btn" disabled title="Protected admin cannot be deleted" style="opacity: 0.5; cursor: not-allowed;">
           <i class="fas fa-trash" style="color: #ccc;"></i>
         </button>
@@ -2181,6 +2256,9 @@ function renderUsers(filter = "", roleFilter = CURRENT_ROLE_FILTER) {
         </button>
         <button class="icon-btn" onclick="showResetModal('${escapeHtml(user.Username)}')" title="Reset Password">
           <i class="fas fa-key"></i>
+        </button>
+        <button class="icon-btn" onclick="forceLogoutUser('${escapeHtml(user.Username)}')" title="Force Logout" style="color: #ff7a00;">
+          <i class="fas fa-sign-out-alt"></i>
         </button>
         <button class="icon-btn" onclick="showDeleteModal('${escapeHtml(user.Username)}')" title="Delete" style="color: #ff4444;">
           <i class="fas fa-trash"></i>
@@ -2195,7 +2273,7 @@ function renderUsers(filter = "", roleFilter = CURRENT_ROLE_FILTER) {
     
     let usernameDisplay = user.Username || '';
     let fullnameDisplay = user.FullName || '';
-    let barangayDisplay = user.AssignedBarangay || '';
+    let barangayDisplay = user.AssignedBarangay || 'All';
     let roleDisplay = user.Role || 'Staff';
     
     if (filter) {
@@ -2274,6 +2352,7 @@ function openUserModal(mode = 'add', username = null) {
   
   const modal = document.getElementById('userModal');
   const title = document.getElementById('modalTitle');
+  const barangaySelect = document.getElementById('user_barangay');
   
   if (!modal) return;
   
@@ -2289,7 +2368,23 @@ function openUserModal(mode = 'add', username = null) {
       document.getElementById('user_fullname').value = user.FullName || '';
       const roleValue = user.Role === 'Admin' ? 'Admin' : 'Staff';
       document.getElementById('user_role').value = roleValue;
-      document.getElementById('user_barangay').value = user.AssignedBarangay || '';
+      
+      // FIX: Set the barangay value from database (will be "All" or specific barangay)
+      const barangayValue = user.AssignedBarangay || 'All';
+      
+      // Find and select the matching option
+      let barangayFound = false;
+      for (let i = 0; i < barangaySelect.options.length; i++) {
+        if (barangaySelect.options[i].value === barangayValue) {
+          barangaySelect.value = barangayValue;
+          barangayFound = true;
+          break;
+        }
+      }
+      if (!barangayFound) {
+        barangaySelect.value = 'All';
+      }
+      
       document.getElementById('user_username').disabled = true;
       document.getElementById('user_password').required = false;
       document.getElementById('user_password').placeholder = "Leave blank to keep current password";
@@ -2302,6 +2397,8 @@ function openUserModal(mode = 'add', username = null) {
     document.getElementById('user_password').required = true;
     document.getElementById('user_password').placeholder = "Enter new password";
     document.getElementById('user_password').value = '';
+    // Set default to "All" for new users
+    barangaySelect.value = 'All';
     const passwordRequired = document.getElementById('passwordRequired');
     if (passwordRequired) passwordRequired.style.display = 'inline';
   }
@@ -2362,21 +2459,31 @@ async function saveUser() {
     const dbRole = role === 'Admin' ? 'admin' : 'staff';
     const DEFAULT_PASSWORD = 'password123';
     
+    // FIX: Store "All" directly in database instead of NULL
+    // If barangay is empty or "All", store "All" in database
+    let assignedBarangay = 'All';
+    if (barangay && barangay !== 'All' && barangay.trim() !== '') {
+      assignedBarangay = barangay;
+    }
+    
+    console.log('Saving with assigned_barangay:', assignedBarangay);
+    
     if (EDIT_TARGET) {
       // EDIT EXISTING USER
       const updateData = {
         full_name: fullname,
         role: dbRole,
-        assigned_barangay: barangay === 'ALL' ? null : barangay,
+        assigned_barangay: assignedBarangay,  // Will be "All" or specific barangay
         updated_at: new Date().toISOString()
       };
       
       if (password) {
         const hashedPassword = await hashPassword(password);
         updateData.password_hash = hashedPassword;
-        // Only require password change if setting to default 'password123'
         updateData.must_change_password = (password === DEFAULT_PASSWORD);
       }
+      
+      console.log('Updating user with data:', updateData);
       
       const { error } = await supabaseClient
         .from('users')
@@ -2389,7 +2496,7 @@ async function saveUser() {
         action: 'Update User',
         actor: currentUser,
         target_table: 'users',
-        details: `Updated user: ${username}`
+        details: `Updated user: ${username} with role: ${dbRole}, barangay: ${assignedBarangay}`
       }]);
       
       await showAlert(`User "${username}" has been successfully updated.`, 'Success', 'success');
@@ -2399,20 +2506,24 @@ async function saveUser() {
       const hashedPassword = await hashPassword(password);
       const isDefaultPassword = (password === DEFAULT_PASSWORD);
       
+      const newUser = {
+        username: username,
+        full_name: fullname,
+        role: dbRole,
+        assigned_barangay: assignedBarangay,  // Will be "All" or specific barangay
+        password_hash: hashedPassword,
+        must_change_password: isDefaultPassword,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        last_login: new Date().toISOString()
+      };
+      
+      console.log('Creating user with data:', newUser);
+      
       const { error } = await supabaseClient
         .from('users')
-        .insert([{
-          username: username,
-          full_name: fullname,
-          role: dbRole,
-          assigned_barangay: barangay === 'ALL' ? null : barangay,
-          password_hash: hashedPassword,
-          must_change_password: isDefaultPassword,  // Only true if using 'password123'
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          last_login: new Date().toISOString()
-        }]);
+        .insert([newUser]);
       
       if (error) throw error;
       
@@ -2420,7 +2531,7 @@ async function saveUser() {
         action: 'Create User',
         actor: currentUser,
         target_table: 'users',
-        details: `Created user: ${username}`
+        details: `Created user: ${username} with role: ${dbRole}, barangay: ${assignedBarangay}`
       }]);
       
       await showAlert(`User "${username}" has been successfully added.`, 'Success', 'success');
@@ -2616,7 +2727,116 @@ function closeDeleteModal() {
   DELETE_TARGET_USER = null;
 }
 
-/* ============ LOAD USER ACTIVITY - FIXED VERSION ============ */
+// ============ FORCE LOGOUT INDIVIDUAL USER ============
+async function forceLogoutUser(username) {
+    const confirmed = await showConfirm(
+        `⚠️ Force logout "${username}"?\n\nThey will be immediately logged out from ALL devices.\n\nAny unsaved work will be lost.`,
+        'Force Logout User'
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+        // Get user ID
+        const { data: user, error: userError } = await supabaseClient
+            .from('users')
+            .select('id')
+            .eq('username', username)
+            .single();
+        
+        if (userError) throw userError;
+        
+        // Terminate ALL active sessions (including any that might be missed)
+        const { error: sessionError } = await supabaseClient
+            .from('user_sessions')
+            .update({ 
+                is_active: false, 
+                terminated_at: new Date().toISOString(),
+                terminated_reason: 'admin_force_logout'
+            })
+            .eq('user_id', user.id);
+            // Removed .eq('is_active', true) to catch any session
+        
+        if (sessionError) throw sessionError;
+        
+        // Verify sessions are terminated
+        const { data: verifySessions } = await supabaseClient
+            .from('user_sessions')
+            .select('id, is_active')
+            .eq('user_id', user.id)
+            .eq('is_active', true);
+        
+        if (verifySessions && verifySessions.length > 0) {
+            console.warn('Some sessions still active:', verifySessions);
+            // Force delete them
+            await supabaseClient
+                .from('user_sessions')
+                .update({ is_active: false, terminated_at: new Date().toISOString() })
+                .eq('user_id', user.id);
+        }
+        
+        await showAlert(`User "${username}" has been force logged out from all devices.`, 'Success', 'success');
+        loadUsers();
+        
+    } catch (err) {
+        console.error('Force logout error:', err);
+        await showAlert('Failed to force logout user: ' + err.message, 'Error', 'error');
+    }
+}
+// ============ FORCE LOGOUT ALL USERS ============
+async function forceLogoutAllUsers() {
+    const currentUsername = localStorage.getItem('username');
+    
+    const confirmed = await showConfirm(
+        `⚠️⚠️⚠️ FORCE LOGOUT ALL USERS ⚠️⚠️⚠️\n\n` +
+        `This will log out EVERYONE except you (${currentUsername}).\n\n` +
+        `All users will be immediately disconnected.\n\n` +
+        `Any unsaved work will be lost.\n\n` +
+        `Are you ABSOLUTELY sure?`,
+        'Force Logout All Users'
+    );
+    
+    if (!confirmed) return;
+    
+    // Double confirmation for safety
+    const doubleConfirm = await showConfirm(
+        `LAST CHANCE: Force logout ALL users?\n\nThis action cannot be undone.`,
+        'Final Confirmation'
+    );
+    
+    if (!doubleConfirm) return;
+    
+    try {
+        // Get current user ID
+        const { data: currentUser } = await supabaseClient
+            .from('users')
+            .select('id')
+            .eq('username', currentUsername)
+            .single();
+        
+        // Terminate all sessions except current user
+        const { error } = await supabaseClient
+            .from('user_sessions')
+            .update({ 
+                is_active: false, 
+                terminated_at: new Date().toISOString(),
+                terminated_reason: 'admin_force_logout_all'
+            })
+            .eq('is_active', true)
+            .neq('user_id', currentUser.id);
+        
+        if (error) throw error;
+        
+        await showAlert('All users have been force logged out successfully!', 'Success', 'success');
+        loadUsers(); // Refresh the list
+        
+    } catch (err) {
+        console.error('Force logout all error:', err);
+        await showAlert('Failed to force logout all users: ' + err.message, 'Error', 'error');
+    }
+}
+
+/* ============ LOAD USER ACTIVITY - WITH ONLINE USERS FIRST ============ */
 async function loadUserActivity() {
   if (!supabaseClient) return;
   
@@ -2624,19 +2844,37 @@ async function loadUserActivity() {
     // First, update current user's activity to mark them as online
     await updateCurrentUserActivity();
     
-    // Get users with their last login info
+    // Get users with their last login info (no sorting yet, we'll do custom sorting)
     const { data: users, error } = await supabaseClient
       .from('users')
-      .select('username, last_login, created_at, role, full_name')
-      .order('last_login', { ascending: false, nullsLast: true });
+      .select('username, last_login, last_activity, created_at, role, full_name');
     
     if (error) throw error;
+    
+    // Sort users: Online first, then by last activity (most recent first)
+    const sortedUsers = users.sort((a, b) => {
+      const aLastActive = a.last_activity || a.last_login;
+      const bLastActive = b.last_activity || b.last_login;
+      const now = new Date();
+      
+      const aIsOnline = aLastActive && (now - new Date(aLastActive)) < 10 * 1000;
+      const bIsOnline = bLastActive && (now - new Date(bLastActive)) < 10 * 1000;
+      
+      // Online users first
+      if (aIsOnline && !bIsOnline) return -1;
+      if (!aIsOnline && bIsOnline) return 1;
+      
+      // Then sort by most recent activity
+      const aTime = aLastActive ? new Date(aLastActive).getTime() : 0;
+      const bTime = bLastActive ? new Date(bLastActive).getTime() : 0;
+      return bTime - aTime;
+    });
     
     const tbody = document.getElementById('activityBody');
     if (!tbody) return;
     tbody.innerHTML = '';
     
-    if (!users || users.length === 0) {
+    if (!sortedUsers || sortedUsers.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">No activity data available</td></tr>`;
       return;
     }
@@ -2647,8 +2885,11 @@ async function loadUserActivity() {
     const now = new Date();
     const currentUsername = localStorage.getItem('username');
     
-    for (const user of users) {
+    for (const user of sortedUsers) {
       const tr = document.createElement('tr');
+      
+      // Check both last_activity (from heartbeat) and last_login
+      const lastActiveTime = user.last_activity || user.last_login;
       let lastLogin = user.last_login ? new Date(user.last_login) : null;
       
       // If this is the current user and last_login is null/old, update it
@@ -2657,7 +2898,8 @@ async function loadUserActivity() {
         lastLogin = new Date();
       }
       
-      const isOnline = lastLogin && (now - lastLogin) < 5 * 60 * 1000;
+      // 10 SECOND ONLINE DETECTION
+      const isOnline = lastActiveTime && (now - new Date(lastActiveTime)) < 10 * 1000;
       
       if (isOnline) onlineCount++;
       
@@ -2665,7 +2907,7 @@ async function loadUserActivity() {
       
       if (lastLogin && lastLogin.toDateString() === today) todayCount++;
       
-      // Determine status text - plain text only, NO emojis
+      // Determine status text
       let statusText = 'Offline';
       let statusClass = 'status-offline';
       if (isOnline) {
@@ -2686,7 +2928,7 @@ async function loadUserActivity() {
         }
       }
       
-      // Create table row with proper structure
+      // Create table row
       const usernameCell = document.createElement('td');
       usernameCell.innerHTML = `<strong>${escapeHtml(user.username)}</strong>${user.username === currentUsername ? ' <span style="color:#0f7a4a;">(You)</span>' : ''}`;
       tr.appendChild(usernameCell);
@@ -2701,7 +2943,9 @@ async function loadUserActivity() {
       tr.appendChild(lastLoginCell);
       
       const lastActivityCell = document.createElement('td');
-      lastActivityCell.innerHTML = `<small>${lastLoginStr}</small>`;
+      // Show last_activity if available
+      const lastActivityStr = user.last_activity ? new Date(user.last_activity).toLocaleString() : 'Never';
+      lastActivityCell.innerHTML = `<small>${lastActivityStr}</small>`;
       tr.appendChild(lastActivityCell);
       
       const activeTimeCell = document.createElement('td');
@@ -2721,15 +2965,15 @@ async function loadUserActivity() {
     
     if (statOnline) statOnline.textContent = onlineCount;
     if (statToday) statToday.textContent = todayCount;
-    if (statTotalUsers) statTotalUsers.textContent = users.length;
+    if (statTotalUsers) statTotalUsers.textContent = sortedUsers.length;
     
-    console.log(`Activity loaded - Online: ${onlineCount}, Active Today: ${todayCount}, Total: ${users.length}`);
+    console.log(`🟢 Activity loaded - Online: ${onlineCount}, Active Today: ${todayCount}, Total: ${sortedUsers.length}`);
     
   } catch(err) {
     console.error('Error loading activity:', err);
     const tbody = document.getElementById('activityBody');
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Error loading activity data: ${err.message}</td></tr>`;
+      tbody.innerHTML = `<td><td colspan="6" style="text-align: center; color: red;">Error loading activity data: ${err.message}</td></tr>`;
     }
   }
 }
@@ -3059,7 +3303,7 @@ function setupConfirmModal() {
     if (yesBtn) {
         yesBtn.onclick = async function() {
             confirmModal.style.display = 'none';
-            await performLogout();
+            await performLogout();  // ✅ Calls database cleanup + local storage
         };
     }
     
