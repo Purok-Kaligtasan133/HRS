@@ -1805,41 +1805,100 @@ function destroyChart() {
     }
 }
 
-// ============ FETCH DATA FROM SUPABASE ============
+async function fetchAllData(table, pageSize = 1000) {
+    let allData = [];
+    let page = 0;
+    let hasMore = true;
+    
+    while (hasMore) {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
+        
+        const { data, error } = await supabaseClient
+            .from(table)
+            .select('*')
+            .range(from, to);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            allData = [...allData, ...data];
+            page++;
+        }
+        
+        if (!data || data.length < pageSize) {
+            hasMore = false;
+        }
+    }
+    
+    return allData;
+}
+
 async function fetchDashboardData() {
     if (!supabaseClient) {
         console.error('Supabase client not initialized');
         return null;
     }
     
-    try {
-        console.log("Fetching dashboard data from Supabase...");
+    // Helper function to fetch all rows with pagination
+    async function fetchAll(table) {
+        let allData = [];
+        let page = 0;
+        const pageSize = 1000;
+        let hasMore = true;
         
-        // Fetch all required data in parallel
+        while (hasMore) {
+            const from = page * pageSize;
+            const to = from + pageSize - 1;
+            
+            const { data, error } = await supabaseClient
+                .from(table)
+                .select('*')
+                .range(from, to);
+            
+            if (error) {
+                console.error(`Error fetching ${table}:`, error);
+                break;
+            }
+            
+            if (data && data.length > 0) {
+                allData = [...allData, ...data];
+                page++;
+            }
+            
+            if (!data || data.length < pageSize) {
+                hasMore = false;
+            }
+        }
+        
+        return allData;
+    }
+    
+    try {
+        console.log("Fetching dashboard data from Supabase with pagination...");
+        
         const [households, persons, livestock, govAssistance, displacementReasons, assemblyAreas, calamityDocs, calamityImpacts] = await Promise.all([
-            supabaseClient.from('households').select('*'),
-            supabaseClient.from('persons').select('*'),
-            supabaseClient.from('livestock').select('*'),
-            supabaseClient.from('gov_assistance').select('*'),
-            supabaseClient.from('displacement_reasons').select('*'),
-            supabaseClient.from('assembly_areas').select('*'),
-            supabaseClient.from('calamity_documents').select('*'),
-            supabaseClient.from('calamity_impacts').select('*')
+            fetchAll('households'),
+            fetchAll('persons'),
+            fetchAll('livestock'),
+            fetchAll('gov_assistance'),
+            fetchAll('displacement_reasons'),
+            fetchAll('assembly_areas'),
+            fetchAll('calamity_documents'),
+            fetchAll('calamity_impacts')
         ]);
         
-        if (households.error) throw households.error;
-        
-        console.log(`Fetched ${households.data?.length || 0} households, ${persons.data?.length || 0} persons`);
+        console.log(`Fetched ${households.length} households, ${persons.length} persons`);
         
         return {
-            households: households.data || [],
-            persons: persons.data || [],
-            livestock: livestock.data || [],
-            govAssistance: govAssistance.data || [],
-            displacementReasons: displacementReasons.data || [],
-            assemblyAreas: assemblyAreas.data || [],
-            calamityDocs: calamityDocs.data || [],
-            calamityImpacts: calamityImpacts.data || []
+            households: households,
+            persons: persons,
+            livestock: livestock,
+            govAssistance: govAssistance,
+            displacementReasons: displacementReasons,
+            assemblyAreas: assemblyAreas,
+            calamityDocs: calamityDocs,
+            calamityImpacts: calamityImpacts
         };
         
     } catch (err) {
@@ -1847,7 +1906,6 @@ async function fetchDashboardData() {
         return null;
     }
 }
-
 // ============ PROCESS DASHBOARD DATA ============
 async function loadDashboard(showLoader = true) {
     if (showLoader) showLoading(true);
