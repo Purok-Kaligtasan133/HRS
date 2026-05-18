@@ -17,6 +17,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <script src="js/force-logout.js"></script>
 <script src="js/session-check.js"></script>
+<script src="js/security.js"></script>
 <style>
    /* ORIGINAL RECORDS STYLES - Keep all your CSS */
    :root{
@@ -3215,6 +3216,58 @@ html {
         visibility: hidden !important;
     }
 }
+/* ============ MOBILE & TABLET OPTIMIZATIONS (1024px AND BELOW) ============ */
+@media (max-width: 1024px) {
+    /* Mobile loading toast */
+    .mobile-loading-toast {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #0f7a4a;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 30px;
+        font-size: 0.75rem;
+        z-index: 10001;
+        display: none;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        pointer-events: none;
+        font-weight: 500;
+    }
+    
+    .mobile-loading-toast.show {
+        display: flex;
+    }
+    
+    /* Better touch targets for mobile */
+    .virtual-row,
+    .edit-btn,
+    .delete-btn,
+    .row-select,
+    .row-select-mobile {
+        touch-action: manipulation;
+    }
+    
+    /* Prevent zoom on input focus on mobile */
+    @media (max-width: 768px) {
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+    }
+}
+
+/* Tablet specific (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .mobile-loading-toast {
+        bottom: 20px;
+        font-size: 0.8rem;
+        padding: 12px 20px;
+    }
+}
 </style>
 </head>
 <body>
@@ -5117,6 +5170,89 @@ html {
     </div>
 </nav>
 
+<!-- Updating Records Modal -->
+<div id="updatingModal" class="modal-overlay" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10002; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 12px;">
+                <div class="loading-spinner-small" style="width: 32px; height: 32px; border: 3px solid #e1e8e5; border-top-color: #0f7a4a; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Updating Records</h3>
+            <p id="updatingHouseholdName" style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; word-break: break-word;">Loading...</p>
+            <p style="margin: 0; color: #64748b; font-size: 0.7rem; line-height: 1.4;">Please wait, this may take a moment...</p>
+        </div>
+        <div style="padding: 4px 20px 20px 20px;">
+            <div style="height: 4px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Take Over Warning Modal (Device B) - Matching style -->
+<div id="takeOverWarningModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10003; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Take Over Warning</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                Taking over will immediately log out the other device.
+            </p>
+            <p style="margin: 0; color: #dc2626; font-size: 0.75rem; font-weight: 500;">
+                Any unsaved work on the other device may be lost.
+            </p>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="cancelTakeOverBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button id="confirmTakeOverBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Take Over
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Force Logout Modal -->
+<div id="adminForceLogoutModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10004; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-user-shield" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Account Logged Out by Admin</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                An administrator has logged you out from all devices.
+            </p>
+            <div style="margin-top: 12px; background: #fff8e1; padding: 8px; border-radius: 8px;">
+                <div style="font-size: 0.7rem; color: #ff7a00; font-weight: 500;">You will be redirected to login</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #ff7a00;" id="adminForceLogoutCountdown">5</div>
+                <div style="font-size: 0.7rem; color: var(--text-light);">seconds</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Session Taken Over Modal (Device A) - Matching style -->
+<div id="sessionTakenOverModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10003; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exchange-alt" style="font-size: 1.6rem; color: #dc2626; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Session Taken Over!</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                Another device has taken over this account.
+            </p>
+            <div style="margin-top: 12px; background: #fef2f2; padding: 8px; border-radius: 8px;">
+                <div style="font-size: 0.7rem; color: #dc2626; font-weight: 500;">You will be logged out in</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #dc2626;" id="takeOverCountdown">5</div>
+                <div style="font-size: 0.7rem; color: var(--text-light);">seconds</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Confirmation Modal for Logout -->
 <div id="confirmModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10001; padding: 16px;">
     <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); animation: modalSlideUp 0.2s ease; overflow: hidden;">
@@ -5152,7 +5288,6 @@ html {
         document.head.appendChild(style);
     }
 </script>
-
 <script>
 /* ============ SUPABASE CONFIGURATION ============ */
 const SUPABASE_URL = 'https://opibntxwagnjazpbtxrv.supabase.co';
@@ -5215,8 +5350,15 @@ const TABLE_DISPLAY_COLUMNS = [
     'Taal Volcano', 'Typhoon', 'Flood', 'Landslide', 'Earthquake', 'Fire',
     'Inside Assembly Area', 'Outside Assembly Area',
     'Family/Relative Host', 'Host_Contact', 'Pick-Up Location', 'Assembly Area', 'Transportation',
-    'TUPAD', 'Local 4Ps', 'National 4Ps', 'Local Social Pension', 'National Social Pension',
-    'Solo Parent Assistance', 'Relief Goods', 'Cash Subsidy', 'AICS',
+    'TUPAD', 'TUPAD_Date',
+    'Local 4Ps', 'Local 4Ps_Date',
+    'National 4Ps', 'National 4Ps_Date',
+    'Local Social Pension', 'Local Social Pension_Date',
+    'National Social Pension', 'National Social Pension_Date',
+    'Solo Parent Assistance', 'Solo Parent Assistance_Date',
+    'Relief Goods', 'Relief Goods_Date',
+    'Cash Subsidy', 'Cash Subsidy_Date',
+    'AICS', 'AICS_Date',
     'Dog', 'Cat', 'Pig', 'Cow', 'Carabao', 'Chicken', 'Others (Animals)',
     'Structural Damage', 'Household Injury', 'Habitability', 'Loss of Livelihood',
     'Calamity Documents', 'Submitted By', 'Submitted On', 'Updated By', 'Updated On'
@@ -5276,6 +5418,43 @@ function showInfo(message) {
     if (msgEl) msgEl.textContent = message;
     showModal('infoModal');
     setTimeout(() => hideModal('infoModal'), 2000);
+}
+
+// ============ UPDATING MODAL FUNCTIONS ============
+let updatingModalTimeout = null;
+
+function showUpdatingModal(householdHeadName) {
+    const modal = document.getElementById('updatingModal');
+    const nameSpan = document.getElementById('updatingHouseholdName');
+    
+    if (modal && nameSpan) {
+        // Truncate long names for mobile
+        let displayName = householdHeadName || 'Household';
+        if (displayName.length > 30 && window.innerWidth <= 768) {
+            displayName = displayName.substring(0, 27) + '...';
+        }
+        nameSpan.textContent = displayName;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Safety timeout - auto hide after 30 seconds (in case something goes wrong)
+    if (updatingModalTimeout) clearTimeout(updatingModalTimeout);
+    updatingModalTimeout = setTimeout(() => {
+        hideUpdatingModal();
+    }, 30000);
+}
+
+function hideUpdatingModal() {
+    const modal = document.getElementById('updatingModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    if (updatingModalTimeout) {
+        clearTimeout(updatingModalTimeout);
+        updatingModalTimeout = null;
+    }
 }
 
 function escapeHtml(str) {
@@ -5466,6 +5645,70 @@ function setupConfirmModal() {
 
 function getUserFullName() {
     return localStorage.getItem('staffName') || localStorage.getItem('username') || 'System';
+}
+
+// ============ MOBILE & TABLET HELPER FUNCTIONS ============
+function isMobileOrTablet() {
+    return window.innerWidth <= 1024;
+}
+
+function isMobileDevice() {
+    return window.innerWidth <= 768;
+}
+
+function getNetworkType() {
+    if ('connection' in navigator) {
+        const conn = navigator.connection;
+        if (conn.effectiveType) {
+            return conn.effectiveType; // 'slow-2g', '2g', '3g', '4g'
+        }
+    }
+    return 'unknown';
+}
+
+function showMobileLoadingToast(message) {
+    const toast = document.getElementById('mobileLoadingToast');
+    const messageSpan = document.getElementById('mobileToastMessage');
+    if (toast && messageSpan) {
+        messageSpan.textContent = message;
+        toast.classList.add('show');
+    }
+}
+
+function hideMobileLoadingToast() {
+    const toast = document.getElementById('mobileLoadingToast');
+    if (toast) {
+        toast.classList.remove('show');
+    }
+}
+
+async function saveWithMobileOptimization(saveFunction, householdHeadName) {
+    const isMobile = isMobileDevice();
+    const networkType = getNetworkType();
+    const isSlowNetwork = networkType === 'slow-2g' || networkType === '2g' || networkType === '3g';
+    
+    // For slow mobile connections, show warning first
+    if (isMobile && isSlowNetwork) {
+        // Use a simple confirm dialog for slow network warning
+        const userConfirmed = confirm("You're on a slow mobile connection. Saving may take a few seconds. Do you want to continue?");
+        
+        if (!userConfirmed) {
+            return false;
+        }
+    }
+    
+    // Show updating modal
+    showUpdatingModal(householdHeadName);
+    
+    try {
+        await saveFunction();
+        return true;
+    } catch (error) {
+        console.error('Save error:', error);
+        throw error;
+    } finally {
+        hideUpdatingModal();
+    }
 }
 
 // ========== AUDIT LOG HELPER FUNCTION ==========
@@ -6865,6 +7108,22 @@ class VirtualScroller {
         const row = document.createElement('div');
         row.className = 'virtual-row';
         row.style.cssText = `position: absolute; top: ${pos}px; left: 0; right: 0; display: flex; min-width: max-content; background: ${bg}; border-bottom: 1px solid #e0e0e0; font-size: 0.75rem; cursor: pointer;`;
+
+        // Add touch feedback for mobile/tablet
+        if (isMobileOrTablet()) {
+            row.addEventListener('touchstart', function() {
+                this.style.opacity = '0.7';
+                this.style.transition = 'opacity 0.1s ease';
+            }, { passive: true });
+            
+            row.addEventListener('touchend', function() {
+                this.style.opacity = '1';
+            }, { passive: true });
+            
+            row.addEventListener('touchcancel', function() {
+                this.style.opacity = '1';
+            }, { passive: true });
+        }
         
         const searchTerm = virtualState.currentSearch;
         let html = `<div class="virtual-cell" style="width: ${this.columnWidths.checkbox}px; text-align: center; position: sticky; left: 0; background: ${bg}; z-index: 10; padding: 8px 0;">
@@ -6933,6 +7192,22 @@ class VirtualScroller {
         const row = document.createElement('div');
         row.className = 'virtual-row member-row';
         row.style.cssText = `position: absolute; top: ${pos}px; left: 0; right: 0; display: flex; min-width: max-content; background-color: #fafafa; border-bottom: 1px solid #e0e0e0; font-size: 0.7rem;`;
+        
+        // Add touch feedback for mobile/tablet
+        if (isMobileOrTablet()) {
+            row.addEventListener('touchstart', function() {
+                this.style.opacity = '0.7';
+                this.style.transition = 'opacity 0.1s ease';
+            }, { passive: true });
+            
+            row.addEventListener('touchend', function() {
+                this.style.opacity = '1';
+            }, { passive: true });
+            
+            row.addEventListener('touchcancel', function() {
+                this.style.opacity = '1';
+            }, { passive: true });
+        }
         
         const searchTerm = virtualState.currentSearch;
         let html = `<div class="virtual-cell" style="width: ${this.columnWidths.checkbox}px; flex-shrink: 0; position: sticky; left: 0; background-color: #fafafa; z-index: 10; padding: 6px 0;"></div>`;
@@ -7067,7 +7342,6 @@ async function loadRecords(reset = true, showLoadingOverlay = true) {
             const trimmedSearch = virtualState.currentSearch.trim();
             const isNumeric = /^\d+$/.test(trimmedSearch);
             
-            // Build search conditions
             if (isNumeric) {
                 const numericId = parseInt(trimmedSearch);
                 query = query.or(`head_name.ilike.${searchTerm},barangay.ilike.${searchTerm},data_id.eq.${numericId}`);
@@ -7115,12 +7389,14 @@ async function loadRecords(reset = true, showLoadingOverlay = true) {
             db.from('calamity_impacts').select('*').in('household_id', householdIds)
         ]);
         
-        // Organize data by household_id
+        // ============================================
+        // ORGANIZE DATA BY HOUSEHOLD_ID AND PERSON_ID
+        // ============================================
         const personsByHousehold = {};
         const livestockByHousehold = {};
         const govByHousehold = {};
         const displacementByHousehold = {};
-        const assemblyByHousehold = {};
+        const assemblyByPerson = {};  // ← STORE BY PERSON_ID (FIX)
         const calamityDocsByHousehold = {};
         const calamityImpactsByHousehold = {};
         
@@ -7144,8 +7420,9 @@ async function loadRecords(reset = true, showLoadingOverlay = true) {
             displacementByHousehold[d.household_id].push(d); 
         });
         
+        // FIX: Store assembly areas by person_id (not household_id)
         assemblyAreas?.forEach(a => { 
-            assemblyByHousehold[a.household_id] = a; 
+            assemblyByPerson[a.person_id] = a; 
         });
         
         calamityDocs?.forEach(c => { 
@@ -7168,7 +7445,10 @@ async function loadRecords(reset = true, showLoadingOverlay = true) {
             const householdLivestock = livestockByHousehold[household.id] || [];
             const householdGov = govByHousehold[household.id] || [];
             const householdDisplacement = displacementByHousehold[household.id] || [];
-            const householdAssembly = assemblyByHousehold[household.id];
+            
+            // FIX: Get HEAD assembly using person_id
+            const headAssembly = assemblyByPerson[headPerson.id];
+            
             const householdCalamityDocs = calamityDocsByHousehold[household.id] || [];
             const householdCalamityImpacts = calamityImpactsByHousehold[household.id] || [];
             
@@ -7176,31 +7456,34 @@ async function loadRecords(reset = true, showLoadingOverlay = true) {
             const livestockMap = {};
             householdLivestock.forEach(l => { livestockMap[l.animal_type] = l; });
             
-            // Build HEAD gov assistance map (assistance_type -> object)
+            // Build HEAD gov assistance map
+            const headGov = householdGov.filter(g => g.person_id === headPerson.id);
             const govMap = {};
-            householdGov.forEach(g => { govMap[g.assistance_type] = g; });
+            headGov.forEach(g => { govMap[g.assistance_type] = g; });
             
-            // Build HEAD displacement map
+            // Build HEAD displacement map - ONLY for HEAD's person_id
+            const headDisplacement = householdDisplacement.filter(d => d.person_id === headPerson.id);
             const displacementMap = {};
-            householdDisplacement.forEach(d => { displacementMap[d.reason_type] = d; });
+            headDisplacement.forEach(d => { displacementMap[d.reason_type] = d; });
             
-            // Get HEAD calamity impact (should be one per household for HEAD)
-            const headCalamityImpact = householdCalamityImpacts.find(i => !i.person_id) || {};
-            
+            // Get HEAD calamity impact
+            const headCalamityImpact = householdCalamityImpacts.find(i => i.person_id === headPerson.id) || {};
+                        
             // Build HEAD calamity docs map by document_type
             const headCalamityDocsMap = {};
             householdCalamityDocs.forEach(doc => {
-                if (!doc.person_id) {
+                if (doc.person_id === headPerson.id) {  // ← CORRECT - match HEAD's person_id
                     headCalamityDocsMap[doc.document_type] = doc;
                 }
             });
-            
+
             // Build MEMBER data with all fields
             const membersWithFullData = members.map(member => {
                 // Get member-specific data
                 const memberGov = householdGov.filter(g => g.person_id === member.id);
                 const memberDisplacement = householdDisplacement.filter(d => d.person_id === member.id);
-                const memberAssembly = assemblyByHousehold[household.id]?.person_id === member.id ? assemblyByHousehold[household.id] : null;
+                // FIX: Get member assembly using person_id
+                const memberAssembly = assemblyByPerson[member.id];
                 const memberCalamityImpact = householdCalamityImpacts.find(i => i.person_id === member.id) || {};
                 const memberCalamityDocs = householdCalamityDocs.filter(d => d.person_id === member.id);
                 
@@ -7247,7 +7530,7 @@ async function loadRecords(reset = true, showLoadingOverlay = true) {
                     'Earthquake': memberDisplacementMap['Earthquake'] ? 'Yes' : 'No',
                     'Fire': memberDisplacementMap['Fire'] ? 'Yes' : 'No',
                     'Other Reasons': (memberDisplacementMap['Other'] ? memberDisplacementMap['Other'].other_reason_text : '') || '',
-                    // Assembly Area
+                    // Assembly Area (using memberAssembly from assemblyByPerson)
                     'Inside Assembly Area': memberAssembly?.inside_assembly ? 'Yes' : 'No',
                     'Outside Assembly Area': memberAssembly?.outside_assembly ? 'Yes' : 'No',
                     'Pick-Up Location': memberAssembly?.pickup_location || '',
@@ -7369,14 +7652,14 @@ async function loadRecords(reset = true, showLoadingOverlay = true) {
                     'Earthquake': displacementMap['Earthquake'] ? 'Yes' : 'No',
                     'Fire': displacementMap['Fire'] ? 'Yes' : 'No',
                     'Other Reasons': displacementMap['Other']?.other_reason_text || '',
-                    // Assembly Area
-                    'Inside Assembly Area': householdAssembly?.inside_assembly ? 'Yes' : 'No',
-                    'Outside Assembly Area': householdAssembly?.outside_assembly ? 'Yes' : 'No',
-                    'Pick-Up Location': householdAssembly?.pickup_location || '',
-                    'Assembly Area': householdAssembly?.assembly_area_name || '',
-                    'Family/Relative Host': householdAssembly?.family_host_name || '',
-                    'Host_Contact': householdAssembly?.host_contact_number || '',
-                    'Transportation': householdAssembly?.transportation_type || '',
+                    // Assembly Area (using headAssembly from assemblyByPerson)
+                    'Inside Assembly Area': headAssembly?.inside_assembly ? 'Yes' : 'No',
+                    'Outside Assembly Area': headAssembly?.outside_assembly ? 'Yes' : 'No',
+                    'Pick-Up Location': headAssembly?.pickup_location || '',
+                    'Assembly Area': headAssembly?.assembly_area_name || '',
+                    'Family/Relative Host': headAssembly?.family_host_name || '',
+                    'Host_Contact': headAssembly?.host_contact_number || '',
+                    'Transportation': headAssembly?.transportation_type || '',
                     // Calamity Impacts (HEAD)
                     'Structural Damage': headCalamityImpact.structural_damage || 'No',
                     'Structural Damage Details': headCalamityImpact.structural_damage_details || '',
@@ -7419,7 +7702,6 @@ async function loadRecords(reset = true, showLoadingOverlay = true) {
         virtualState.currentPage++;
         virtualState.hasMore = households.length === 15;
         
-        // Show "no more records" message if we've reached the end and have records
         if (!virtualState.hasMore && virtualState.allHouseholds.length > 0) {
             const existingLoading = $('loadingMoreRow');
             if (existingLoading) existingLoading.remove();
@@ -7607,7 +7889,7 @@ async function performDelete() {
             action: 'Delete Record',
             actor: getUserFullName(),
             target_table: 'households',
-            details: `Deleted household ${deletePendingHeadName} from ${deletePendingBarangay}`
+            details: `Deleted household "${deletePendingHeadName}" from ${deletePendingBarangay}`
         }]);
 
         // ========== AUDIT LOGGING - DELETE RECORD ==========
@@ -7738,11 +8020,15 @@ async function onEdit(id) {
         const livestockMap = {};
         livestock.forEach(l => { livestockMap[l.animal_type] = l; });
         
+        // Filter govAssistance for HEAD only (person_id matches headPerson.id or is null)
+        const headGov = govAssistance.filter(g => g.person_id === headPerson.id || !g.person_id);
         const govMap = {};
-        govAssistance.forEach(g => { govMap[g.assistance_type] = g; });
+        headGov.forEach(g => { govMap[g.assistance_type] = g; });
         
+        // FIX: Filter displacement reasons for HEAD only
+        const headDisplacement = displacementReasons.filter(d => d.person_id === headPerson.id);
         const displacementMap = {};
-        displacementReasons.forEach(d => { displacementMap[d.reason_type] = d; });
+        headDisplacement.forEach(d => { displacementMap[d.reason_type] = d; });
         
         const assemblyMap = {};
         assemblyAreas.forEach(a => { assemblyMap[a.person_id] = a; });
@@ -7799,7 +8085,7 @@ async function onEdit(id) {
             'Carabao Qty.': livestockMap['Carabao']?.quantity || '',
             'Chicken': livestockMap['Chicken'] ? 'Yes' : 'No',
             'Chicken Qty.': livestockMap['Chicken']?.quantity || '',
-            'Others (Animals)': livestockMap['Others']?.quantity || livestockMap['Others']?.animal_name || '',
+            'Others (Animals)': livestockMap['Others']?.animal_name || livestockMap['Others']?.others_description || '',
             'TUPAD': govMap['TUPAD'] ? 'Yes' : 'No',
             'TUPAD_Date': govMap['TUPAD']?.received_date || '',
             'Local 4Ps': govMap['Local 4Ps'] ? 'Yes' : 'No',
@@ -8071,8 +8357,9 @@ if (registrationValue !== '') {
         if ($('edit_statusOthers')) $('edit_statusOthers').value = '';
     }
     
-    // Displacement Reasons - Use consistent field name
-    if ($('edit_displacement_taal')) $('edit_displacement_taal').checked = head['Taal Volcano'] === 'Yes';
+    // Displacement Reasons - Check BOTH possible field names for Taal Volcano
+    const taalValue = (head['Taal Volcano'] === 'Yes') || (head['Taal Volcano (Within 14-15 KM Danger Zone)'] === 'Yes');
+    if ($('edit_displacement_taal')) $('edit_displacement_taal').checked = taalValue;
     if ($('edit_displacement_typhoon')) $('edit_displacement_typhoon').checked = head['Typhoon'] === 'Yes';
     if ($('edit_displacement_flood')) $('edit_displacement_flood').checked = head['Flood'] === 'Yes';
     if ($('edit_displacement_landslide')) $('edit_displacement_landslide').checked = head['Landslide'] === 'Yes';
@@ -8772,44 +9059,69 @@ setMemberGov('member_solo', 'member_solo_date_input', 'member_solo_date', m['Sol
 setMemberGov('member_relief', 'member_relief_date_input', 'member_relief_date', m['Relief Goods'], m['Relief Goods_Date']);
 setMemberGov('member_cash', 'member_cash_date_input', 'member_cash_date', m['Cash Subsidy'], m['Cash Subsidy_Date']);
 
-// AICS Section
+// ============================================
+// FIX: AICS Section - Clear for new members
+// ============================================
 const memberAicsSelect = $('memberAics');
 const memberAicsDateInput = $('member_aics_date_input');
 const memberAicsDateField = $('member_aics_date');
 
+// Check if this is a NEW member (no ID and no Name)
+const isNewMember = (!m.id && (!m['Name of Household Member/s'] || m['Name of Household Member/s'].trim() === ''));
+
 if (memberAicsSelect) {
-    memberAicsSelect.value = m['AICS'] || '';
+    // Get the saved AICS value
+    let savedAicsValue = m['AICS'] || '';
     
-    // Add change event listener
-    const newAicsSelect = memberAicsSelect.cloneNode(true);
-    memberAicsSelect.parentNode.replaceChild(newAicsSelect, memberAicsSelect);
-    newAicsSelect.addEventListener('change', function() {
-        const dateFieldElem = $('member_aics_date');
-        const dateInputElem = $('member_aics_date_input');
-        if (this.value && this.value !== '' && this.value !== 'None') {
-            if (dateFieldElem) dateFieldElem.classList.add('show');
-        } else {
-            if (dateFieldElem) dateFieldElem.classList.remove('show');
-            if (dateInputElem) dateInputElem.value = '';
-        }
-        markMemberFormChanged();
-    });
-}
-
-if (memberAicsDateInput && m['AICS_Date']) {
-    let aicsDateStr = m['AICS_Date'];
-    if (aicsDateStr.includes('T')) {
-        aicsDateStr = aicsDateStr.split('T')[0];
+    // If this is a NEW member, force everything to empty
+    if (isNewMember) {
+        savedAicsValue = '';
+        m['AICS_Date'] = '';
     }
-    memberAicsDateInput.value = aicsDateStr;
-    console.log('Setting AICS date to:', aicsDateStr);
-}
-
-if (memberAicsDateField) {
-    if ((m['AICS_Date'] && m['AICS_Date'] !== '') || (m['AICS'] && m['AICS'] !== '')) {
-        memberAicsDateField.classList.add('show');
-    } else {
-        memberAicsDateField.classList.remove('show');
+    
+    // Also check if it might be stored differently
+    if (!savedAicsValue && m['AICS_Display']) {
+        savedAicsValue = m['AICS_Display'];
+    }
+    
+    // Set the dropdown - try exact match first
+    let found = false;
+    for (let i = 0; i < memberAicsSelect.options.length; i++) {
+        if (memberAicsSelect.options[i].value === savedAicsValue) {
+            memberAicsSelect.selectedIndex = i;
+            found = true;
+            break;
+        }
+    }
+    
+    if (!found && savedAicsValue) {
+        memberAicsSelect.value = savedAicsValue;
+    } else if (isNewMember || !savedAicsValue) {
+        memberAicsSelect.value = '';
+    }
+    
+    // Set the date - FORCE empty for new members
+    if (memberAicsDateInput) {
+        if (isNewMember) {
+            memberAicsDateInput.value = '';
+        } else if (m['AICS_Date']) {
+            let aicsDateStr = m['AICS_Date'];
+            if (aicsDateStr.includes('T')) {
+                aicsDateStr = aicsDateStr.split('T')[0];
+            }
+            memberAicsDateInput.value = aicsDateStr;
+        } else {
+            memberAicsDateInput.value = '';
+        }
+    }
+    
+    // Show/hide date field - HIDE for new members
+    if (memberAicsDateField) {
+        if (!isNewMember && ((m['AICS_Date'] && m['AICS_Date'] !== '') || (savedAicsValue && savedAicsValue !== ''))) {
+            memberAicsDateField.classList.add('show');
+        } else {
+            memberAicsDateField.classList.remove('show');
+        }
     }
 }
     
@@ -9122,6 +9434,14 @@ function closeEditPanel() {
 function performCloseEditPanel() {
     $('editPanel')?.classList.remove('open');
     $('panelOverlay')?.classList.remove('show');
+    
+    // Clean up swipe listeners if they exist
+    const panel = $('editPanel');
+    if (panel && panel._swipeCleanup) {
+        panel._swipeCleanup();
+        delete panel._swipeCleanup;
+    }
+    
     if (editDataID) releaseLock(editDataID);
     editDataID = null;
     editHead = {};
@@ -9399,6 +9719,14 @@ function checkEditFormUnsavedChanges() {
 async function saveEditedHousehold(silentReload = false) {
     console.log('Saving household data for ID:', editDataID);
     
+    // Mobile timeout warning
+    let saveTimeout = null;
+    if (isMobileDevice() && getNetworkType() !== '4g') {
+        saveTimeout = setTimeout(() => {
+            showInfo("Still saving on your connection. Please don't close the browser.");
+        }, 8000);
+    }
+    
     if (!validateHeadFormForEdit()) {
         const validationSummary = $('validationSummaryEdit');
         if (validationSummary && validationSummary.classList.contains('show')) {
@@ -9419,6 +9747,29 @@ async function saveEditedHousehold(silentReload = false) {
         const bd_input = $('edit_householdBirthdate')?.value || '';
         const headBirthForSheet = toSheetDate(bd_input);
         const headAgeInfo = computeAgeDetailed(bd_input);
+
+        // ============================================
+        // FIX: Sync displacement reasons to editHead BEFORE saving
+        // ============================================
+        const taalChecked = document.getElementById('edit_displacement_taal')?.checked;
+        editHead['Taal Volcano'] = taalChecked ? 'Yes' : 'No';
+        editHead['Taal Volcano (Within 14-15 KM Danger Zone)'] = taalChecked ? 'Yes' : 'No';
+        editHead['Typhoon'] = document.getElementById('edit_displacement_typhoon')?.checked ? 'Yes' : 'No';
+        editHead['Flood'] = document.getElementById('edit_displacement_flood')?.checked ? 'Yes' : 'No';
+        editHead['Landslide'] = document.getElementById('edit_displacement_landslide')?.checked ? 'Yes' : 'No';
+        editHead['Earthquake'] = document.getElementById('edit_displacement_earthquake')?.checked ? 'Yes' : 'No';
+        editHead['Fire'] = document.getElementById('edit_displacement_fire')?.checked ? 'Yes' : 'No';
+        
+        const otherReasonCheckedForm = document.getElementById('edit_displacement_other_check')?.checked;
+        const otherReasonTextForm = document.getElementById('edit_displacement_other')?.value || '';
+        editHead['Other Reasons'] = (otherReasonCheckedForm && otherReasonTextForm) ? otherReasonTextForm : '';
+        
+        console.log('✅ Displacement reasons synced:', {
+            'Taal Volcano': editHead['Taal Volcano'],
+            'Typhoon': editHead['Typhoon'],
+            'Other Reasons': editHead['Other Reasons']
+        });
+        // ============================================
         
 let registrationValue = "";
 if ($('edit_headRegisteredCheckbox')?.checked) {
@@ -9547,9 +9898,33 @@ if ($('edit_headRegisteredCheckbox')?.checked) {
         const householdId = householdData.id;
         const originalSubmittedBy = householdData.submitted_by || userFullName;
         const originalSubmittedOn = householdData.submitted_on || now;
+
+                // ============================================
+        // FIX: Get existing HEAD record ID to prevent duplicates
+        // ============================================
+        let existingHeadId = null;
+        try {
+            const { data: existingHead, error: headFetchError } = await db
+                .from('persons')
+                .select('id')
+                .eq('household_id', householdId)
+                .eq('person_type', 'HEAD')
+                .maybeSingle();
+            
+            if (!headFetchError && existingHead) {
+                existingHeadId = existingHead.id;
+                console.log('✅ Found existing HEAD record:', existingHeadId);
+            } else {
+                console.log('ℹ️ No existing HEAD record found, will create new');
+            }
+        } catch (err) {
+            console.warn('⚠️ Error fetching HEAD:', err.message);
+        }
+        // ============================================
         
         // Prepare HEAD person data
         const headPersonData = {
+            id: existingHeadId,
             household_id: householdId,
             person_type: 'HEAD',
             name: $('edit_householdHead')?.value,
@@ -9640,9 +10015,14 @@ if ($('edit_headRegisteredCheckbox')?.checked) {
             p_members: membersToInsert,
             p_livestock: livestockData.map(l => ({ ...l, household_id: householdId })),
             p_gov_assistance: govAssistance.map(g => ({ ...g, household_id: householdId })),
-            p_displacement_reasons: displacementReasonsList.map(d => ({ ...d, household_id: householdId })),
+            p_displacement_reasons: displacementReasonsList.map(d => ({ 
+                ...d, 
+                household_id: householdId,
+                person_id: existingHeadId  // ← CRITICAL: Add HEAD's person_id
+            })),
             p_assembly_area: (insideAssembly || outsideAssembly) ? {
                 household_id: householdId,
+                person_id: existingHeadId,
                 inside_assembly: insideAssembly,
                 outside_assembly: outsideAssembly,
                 pickup_location: $('edit_pickup')?.value || '',
@@ -9967,12 +10347,15 @@ if (memberCalamityDocs.length > 0) {
         window.memberCalamityFilesArray = [];
         
         // Audit log with details
-        await db.from('audit_logs').insert([{
-            action: 'Update Record',
-            actor: userFullName,
-            target_table: 'households',
-            details: `Updated household ID ${editDataID}. Members: ${editMembers.length}, Livestock: ${livestockData.length}, Gov Assistance: ${govAssistance.length}`
-        }]);
+            const householdHeadName = $('edit_householdHead')?.value || '';
+            const barangaySelected = $('edit_barangay')?.value || '';
+
+            await db.from('audit_logs').insert([{
+                action: 'Update Record',
+                actor: userFullName,
+                target_table: 'households',
+                details: `Updated household "${householdHeadName}" in ${barangaySelected}. Members: ${editMembers.length}, Livestock: ${livestockData.length}, Gov Assistance: ${govAssistance.length}`
+            }]);
 
                     // ========== AUDIT LOGGING - UPDATE RECORD ==========
             await logAuditAction('UPDATE', 'household', householdId, {
@@ -9983,6 +10366,9 @@ if (memberCalamityDocs.length > 0) {
                 total_members: editMembers.length,
                 description: `Updated household record in ${$('edit_barangay')?.value}, ${$('edit_sitio')?.value}`
             });
+
+        // Clear timeout on success
+        if (saveTimeout) clearTimeout(saveTimeout);
         
         showSuccess(`Household ${editDataID} updated successfully!`);
         
@@ -10000,6 +10386,8 @@ if (memberCalamityDocs.length > 0) {
         }
         
     } catch (err) {
+        // Clear timeout on error
+        if (saveTimeout) clearTimeout(saveTimeout);
         console.error('Save error:', err);
         showError(`Failed to save: ${err.message || 'Unknown error'}`);
     } finally {
@@ -10052,7 +10440,49 @@ function openEditPanel() {
     $('editPanel')?.classList.add('open');
     $('panelOverlay')?.classList.add('show');
     
-    // Re-attach animal checkbox handlers after panel is visible
+    // Mobile/Tablet specific improvements
+    if (isMobileOrTablet()) {
+        const panelBody = document.querySelector('#editPanel .panel-body');
+        if (panelBody) {
+            setTimeout(() => {
+                panelBody.scrollTop = 0;
+            }, 100);
+        }
+        
+        // Swipe to close on mobile devices only
+        if (isMobileDevice()) {
+            const panel = $('editPanel');
+            let touchStartX = 0;
+            let touchStartY = 0;
+            
+            const handleTouchStart = (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            };
+            
+            const handleTouchEnd = (e) => {
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+                
+                // Swipe right (horizontal swipe) more than 50px
+                if (deltaX > 50 && Math.abs(deltaY) < 100) {
+                    closeEditPanel();
+                }
+            };
+            
+            panel.addEventListener('touchstart', handleTouchStart, { passive: true });
+            panel.addEventListener('touchend', handleTouchEnd, { passive: true });
+            
+            // Store cleanup reference
+            panel._swipeCleanup = () => {
+                panel.removeEventListener('touchstart', handleTouchStart);
+                panel.removeEventListener('touchend', handleTouchEnd);
+            };
+        }
+    }
+    
     setTimeout(() => {
         syncAnimalCheckboxes();
     }, 100);
@@ -10689,8 +11119,36 @@ function wireEditPanelUI() {
         });
     }
     
-    // Member panel buttons
-    if ($('memberNext')) $('memberNext').addEventListener('click', memberPanelNext);
+    // Member next button
+    if ($('memberNext')) {
+        $('memberNext').addEventListener('click', async () => {
+            if (!validateMemberFormForEdit()) {
+                const validationSummary = $('validationSummaryMember');
+                if (validationSummary && validationSummary.classList.contains('show')) {
+                    validationSummary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                return;
+            }
+            
+            collectMemberPanelToEdit();
+            memberEditIndex++;
+            
+            if (memberEditIndex >= editMembers.length) {
+                $('memberPanel')?.classList.remove('open');
+                $('panelOverlay')?.classList.remove('open');
+                updateEditMembersPreview();
+                if (sequenceMode) {
+                    sequenceMode = false;
+                    const headName = $('edit_householdHead')?.value || 'Household';
+                    await saveWithMobileOptimization(() => saveEditedHousehold(true), headName);
+                }
+                return;
+            }
+            
+            fillMemberPanelFromEdit(memberEditIndex);
+            if ($('memberPanelTitle')) $('memberPanelTitle').innerText = `Member ${memberEditIndex+1} of ${editMembers.length}`;
+        });
+    }
     if ($('memberBack')) $('memberBack').addEventListener('click', memberPanelBack);
     if ($('memberCancel')) $('memberCancel').addEventListener('click', () => { $('memberPanel')?.classList.remove('open'); $('panelOverlay')?.classList.remove('show'); });
     if ($('memberPanelClose')) $('memberPanelClose').addEventListener('click', () => { $('memberPanel')?.classList.remove('open'); $('panelOverlay')?.classList.remove('show'); });
@@ -10703,19 +11161,28 @@ function wireEditPanelUI() {
     
     // Start Sequence Button
     if ($('startSequenceBtn')) {
-        $('startSequenceBtn').addEventListener('click', () => {
+        $('startSequenceBtn').addEventListener('click', async () => {
             if (!validateHeadFormForEdit()) return;
             const expected = Number($('edit_memberCount')?.value || 0);
             while (editMembers.length < expected) editMembers.push(createEmptyMember());
-            if (expected === 0) { saveEditedHousehold(); return; }
+            if (expected === 0) { 
+                const headName = $('edit_householdHead')?.value || 'Household';
+                await saveWithMobileOptimization(() => saveEditedHousehold(false), headName);
+                return; 
+            }
             sequenceMode = true;
             memberEditIndex = 0;
             openMemberPanelForEdit(memberEditIndex);
         });
     }
     
-    // Save Button
-    if ($('saveEditBtn')) $('saveEditBtn').addEventListener('click', () => saveEditedHousehold(false));
+// Save Button with updating modal
+if ($('saveEditBtn')) {
+    $('saveEditBtn').addEventListener('click', async () => {
+        const headName = $('edit_householdHead')?.value || 'Household';
+        await saveWithMobileOptimization(() => saveEditedHousehold(false), headName);
+    });
+}
     
     // Form input listeners for unsaved changes
     const editFormInputs = document.querySelectorAll('#editForm input, #editForm select, #editForm textarea, #editForm .radio-line input, #editForm .checkbox-item1 input');
@@ -11038,9 +11505,10 @@ function processMobileHouseholdDataFull(households, persons, livestock, govAssis
         displacementByHousehold[d.household_id].push(d);
     });
     
-    const assemblyByHousehold = {};
-    assemblyAreas.forEach(a => {
-        assemblyByHousehold[a.household_id] = a;
+    // FIX: Store assembly by person_id
+    const assemblyByPerson = {};
+    assemblyAreas?.forEach(a => { 
+        assemblyByPerson[a.person_id] = a; 
     });
     
     const calamityDocsByHousehold = {};
@@ -11065,24 +11533,35 @@ function processMobileHouseholdDataFull(households, persons, livestock, govAssis
         householdLivestock.forEach(l => { livestockMap[l.animal_type] = l; });
         
         const householdGov = govByHousehold[household.id] || [];
+        
+        // Filter for HEAD's gov assistance
+        const headGov = householdGov.filter(g => g.person_id === headPerson.id);
         const govMap = {};
-        householdGov.forEach(g => { govMap[g.assistance_type] = g; });
+        headGov.forEach(g => { govMap[g.assistance_type] = g; });
         
         const householdDisplacement = displacementByHousehold[household.id] || [];
+        // Filter displacement reasons for HEAD only
+        const headDisplacement = householdDisplacement.filter(d => d.person_id === headPerson.id);
         const displacementMap = {};
-        householdDisplacement.forEach(d => { displacementMap[d.reason_type] = d; });
+        headDisplacement.forEach(d => { displacementMap[d.reason_type] = d; });
         
-        const householdAssembly = assemblyByHousehold[household.id];
+        // FIX: Get HEAD assembly using person_id
+        const headAssembly = assemblyByPerson[headPerson.id];
+        
         const householdCalamityDocs = calamityDocsByHousehold[household.id] || [];
+        // FIX: Filter calamity docs for HEAD only
         const headCalamityDocsMap = {};
         householdCalamityDocs.forEach(doc => {
-            if (!doc.person_id) headCalamityDocsMap[doc.document_type] = doc;
+            if (doc.person_id === headPerson.id) {
+                headCalamityDocsMap[doc.document_type] = doc;
+            }
         });
         
         const householdCalamityImpacts = calamityImpactsByHousehold[household.id] || [];
-        const headCalamityImpact = householdCalamityImpacts.find(i => !i.person_id) || {};
+        // FIX: Get HEAD calamity impact using person_id
+        const headCalamityImpact = householdCalamityImpacts.find(i => i.person_id === headPerson.id) || {};
         
-        // Build HEAD with ALL columns
+        // Build HEAD object
         const headObj = {
             'Data ID': household.data_id,
             'Barangay': household.barangay,
@@ -11116,16 +11595,27 @@ function processMobileHouseholdDataFull(households, persons, livestock, govAssis
             'Chicken': livestockMap['Chicken'] ? 'Yes' : 'No',
             'Others (Animals)': livestockMap['Others']?.quantity || livestockMap['Others']?.animal_name || '',
             'TUPAD': govMap['TUPAD'] ? 'Yes' : 'No',
+            'TUPAD_Date': govMap['TUPAD']?.received_date || '',
             'Local 4Ps': govMap['Local 4Ps'] ? 'Yes' : 'No',
+            'Local 4Ps_Date': govMap['Local 4Ps']?.received_date || '',
             'National 4Ps': govMap['National 4Ps'] ? 'Yes' : 'No',
+            'National 4Ps_Date': govMap['National 4Ps']?.received_date || '',
             'Local Social Pension': govMap['Local Social Pension'] ? 'Yes' : 'No',
+            'Local Social Pension_Date': govMap['Local Social Pension']?.received_date || '',
             'National Social Pension': govMap['National Social Pension'] ? 'Yes' : 'No',
+            'National Social Pension_Date': govMap['National Social Pension']?.received_date || '',
             'Solo Parent Assistance': govMap['Solo Parent Assistance'] ? 'Yes' : 'No',
+            'Solo Parent Assistance_Date': govMap['Solo Parent Assistance']?.received_date || '',
             'Relief Goods': govMap['Relief Goods'] ? 'Yes' : 'No',
+            'Relief Goods_Date': govMap['Relief Goods']?.received_date || '',
             'Cash Subsidy': govMap['Cash Subsidy'] ? 'Yes' : 'No',
+            'Cash Subsidy_Date': govMap['Cash Subsidy']?.received_date || '',
             'AICS': (govMap['AICS - Shelter Assistance'] ? 'Shelter Assistance' : 
                      govMap['AICS - Burial'] ? 'Burial' : 
                      govMap['AICS - Scholarship'] ? 'Scholarship' : '') || '',
+            'AICS_Date': (govMap['AICS - Shelter Assistance']?.received_date || 
+                        govMap['AICS - Burial']?.received_date || 
+                        govMap['AICS - Scholarship']?.received_date || ''),
             'Taal Volcano': displacementMap['Taal Volcano'] ? 'Yes' : 'No',
             'Typhoon': displacementMap['Typhoon'] ? 'Yes' : 'No',
             'Flood': displacementMap['Flood'] ? 'Yes' : 'No',
@@ -11133,13 +11623,14 @@ function processMobileHouseholdDataFull(households, persons, livestock, govAssis
             'Earthquake': displacementMap['Earthquake'] ? 'Yes' : 'No',
             'Fire': displacementMap['Fire'] ? 'Yes' : 'No',
             'Other Reasons': displacementMap['Other']?.other_reason_text || '',
-            'Inside Assembly Area': householdAssembly?.inside_assembly ? 'Yes' : 'No',
-            'Outside Assembly Area': householdAssembly?.outside_assembly ? 'Yes' : 'No',
-            'Pick-Up Location': householdAssembly?.pickup_location || '',
-            'Assembly Area': householdAssembly?.assembly_area_name || '',
-            'Family/Relative Host': householdAssembly?.family_host_name || '',
-            'Host_Contact': householdAssembly?.host_contact_number || '',
-            'Transportation': householdAssembly?.transportation_type || '',
+            // FIX: Use headAssembly instead of householdAssembly
+            'Inside Assembly Area': headAssembly?.inside_assembly ? 'Yes' : 'No',
+            'Outside Assembly Area': headAssembly?.outside_assembly ? 'Yes' : 'No',
+            'Pick-Up Location': headAssembly?.pickup_location || '',
+            'Assembly Area': headAssembly?.assembly_area_name || '',
+            'Family/Relative Host': headAssembly?.family_host_name || '',
+            'Host_Contact': headAssembly?.host_contact_number || '',
+            'Transportation': headAssembly?.transportation_type || '',
             'Structural Damage': headCalamityImpact.structural_damage || 'No',
             'Structural Damage Details': headCalamityImpact.structural_damage_details || '',
             'Household Injury': headCalamityImpact.household_injury || 'No',
@@ -11160,7 +11651,7 @@ function processMobileHouseholdDataFull(households, persons, livestock, govAssis
             'Updated On': household.updated_at ? formatTimestampPH_(new Date(household.updated_at)) : ''
         };
         
-        // Build members with ALL columns
+        // Build members array
         const membersArray = members.map(member => {
             const memberGov = householdGov.filter(g => g.person_id === member.id);
             const memberGovMap = {};
@@ -11170,7 +11661,9 @@ function processMobileHouseholdDataFull(households, persons, livestock, govAssis
             const memberDisplacementMap = {};
             memberDisplacement.forEach(d => { memberDisplacementMap[d.reason_type] = d; });
             
-            const memberAssembly = assemblyByHousehold[household.id]?.person_id === member.id ? assemblyByHousehold[household.id] : null;
+            // FIX: Get member assembly using person_id
+            const memberAssembly = assemblyByPerson[member.id];
+            
             const memberCalamityImpact = householdCalamityImpacts.find(i => i.person_id === member.id) || {};
             const memberCalamityDocs = householdCalamityDocs.filter(d => d.person_id === member.id);
             const memberCalamityDocsMap = {};
