@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="css/dataform-style.css">
 <script src="js/force-logout.js"></script>
 <script src="js/session-check.js"></script>
+<script src="js/security.js"></script>
 <style>
    :root{
     --bg:#f6f8f7;
@@ -2666,6 +2667,36 @@ textarea.validation-error:focus {
     width: 100%;
     box-sizing: border-box;
 }
+/* Prevent scrollbar shift when modal opens */
+@media (min-width: 769px) {
+    body.modal-open {
+        overflow: hidden;
+        padding-right: var(--scrollbar-width, 0px);
+    }
+}
+
+/* Add this to your existing style section */
+html {
+    overflow-x: hidden;
+}
+/* Prevents page shift when modal opens */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Alternative: smoother approach for desktop */
+@media (min-width: 769px) {
+    body.modal-open {
+        overflow: hidden;
+        padding-right: 15px; /* Approximate scrollbar width */
+    }
+}
 </style>
 </head>
 <body>
@@ -4333,6 +4364,72 @@ textarea.validation-error:focus {
   </div>
 </div>
 
+<!-- Take Over Warning Modal (Device B) - Matching style -->
+<div id="takeOverWarningModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10003; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Take Over Warning</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                Taking over will immediately log out the other device.
+            </p>
+            <p style="margin: 0; color: #dc2626; font-size: 0.75rem; font-weight: 500;">
+                Any unsaved work on the other device may be lost.
+            </p>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="cancelTakeOverBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button id="confirmTakeOverBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Take Over
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Force Logout Modal -->
+<div id="adminForceLogoutModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10004; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-user-shield" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Account Logged Out by Admin</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                An administrator has logged you out from all devices.
+            </p>
+            <div style="margin-top: 12px; background: #fff8e1; padding: 8px; border-radius: 8px;">
+                <div style="font-size: 0.7rem; color: #ff7a00; font-weight: 500;">You will be redirected to login</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #ff7a00;" id="adminForceLogoutCountdown">5</div>
+                <div style="font-size: 0.7rem; color: var(--text-light);">seconds</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Session Taken Over Modal (Device A) - Matching style -->
+<div id="sessionTakenOverModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10003; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exchange-alt" style="font-size: 1.6rem; color: #dc2626; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Session Taken Over!</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                Another device has taken over this account.
+            </p>
+            <div style="margin-top: 12px; background: #fef2f2; padding: 8px; border-radius: 8px;">
+                <div style="font-size: 0.7rem; color: #dc2626; font-weight: 500;">You will be logged out in</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #dc2626;" id="takeOverCountdown">5</div>
+                <div style="font-size: 0.7rem; color: var(--text-light);">seconds</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Confirmation Modal for Logout -->
 <div id="confirmModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10001; padding: 16px;">
     <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); animation: modalSlideUp 0.2s ease; overflow: hidden;">
@@ -4350,6 +4447,23 @@ textarea.validation-error:focus {
             <button id="confirmYesBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
                 <i class="fas fa-check"></i> Yes
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- Saving Records Modal (for dataForm) -->
+<div id="savingModal" class="modal-overlay" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10002; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 12px;">
+                <div class="loading-spinner-small" style="width: 32px; height: 32px; border: 3px solid #e1e8e5; border-top-color: #0f7a4a; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Saving Records</h3>
+            <p id="savingHouseholdInfo" style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4; word-break: break-word;">Loading...</p>
+            <p style="margin: 0; color: #64748b; font-size: 0.7rem; line-height: 1.4;">Please wait, this may take a moment...</p>
+        </div>
+        <div style="padding: 4px 20px 20px 20px;">
+            <div style="height: 4px;"></div>
         </div>
     </div>
 </div>
@@ -4448,6 +4562,59 @@ function showInfo(message) {
     if (msgEl) msgEl.textContent = message;
     showModal('infoModal');
     setTimeout(() => hideModal('infoModal'), 2000);
+}
+
+// ============ SAVING MODAL FUNCTIONS (for dataForm) ==========
+let savingModalTimeout = null;
+
+function showSavingModal(householdHeadName, memberCount) {
+    const modal = document.getElementById('savingModal');
+    const infoSpan = document.getElementById('savingHouseholdInfo');
+    
+    if (modal && infoSpan) {
+        let displayName = householdHeadName || 'Household';
+        let memberText = memberCount === 1 ? '1 member' : `${memberCount} members`;
+        
+        // Truncate long names for mobile
+        if (displayName.length > 25 && window.innerWidth <= 768) {
+            displayName = displayName.substring(0, 22) + '...';
+        }
+        
+        infoSpan.textContent = `${displayName} with ${memberText}`;
+        
+        // Store current scroll position
+        const scrollY = window.scrollY;
+        
+        // Add class to body without changing position
+        document.body.style.overflow = 'hidden';
+        document.body.dataset.scrollY = scrollY;
+        
+        modal.style.display = 'flex';
+    }
+    
+    if (savingModalTimeout) clearTimeout(savingModalTimeout);
+    savingModalTimeout = setTimeout(function() {
+        hideSavingModal();
+    }, 30000);
+}
+
+function hideSavingModal() {
+    const modal = document.getElementById('savingModal');
+    if (modal) {
+        modal.style.display = 'none';
+        
+        // Restore scroll position
+        document.body.style.overflow = '';
+        const scrollY = document.body.dataset.scrollY;
+        if (scrollY) {
+            window.scrollTo(0, parseInt(scrollY));
+            delete document.body.dataset.scrollY;
+        }
+    }
+    if (savingModalTimeout) {
+        clearTimeout(savingModalTimeout);
+        savingModalTimeout = null;
+    }
 }
 
 // ============================================
@@ -5181,9 +5348,15 @@ function fillMemberPanel(idx) {
         if (memberInsideAssembly) {
             document.getElementById("memberInsideAssemblyFields").style.display = 'block';
             document.getElementById("memberOutsideAssemblyFields").style.display = 'none';
+            document.getElementById("memberPickup").value = mem["Pick-Up Location"] || "";
+            document.getElementById("memberAssemblyArea").value = mem["Assembly Area"] || "";
+            document.getElementById("memberTransport").value = mem["Transportation"] || "";
         } else if (memberOutsideAssembly) {
             document.getElementById("memberOutsideAssemblyFields").style.display = 'block';
             document.getElementById("memberInsideAssemblyFields").style.display = 'none';
+            document.getElementById("memberFamilyHost").value = mem["Family/Relative Host"] || "";
+            document.getElementById("memberHostContact").value = mem["Host_Contact"] || "";
+            document.getElementById("memberOutsideTransport").value = mem["Transportation"] || "";
         }
     } else {
         document.getElementById("memberAssemblyAreaOptions").style.display = 'none';
@@ -5223,12 +5396,166 @@ function fillMemberPanel(idx) {
     if (document.getElementById("member_cash").checked) document.getElementById("member_cash_date").classList.add('show');
     if (document.getElementById("memberAics").value !== "") document.getElementById("member_aics_date").classList.add('show');
     
+    // ============================================
+    // CALAMITY IMPACTS (Yes/No radio buttons)
+    // ============================================
+    const memberDamageValue = mem["Structural Damage"] || "No";
+    const memberInjuryValue = mem["Household Injury"] || "No";
+    const memberHabitabilityValue = mem["Habitability"] || "No";
+    const memberLivelihoodValue = mem["Loss of Livelihood"] || "No";
+    
+    document.getElementById("member_damage_yes").checked = memberDamageValue === "Yes";
+    document.getElementById("member_damage_no").checked = memberDamageValue === "No";
+    document.getElementById("member_injury_yes").checked = memberInjuryValue === "Yes";
+    document.getElementById("member_injury_no").checked = memberInjuryValue === "No";
+    document.getElementById("member_habitability_yes").checked = memberHabitabilityValue === "Yes";
+    document.getElementById("member_habitability_no").checked = memberHabitabilityValue === "No";
+    document.getElementById("member_livelihood_yes").checked = memberLivelihoodValue === "Yes";
+    document.getElementById("member_livelihood_no").checked = memberLivelihoodValue === "No";
+    
+    // Show/hide conditional fields for calamity
+    const memberDamageConditional = document.getElementById("member_damage_conditional");
+    const memberInjuryConditional = document.getElementById("member_injury_conditional");
+    const memberHabitabilityConditional = document.getElementById("member_habitability_conditional");
+    const memberLivelihoodConditional = document.getElementById("member_livelihood_conditional");
+    
+    if (memberDamageValue === "Yes") {
+        if (memberDamageConditional) memberDamageConditional.classList.add('show');
+    } else {
+        if (memberDamageConditional) memberDamageConditional.classList.remove('show');
+    }
+    
+    if (memberInjuryValue === "Yes") {
+        if (memberInjuryConditional) memberInjuryConditional.classList.add('show');
+    } else {
+        if (memberInjuryConditional) memberInjuryConditional.classList.remove('show');
+    }
+    
+    if (memberHabitabilityValue === "Yes") {
+        if (memberHabitabilityConditional) memberHabitabilityConditional.classList.add('show');
+    } else {
+        if (memberHabitabilityConditional) memberHabitabilityConditional.classList.remove('show');
+    }
+    
+    if (memberLivelihoodValue === "Yes") {
+        if (memberLivelihoodConditional) memberLivelihoodConditional.classList.add('show');
+    } else {
+        if (memberLivelihoodConditional) memberLivelihoodConditional.classList.remove('show');
+    }
+    
+    // Set details textareas
+    const damageDetails = document.getElementById("member_damage_details");
+    if (damageDetails) damageDetails.value = mem["Structural Damage Details"] || "";
+    
+    const injuryDetails = document.getElementById("member_injury_details");
+    if (injuryDetails) injuryDetails.value = mem["Injury Details"] || "";
+    
+    const habitabilityDetails = document.getElementById("member_habitability_details");
+    if (habitabilityDetails) habitabilityDetails.value = mem["Habitability Details"] || "";
+    
+    const livelihoodDetails = document.getElementById("member_livelihood_details");
+    if (livelihoodDetails) livelihoodDetails.value = mem["Livelihood Details"] || "";
+    
+    const additionalDetails = document.getElementById("member_additional_details");
+    if (additionalDetails) additionalDetails.value = mem["Additional Details"] || "";
+    
+    // ============================================
+    // FILE UPLOAD HANDLERS - STORE FILES IN mem OBJECT
+    // ============================================
+    const memberFileCategories = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
+    
+    memberFileCategories.forEach(category => {
+        const fileInput = document.getElementById(`member_${category}_file`);
+        const filenameSpan = document.getElementById(`member_${category}_filename`);
+        const removeBtn = document.querySelector(`.member-remove-file-btn[data-category="${category}"]`);
+        
+        if (fileInput) {
+            // Remove old listener and create new one
+            const newFileInput = fileInput.cloneNode(true);
+            fileInput.parentNode.replaceChild(newFileInput, fileInput);
+            
+            // Update the filename span and remove button reference
+            const newFilenameSpan = document.getElementById(`member_${category}_filename`);
+            const newRemoveBtn = document.querySelector(`.member-remove-file-btn[data-category="${category}"]`);
+            
+            // Check if there's an existing file URL stored
+            const existingFileUrl = mem[`${category === 'damage' ? 'Structural Damage' : 
+                                          category === 'injury' ? 'Household Injury' : 
+                                          category === 'habitability' ? 'Habitability' : 
+                                          category === 'livelihood' ? 'Loss of Livelihood' : 'Additional Attachment'} File Link`];
+            
+            if (existingFileUrl && existingFileUrl !== "") {
+                // Show that a file exists
+                if (newFilenameSpan) {
+                    const fileName = existingFileUrl.split('/').pop() || 'document';
+                    const shortName = fileName.length > 30 ? fileName.substring(0, 27) + '...' : fileName;
+                    newFilenameSpan.innerHTML = `<i class="fas fa-file"></i> ${shortName} (existing)`;
+                }
+                if (newRemoveBtn) newRemoveBtn.style.display = 'inline-flex';
+            } else {
+                if (newFilenameSpan) newFilenameSpan.innerHTML = 'No file chosen';
+                if (newRemoveBtn) newRemoveBtn.style.display = 'none';
+            }
+            
+            newFileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const fileName = this.files[0].name;
+                    const shortName = fileName.length > 30 ? fileName.substring(0, 27) + '...' : fileName;
+                    if (newFilenameSpan) newFilenameSpan.innerHTML = `<i class="fas fa-file"></i> ${shortName}`;
+                    if (newRemoveBtn) newRemoveBtn.style.display = 'inline-flex';
+                    
+                    // Store file in the current member object for later upload
+                    if (collectedMembers[idx]) {
+                        collectedMembers[idx][`_file_${category}`] = this.files[0];
+                        // Clear any existing file URL since we're replacing
+                        collectedMembers[idx][`${category === 'damage' ? 'Structural Damage' : 
+                                               category === 'injury' ? 'Household Injury' : 
+                                               category === 'habitability' ? 'Habitability' : 
+                                               category === 'livelihood' ? 'Loss of Livelihood' : 'Additional Attachment'} File Link`] = "";
+                    }
+                } else {
+                    if (newFilenameSpan) newFilenameSpan.innerHTML = 'No file chosen';
+                    if (newRemoveBtn) newRemoveBtn.style.display = 'none';
+                    if (collectedMembers[idx]) {
+                        delete collectedMembers[idx][`_file_${category}`];
+                    }
+                }
+            });
+        }
+        
+        if (removeBtn) {
+            const newRemoveBtn = removeBtn.cloneNode(true);
+            removeBtn.parentNode.replaceChild(newRemoveBtn, removeBtn);
+            
+            newRemoveBtn.addEventListener('click', function() {
+                const fileInputElem = document.getElementById(`member_${category}_file`);
+                const filenameSpanElem = document.getElementById(`member_${category}_filename`);
+                if (fileInputElem) fileInputElem.value = '';
+                if (filenameSpanElem) filenameSpanElem.innerHTML = 'No file chosen';
+                newRemoveBtn.style.display = 'none';
+                if (collectedMembers[idx]) {
+                    delete collectedMembers[idx][`_file_${category}`];
+                    // Also clear the file URL
+                    collectedMembers[idx][`${category === 'damage' ? 'Structural Damage' : 
+                                           category === 'injury' ? 'Household Injury' : 
+                                           category === 'habitability' ? 'Habitability' : 
+                                           category === 'livelihood' ? 'Loss of Livelihood' : 'Additional Attachment'} File Link`] = "";
+                }
+            });
+        }
+    });
+    
     const total = Math.max(1, membersToCollect);
     document.getElementById("panelTitle").textContent = `Member ${idx + 1} of ${total}`;
 
-        // Toggle Additional Attachment visibility based on existing calamity values
+    // Toggle Additional Attachment visibility based on existing calamity values
     setTimeout(function() {
         toggleMemberAdditionalAttachment();
+        // Also trigger any conditional field updates
+        const event = new Event('change');
+        document.querySelectorAll('input[name="member_damage"], input[name="member_injury"], input[name="member_habitability"], input[name="member_livelihood"]').forEach(el => {
+            el.dispatchEvent(event);
+        });
     }, 50);
 }
 
@@ -5254,7 +5581,39 @@ function collectMemberDataFromPanel() {
     const memberName = name || "Unnamed Member";
     const memberGender = document.querySelector("input[name='member_gender']:checked")?.value || "";
     
-    return {
+    // Get AICS value - FIXED
+    const aicsSelect = document.getElementById("memberAics");
+    let aicsValue = aicsSelect ? aicsSelect.value : "";
+    console.log('🔍 Collecting AICS value:', aicsValue);
+    if (!aicsValue || aicsValue === "None" || aicsValue === "") {
+        aicsValue = "";
+    }
+    
+    // Get AICS date - FIXED
+    const aicsDateInput = document.getElementById("member_aics_date_input");
+    let aicsDate = aicsDateInput ? aicsDateInput.value : "";
+    console.log('🔍 Collecting AICS date:', aicsDate);
+    if (aicsDate && aicsDate !== "") {
+        const formattedDate = toSheetDateFormat(aicsDate);
+        console.log('🔍 Formatted AICS date:', formattedDate);
+        aicsDate = formattedDate;
+    } else {
+        aicsDate = "";
+    }
+    
+    // Get calamity responses with proper null checks
+    const memberDamageRadios = document.querySelectorAll('input[name="member_damage"]:checked');
+    const memberInjuryRadios = document.querySelectorAll('input[name="member_injury"]:checked');
+    const memberHabitabilityRadios = document.querySelectorAll('input[name="member_habitability"]:checked');
+    const memberLivelihoodRadios = document.querySelectorAll('input[name="member_livelihood"]:checked');
+    
+    const memberDamageValue = memberDamageRadios.length > 0 ? memberDamageRadios[0].value : "No";
+    const memberInjuryValue = memberInjuryRadios.length > 0 ? memberInjuryRadios[0].value : "No";
+    const memberHabitabilityValue = memberHabitabilityRadios.length > 0 ? memberHabitabilityRadios[0].value : "No";
+    const memberLivelihoodValue = memberLivelihoodRadios.length > 0 ? memberLivelihoodRadios[0].value : "No";
+    
+    // Create the member object
+    const obj = {
         "Name of Household Member/s": memberName,
         "FishR Registered/RSBSA Registered": registrationValue,
         "Contact no.": document.getElementById("memberContact").value || "",
@@ -5305,36 +5664,95 @@ function collectMemberDataFromPanel() {
         "Relief Goods_Date": document.getElementById("member_relief_date_input").value ? toSheetDateFormat(document.getElementById("member_relief_date_input").value) : "",
         "Cash Subsidy": document.getElementById("member_cash").checked ? "Yes" : "No",
         "Cash Subsidy_Date": document.getElementById("member_cash_date_input").value ? toSheetDateFormat(document.getElementById("member_cash_date_input").value) : "",
-"AICS": (function() {
-    const aicsSelect = document.getElementById("memberAics");
-    const aicsValue = aicsSelect ? aicsSelect.value : "";
-    console.log('🔍 Collecting AICS value:', aicsValue);
-    if (!aicsValue || aicsValue === "None" || aicsValue === "") {
-        return "";
-    }
-    return aicsValue;
-})(),
-"AICS_Date": (function() {
-    const aicsDateInput = document.getElementById("member_aics_date_input");
-    const aicsDate = aicsDateInput ? aicsDateInput.value : "";
-    console.log('🔍 Collecting AICS date:', aicsDate);
-    if (aicsDate && aicsDate !== "") {
-        const formattedDate = toSheetDateFormat(aicsDate);
-        console.log('🔍 Formatted AICS date:', formattedDate);
-        return formattedDate;
-    }
-    return "";
-})(),
-        "Structural Damage": document.querySelector('input[name="member_damage"]:checked')?.value || "No",
+        "AICS": aicsValue,
+        "AICS_Date": aicsDate,
+        "Structural Damage": memberDamageValue,
         "Structural Damage Details": document.getElementById('member_damage_details')?.value || "",
-        "Household Injury": document.querySelector('input[name="member_injury"]:checked')?.value || "No",
+        "Household Injury": memberInjuryValue,
         "Injury Details": document.getElementById('member_injury_details')?.value || "",
-        "Habitability": document.querySelector('input[name="member_habitability"]:checked')?.value || "No",
+        "Habitability": memberHabitabilityValue,
         "Habitability Details": document.getElementById('member_habitability_details')?.value || "",
-        "Loss of Livelihood": document.querySelector('input[name="member_livelihood"]:checked')?.value || "No",
+        "Loss of Livelihood": memberLivelihoodValue,
         "Livelihood Details": document.getElementById('member_livelihood_details')?.value || "",
-        "Additional Details": document.getElementById('member_additional_details')?.value || ""
+        "Additional Details": document.getElementById('member_additional_details')?.value || "",
+        // Calamity File Links (preserve existing if any)
+        "Structural Damage File Link": (() => {
+            const existing = (collectedMembers[currentMemberIndex] || {})["Structural Damage File Link"];
+            return existing || "";
+        })(),
+        "Household Injury File Link": (() => {
+            const existing = (collectedMembers[currentMemberIndex] || {})["Household Injury File Link"];
+            return existing || "";
+        })(),
+        "Habitability File Link": (() => {
+            const existing = (collectedMembers[currentMemberIndex] || {})["Habitability File Link"];
+            return existing || "";
+        })(),
+        "Loss of Livelihood File Link": (() => {
+            const existing = (collectedMembers[currentMemberIndex] || {})["Loss of Livelihood File Link"];
+            return existing || "";
+        })(),
+        "Additional Attachment File Link": (() => {
+            const existing = (collectedMembers[currentMemberIndex] || {})["Additional Attachment File Link"];
+            return existing || "";
+        })()
     };
+    
+    // Preserve file references for later upload (new files)
+    if (collectedMembers[currentMemberIndex]) {
+        const categories = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
+        categories.forEach(category => {
+            if (collectedMembers[currentMemberIndex][`_file_${category}`]) {
+                obj[`_file_${category}`] = collectedMembers[currentMemberIndex][`_file_${category}`];
+            }
+        });
+    }
+    
+    return obj;
+}
+
+// ============================================
+// CLEAR VALIDATION ERRORS FUNCTION (Complete)
+// ============================================
+function clearValidationErrors(formId) {
+    if (formId === 'headForm') {
+        // Clear input validation errors
+        const inputs = document.querySelectorAll('#headForm input, #headForm select, #headForm textarea');
+        inputs.forEach(input => {
+            input.classList.remove('validation-error', 'input-error');
+        });
+        
+        // Clear gender radio container
+        const genderContainer = document.querySelector('#headForm .radio-line');
+        if (genderContainer) genderContainer.classList.remove('validation-error');
+        
+        // Hide validation summary
+        const validationSummary = document.getElementById('validationSummaryHead');
+        if (validationSummary) validationSummary.classList.remove('show');
+        
+        // Clear error messages
+        const errorMessages = document.querySelectorAll('#headForm .error-message');
+        errorMessages.forEach(msg => msg.style.display = 'none');
+        
+        // Clear contact error specifically
+        const contactError = document.getElementById('contactError');
+        if (contactError) contactError.style.display = 'none';
+        
+    } else if (formId === 'memberForm') {
+        // Clear member form validation errors
+        const inputs = document.querySelectorAll('#memberForm input, #memberForm select, #memberForm textarea');
+        inputs.forEach(input => {
+            input.classList.remove('validation-error', 'input-error');
+        });
+        
+        // Clear gender radio container in member form
+        const genderContainer = document.querySelectorAll('#memberForm .radio-line')[1];
+        if (genderContainer) genderContainer.classList.remove('validation-error');
+        
+        // Hide member validation summary
+        const validationSummary = document.getElementById('validationSummaryMember');
+        if (validationSummary) validationSummary.classList.remove('show');
+    }
 }
 
 // ============================================
@@ -5467,10 +5885,8 @@ async function getNextDataId() {
     throw new Error('Failed to get unique data_id after multiple attempts');
 }
 
-// ============================================
-// MAIN SUBMIT FUNCTION (WITH AUTO-GENERATED DATA_ID)
-// ============================================
 async function submitHeadAndMembers() {
+const headName = document.getElementById("householdHead")?.value || 'Household';
     if (window.isSaving) {
         console.log('Save in progress, queuing request...');
         return new Promise((resolve, reject) => {
@@ -5494,42 +5910,113 @@ async function submitHeadAndMembers() {
             throw new Error("Database connection not initialized. Please refresh the page.");
         }
         
-        // Collect files for upload
-        const categories = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
-        let totalFiles = categories.filter(cat => headCalamityFiles[cat]).length;
-        
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            if (totalFiles > 0) submitBtn.innerHTML = `<i class="fas fa-spinner fa-pulse"></i> Uploading 0/${totalFiles}...`;
-            else submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Saving...';
+        // Validate head form first
+        if (!validateHeadForm()) {
+            const validationSummary = document.getElementById('validationSummaryHead');
+            if (validationSummary && validationSummary.classList.contains('show')) {
+                validationSummary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            throw new Error("Please complete all required fields.");
         }
         
-        // Upload files in parallel
-        const uploadPromises = [];
-        let currentFile = 0;
+        // Validate members if any
+        const memberCount = parseInt(document.getElementById("memberCount").value || 0);
+        showSavingModal(headName, memberCount);
         
-        for (const category of categories) {
-            if (headCalamityFiles[category]) {
-                currentFile++;
-                if (submitBtn && totalFiles > 0) {
-                    submitBtn.innerHTML = `<i class="fas fa-spinner fa-pulse"></i> Uploading ${currentFile}/${totalFiles}...`;
-                }
-                uploadPromises.push(
-                    uploadFileToSupabase(headCalamityFiles[category], category, null) // Pass null, ID will come from DB
-                        .then(url => ({ category, url }))
-                );
+        // IMPORTANT: If memberCount is 0, collectedMembers should be empty array
+        if (memberCount === 0) {
+            collectedMembers = [];
+        } else if (collectedMembers.length !== memberCount) {
+            throw new Error(`Please complete all ${memberCount} member(s) before saving. Only ${collectedMembers.length} member(s) were collected.`);
+        }
+        
+        // Check if all members have names
+        if (memberCount > 0) {
+            const incompleteMembers = collectedMembers.filter(m => !m["Name of Household Member/s"] || m["Name of Household Member/s"].trim() === "");
+            if (incompleteMembers.length > 0) {
+                throw new Error(`Please fill in names for all ${memberCount} member(s). ${incompleteMembers.length} member(s) are incomplete.`);
             }
         }
         
-        const uploadResults = await Promise.all(uploadPromises);
-        const uploadedUrls = { damage: null, injury: null, habitability: null, livelihood: null, additional: null };
-        uploadResults.forEach(result => {
-            if (result.url) uploadedUrls[result.category] = result.url;
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Preparing data...';
+        }
+        
+        // ============================================
+        // UPLOAD ALL FILES FIRST (HEAD + MEMBERS)
+        // ============================================
+        
+        // Track total files for progress
+        let totalFiles = 0;
+        let uploadedFiles = 0;
+        
+        // Count HEAD files
+        const headCategories = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
+        headCategories.forEach(cat => {
+            if (headCalamityFiles[cat]) totalFiles++;
         });
         
-        if (submitBtn && totalFiles > 0) submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Saving data...';
+        // Count member files
+        if (memberCount > 0) {
+            for (let i = 0; i < collectedMembers.length; i++) {
+                const member = collectedMembers[i];
+                const memberFileCategories = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
+                memberFileCategories.forEach(cat => {
+                    if (member[`_file_${cat}`]) totalFiles++;
+                });
+            }
+        }
         
-        // Collect HEAD data
+        if (submitBtn && totalFiles > 0) {
+            submitBtn.innerHTML = `<i class="fas fa-spinner fa-pulse"></i> Uploading 0/${totalFiles} files...`;
+        }
+        
+        function updateFileProgress() {
+            uploadedFiles++;
+            if (submitBtn && totalFiles > 0) {
+                submitBtn.innerHTML = `<i class="fas fa-spinner fa-pulse"></i> Uploading ${uploadedFiles}/${totalFiles} files...`;
+            }
+        }
+        
+        // Upload HEAD files
+        const headUploadedUrls = {};
+        for (const category of headCategories) {
+            if (headCalamityFiles[category]) {
+                const url = await uploadFileToSupabase(headCalamityFiles[category], `head_${category}`, 'pending');
+                if (url) headUploadedUrls[category] = url;
+                updateFileProgress();
+            }
+        }
+        
+        // Upload MEMBER files and store them with member data
+        const memberUploadedFiles = [];
+        if (memberCount > 0) {
+            for (let i = 0; i < collectedMembers.length; i++) {
+                const member = collectedMembers[i];
+                const memberUrls = {};
+                const memberFileCategories = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
+                
+                for (const category of memberFileCategories) {
+                    const fileKey = `_file_${category}`;
+                    if (member[fileKey]) {
+                        const url = await uploadFileToSupabase(member[fileKey], `member_${i}_${category}`, 'pending');
+                        if (url) memberUrls[category] = url;
+                        updateFileProgress();
+                    }
+                }
+                memberUploadedFiles.push(memberUrls);
+            }
+        }
+        
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Saving household data...';
+        }
+        
+        // ============================================
+        // COLLECT HEAD DATA
+        // ============================================
+        
         const headBirthInput = document.getElementById("householdBirthdate").value;
         const headBirthForSheet = headBirthInput ? toSheetDateFormat(headBirthInput) : null;
         const headAgeInfo = headBirthInput ? computeAgeDetailed(headBirthInput) : null;
@@ -5561,7 +6048,10 @@ async function submitHeadAndMembers() {
             }
         }
         
-        // Collect livestock data
+        // ============================================
+        // COLLECT LIVESTOCK DATA
+        // ============================================
+        
         const livestockData = [];
         const animals = [
             { type: 'Dog', chk: 'dog_chk', qty: 'dog_qty' },
@@ -5578,8 +6068,11 @@ async function submitHeadAndMembers() {
                 const qtyInput = document.getElementById(animal.qty);
                 const quantity = qtyInput && qtyInput.value ? parseInt(qtyInput.value) : 1;
                 livestockData.push({ 
-                    animal_type: animal.type, has_animal: true, quantity: quantity,
-                    animal_name: animal.type, others_description: null
+                    animal_type: animal.type, 
+                    has_animal: true, 
+                    quantity: quantity,
+                    animal_name: animal.type, 
+                    others_description: null
                 });
             }
         }
@@ -5587,12 +6080,18 @@ async function submitHeadAndMembers() {
         const othersText = document.getElementById("animals_others").value;
         if (othersText && othersText.trim()) {
             livestockData.push({ 
-                animal_type: 'Others', has_animal: true, quantity: 1,
-                animal_name: othersText, others_description: othersText
+                animal_type: 'Others', 
+                has_animal: true, 
+                quantity: 1,
+                animal_name: othersText, 
+                others_description: othersText
             });
         }
         
-        // Collect government assistance
+        // ============================================
+        // COLLECT GOVERNMENT ASSISTANCE (HEAD)
+        // ============================================
+        
         const govAssistance = [];
         const govPrograms = [
             { chk: 'ass_tupad', date: 'ass_tupad_date_input', name: 'TUPAD' },
@@ -5627,7 +6126,10 @@ async function submitHeadAndMembers() {
             });
         }
         
-        // Collect displacement reasons
+        // ============================================
+        // COLLECT DISPLACEMENT REASONS (HEAD)
+        // ============================================
+        
         const displacementReasonsList = [];
         const displacementMapping = [
             { id: 'displacement_taal', type: 'Taal Volcano' },
@@ -5653,44 +6155,52 @@ async function submitHeadAndMembers() {
                                     (outsideAssembly ? document.getElementById("outside_transport")?.value || "" : "");
         
         // ============================================
-        // INSERT HOUSEHOLD - LET DATABASE AUTO-GENERATE data_id
+        // COLLECT CALAMITY IMPACTS (HEAD)
         // ============================================
-        const { data: household, error: hError } = await supabaseClient
-            .from('households')
-            .insert([{
-                // REMOVED: data_id - let database auto-generate
-                barangay: document.getElementById("barangay").value,
-                sitio_purok: document.getElementById("sitio").value,
-                head_name: document.getElementById("householdHead").value,
-                contact_number: document.getElementById("contactNo").value,
-                no_of_members: membersToCollect,
-                fishr_registration: headRegistrationValue,
-                coordinate_lat: coordinateLat,
-                coordinate_lng: coordinateLng,
-                submitted_on: currentTimestamp,
-                submitted_by: currentUserFullName,
-                updated_on: null,
-                updated_by: null
-            }])
-            .select()
-            .single();
         
-        if (hError) throw new Error(`Household insert failed: ${hError.message}`);
+        const damageResponse = document.querySelector('input[name="head_damage"]:checked')?.value || 'No';
+        const injuryResponse = document.querySelector('input[name="head_injury"]:checked')?.value || 'No';
+        const habitabilityResponse = document.querySelector('input[name="head_habitability"]:checked')?.value || 'No';
+        const livelihoodResponse = document.querySelector('input[name="head_livelihood"]:checked')?.value || 'No';
         
-        // Get the auto-generated data_id from the response
-        const nextDataId = household.data_id;
-        console.log('Auto-generated Data ID:', nextDataId);
+        // ============================================
+        // COLLECT CALAMITY DOCUMENTS (HEAD)
+        // ============================================
         
-        // Prepare HEAD person data
+        const calamityDocs = [];
+        const docTypes = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
+        const docTypeNames = {
+            damage: 'Structural Damage',
+            injury: 'Household Injury',
+            habitability: 'Habitability',
+            livelihood: 'Loss of Livelihood',
+            additional: 'Additional Attachment'
+        };
+        
+        docTypes.forEach(type => {
+            if (headUploadedUrls[type]) {
+                calamityDocs.push({
+                    document_type: docTypeNames[type],
+                    file_url: headUploadedUrls[type],
+                    details: document.getElementById(`head_${type}_details`)?.value || '',
+                    calamity_response: type !== 'additional' ? document.querySelector(`input[name="head_${type}"]:checked`)?.value || 'No' : null,
+                    uploaded_by: currentUserFullName,
+                    uploaded_at: currentTimestamp
+                });
+            }
+        });
+        
+        // ============================================
+        // PREPARE HEAD PERSON DATA
+        // ============================================
+        
         const headPersonData = {
-            household_id: household.id,
-            person_type: 'HEAD',
             name: document.getElementById("householdHead").value,
-            contact_number: document.getElementById("contactNo").value,
             gender: document.querySelector('input[name="head_gender"]:checked')?.value || '',
             birthdate: headBirthForSheet,
-            age: headAgeInfo?.ageValue || headAgeInfo?.display || "",
-            age_category: headAgeInfo?.ageCategory || headAgeInfo?.stage || "",
+            age: headAgeInfo?.display || "",
+            age_category: headAgeInfo?.stage || "",
+            contact_number: document.getElementById("contactNo").value,
             solo_parenting: document.getElementById("soloParenting").checked,
             lactating: document.getElementById("lactating").checked,
             pregnant: document.getElementById("pregnant").checked,
@@ -5704,99 +6214,51 @@ async function submitHeadAndMembers() {
             job_title: document.getElementById("jobTitle").value || '',
             is_ofw: document.querySelector('input[name="ofw_status"]:checked')?.value === 'Yes',
             ofw_country: document.getElementById("country").value || '',
+            created_by: currentUserFullName,
             created_at: currentTimestamp,
+            updated_by: currentUserFullName,
             updated_at: currentTimestamp
         };
         
-        // Prepare MEMBERS data
-        const memberRecords = [];
-        const validMembers = [];
+        // ============================================
+        // PREPARE HOUSEHOLD DATA
+        // ============================================
         
-        for (let i = 0; i < membersToCollect; i++) {
-            const member = collectedMembers[i];
-            if (member && member["Name of Household Member/s"] && member["Name of Household Member/s"].trim() !== "") {
-                validMembers.push(member);
-                const memberAgeInfo = member.Birthdate ? computeAgeDetailed(member.Birthdate) : null;
-                
-                memberRecords.push({
-                    household_id: household.id,
-                    person_type: 'MEMBER',
-                    name: member["Name of Household Member/s"],
-                    contact_number: member["Contact no."] || null,
-                    gender: member.Gender || '',
-                    birthdate: member.Birthdate ? toSheetDateFormat(member.Birthdate) : null,
-                    age: memberAgeInfo?.ageValue || memberAgeInfo?.display || "",
-                    age_category: memberAgeInfo?.ageCategory || memberAgeInfo?.stage || "",
-                    solo_parenting: member["Solo Parenting"] === 'Yes',
-                    lactating: member.Lactating === 'Yes',
-                    pregnant: member.Pregnant === 'Yes',
-                    is_pwd: member["Persons with Disability (PWD)"] === 'Yes',
-                    disability_type: member["Type of Disability"] || '',
-                    fishr_registration: member["FishR Registered/RSBSA Registered"] || '',
-                    status: member.Status || '',
-                    educational_attainment: member["Educational Attainment"] || '',
-                    college_graduate_course: member["College Graduate Course"] || '',
-                    employment_status: member.Employment || '',
-                    job_title: member["Job Title"] || '',
-                    is_ofw: member["Overseas Filipino Worker(OFW)"] === 'Yes',
-                    ofw_country: member.Country || '',
-                    created_at: currentTimestamp,
-                    updated_at: currentTimestamp
-                });
-            }
-        }
+        const householdData = {
+            barangay: document.getElementById("barangay").value,
+            sitio_purok: document.getElementById("sitio").value,
+            head_name: document.getElementById("householdHead").value,
+            contact_number: document.getElementById("contactNo").value,
+            no_of_members: collectedMembers.length,
+            fishr_registration: headRegistrationValue,
+            coordinate_lat: coordinateLat,
+            coordinate_lng: coordinateLng,
+            submitted_on: currentTimestamp,
+            submitted_by: currentUserFullName
+        };
         
-        // Insert all persons in ONE batch
-        const allPersons = [headPersonData, ...memberRecords];
-        const { data: insertedPersons, error: personsError } = await supabaseClient
-            .from('persons')
-            .insert(allPersons)
-            .select();
+        // ============================================
+        // PREPARE ASSEMBLY AREA DATA
+        // ============================================
         
-        if (personsError) throw new Error(`Persons insert failed: ${personsError.message}`);
-        
-        const headPerson = insertedPersons[0];
-        const memberPersons = insertedPersons.slice(1);
-        
-        // Batch insert livestock
-        if (livestockData.length > 0) {
-            const livestockWithHousehold = livestockData.map(l => ({ ...l, household_id: household.id }));
-            await supabaseClient.from('livestock').insert(livestockWithHousehold);
-        }
-        
-        // Insert HEAD's related data
-        if (govAssistance.length > 0) {
-            const govWithIds = govAssistance.map(g => ({ ...g, person_id: headPerson.id, household_id: household.id }));
-            await supabaseClient.from('gov_assistance').insert(govWithIds);
-        }
-        
-        if (displacementReasonsList.length > 0) {
-            const dispWithIds = displacementReasonsList.map(d => ({ ...d, person_id: headPerson.id, household_id: household.id }));
-            await supabaseClient.from('displacement_reasons').insert(dispWithIds);
-        }
-        
+        let assemblyAreaData = null;
         if (insideAssembly || outsideAssembly) {
-            await supabaseClient.from('assembly_areas').insert([{
-                person_id: headPerson.id,
-                household_id: household.id,
+            assemblyAreaData = {
                 inside_assembly: insideAssembly,
                 outside_assembly: outsideAssembly,
                 pickup_location: document.getElementById("pickup")?.value || '',
                 assembly_area_name: document.getElementById("assembly_area")?.value || '',
                 family_host_name: document.getElementById("family_host")?.value || '',
                 host_contact_number: document.getElementById("host_contact")?.value || '',
-                transportation_type: transportationValue || ''
-            }]);
+                transportation_type: transportationValue
+            };
         }
         
-        // HEAD calamity impacts
-        const damageResponse = document.querySelector('input[name="head_damage"]:checked')?.value || 'No';
-        const injuryResponse = document.querySelector('input[name="head_injury"]:checked')?.value || 'No';
-        const habitabilityResponse = document.querySelector('input[name="head_habitability"]:checked')?.value || 'No';
-        const livelihoodResponse = document.querySelector('input[name="head_livelihood"]:checked')?.value || 'No';
+        // ============================================
+        // PREPARE CALAMITY IMPACTS DATA
+        // ============================================
         
-        await supabaseClient.from('calamity_impacts').insert([{
-            household_id: household.id,
+        const calamityImpactsData = {
             structural_damage: damageResponse,
             structural_damage_details: document.getElementById('head_damage_details')?.value || '',
             household_injury: injuryResponse,
@@ -5806,84 +6268,97 @@ async function submitHeadAndMembers() {
             loss_of_livelihood: livelihoodResponse,
             livelihood_details: document.getElementById('head_livelihood_details')?.value || '',
             additional_details: document.getElementById('head_additional_details')?.value || ''
-        }]);
+        };
         
-        // HEAD calamity documents
-        const calamityDocs = [];
-        const docTypes = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
-        docTypes.forEach(type => {
-            if (uploadedUrls[type]) {
-                calamityDocs.push({
-                    household_id: household.id,
-                    document_type: type === 'damage' ? 'Structural Damage' :
-                                  type === 'injury' ? 'Household Injury' :
-                                  type === 'habitability' ? 'Habitability' :
-                                  type === 'livelihood' ? 'Loss of Livelihood' : 'Additional Attachment',
-                    file_url: uploadedUrls[type],
-                    details: document.getElementById(`head_${type}_details`)?.value || '',
-                    calamity_response: type !== 'additional' ? document.querySelector(`input[name="head_${type}"]:checked`)?.value || 'No' : null,
-                    uploaded_by: currentUserFullName,
-                    uploaded_at: currentTimestamp
-                });
+        // ============================================
+        // PREPARE MEMBERS DATA (COMPLETE)
+        // ============================================
+        
+        const memberRecords = [];
+        
+        for (let i = 0; i < collectedMembers.length; i++) {
+            const member = collectedMembers[i];
+            if (!member["Name of Household Member/s"] || member["Name of Household Member/s"].trim() === "") continue;
+            
+            const memberBirthInput = member.Birthdate;
+            const memberBirthForSheet = memberBirthInput ? toSheetDateFormat(memberBirthInput) : null;
+            const memberAgeInfo = memberBirthInput ? computeAgeDetailed(memberBirthInput) : null;
+            
+            // Get member registration value
+            let memberRegistrationValue = member["FishR Registered/RSBSA Registered"] || "";
+            
+            // Get member status (handle "Others")
+            let memberStatusValue = member.Status || "";
+            if (memberStatusValue === "Others" && member.StatusOthers) {
+                memberStatusValue = member.StatusOthers;
             }
-        });
-        
-        if (calamityDocs.length > 0) {
-            await supabaseClient.from('calamity_documents').insert(calamityDocs);
-        }
-        
-        // Process MEMBERS data
-        // Process MEMBERS data
-        for (let idx = 0; idx < validMembers.length; idx++) {
-            const member = validMembers[idx];
-            const memberPerson = memberPersons[idx];
             
-            if (!memberPerson) continue;
+            // Get member AICS value
+            const memberAicsValue = member.AICS || "";
+            const memberAicsDateValue = member.AICS_Date || "";
             
-            // Upload member files
-            const memberUploadedUrls = await uploadMemberFilesForPerson(memberPerson.id, household.id, idx, memberCalamityFiles);
-            
-            // Member displacement reasons
-            const memberDisplacement = [];
-            const displacementMapping = [
-                { type: 'Taal Volcano (Within 14-15 KM Danger Zone)', field: 'Taal Volcano (Within 14-15 KM Danger Zone)' },
-                { type: 'Typhoon', field: 'Typhoon' },
-                { type: 'Flood', field: 'Flood' },
-                { type: 'Landslide', field: 'Landslide' },
-                { type: 'Earthquake', field: 'Earthquake' },
-                { type: 'Fire', field: 'Fire' }
+            // Prepare member government assistance
+            const memberGovAssistance = [];
+            const memberGovPrograms = [
+                { name: 'TUPAD', value: member.TUPAD, date: member.TUPAD_Date },
+                { name: 'Local 4Ps', value: member["Local 4Ps"], date: member["Local 4Ps_Date"] },
+                { name: 'National 4Ps', value: member["National 4Ps"], date: member["National 4Ps_Date"] },
+                { name: 'Local Social Pension', value: member["Local Social Pension"], date: member["Local Social Pension_Date"] },
+                { name: 'National Social Pension', value: member["National Social Pension"], date: member["National Social Pension_Date"] },
+                { name: 'Solo Parent Assistance', value: member["Solo Parent Assistance"], date: member["Solo Parent Assistance_Date"] },
+                { name: 'Relief Goods', value: member["Relief Goods"], date: member["Relief Goods_Date"] },
+                { name: 'Cash Subsidy', value: member["Cash Subsidy"], date: member["Cash Subsidy_Date"] }
             ];
             
-            displacementMapping.forEach(item => {
-                if (member[item.field] === 'Yes') {
-                    memberDisplacement.push({ 
-                        reason_type: item.type, 
-                        is_affected: true, 
-                        person_id: memberPerson.id, 
-                        household_id: household.id 
+            const memberGovAssistanceList = [];
+            memberGovPrograms.forEach(prog => {
+                if (prog.value === 'Yes') {
+                    memberGovAssistanceList.push({
+                        assistance_type: prog.name,
+                        received_date: prog.date && prog.date !== "" ? prog.date : null,
+                        is_received: true
                     });
                 }
             });
             
-            if (member["Other Reasons"] && member["Other Reasons"].trim() !== "") {
-                memberDisplacement.push({ 
-                    reason_type: 'Other', 
-                    other_reason_text: member["Other Reasons"], 
-                    is_affected: true, 
-                    person_id: memberPerson.id, 
-                    household_id: household.id 
+            // Add AICS for member
+            if (memberAicsValue && memberAicsValue !== "" && memberAicsValue !== "None") {
+                let assistanceType = memberAicsValue;
+                if (!assistanceType.includes('AICS')) {
+                    assistanceType = 'AICS - ' + assistanceType;
+                }
+                memberGovAssistanceList.push({
+                    assistance_type: assistanceType,
+                    received_date: memberAicsDateValue && memberAicsDateValue !== "" ? memberAicsDateValue : null,
+                    is_received: true
                 });
             }
             
-            if (memberDisplacement.length > 0) {
-                await supabaseClient.from('displacement_reasons').insert(memberDisplacement);
+            // Prepare member displacement reasons
+            const memberDisplacementList = [];
+            const memberDisplacementMapping = [
+                { type: 'Taal Volcano', value: member["Taal Volcano"] || member["Taal Volcano (Within 14-15 KM Danger Zone)"] },
+                { type: 'Typhoon', value: member.Typhoon },
+                { type: 'Flood', value: member.Flood },
+                { type: 'Landslide', value: member.Landslide },
+                { type: 'Earthquake', value: member.Earthquake },
+                { type: 'Fire', value: member.Fire }
+            ];
+            
+            memberDisplacementMapping.forEach(item => {
+                if (item.value === 'Yes') {
+                    memberDisplacementList.push({ reason_type: item.type, is_affected: true });
+                }
+            });
+            
+            if (member["Other Reasons"] && member["Other Reasons"].trim() !== "") {
+                memberDisplacementList.push({ reason_type: 'Other', other_reason_text: member["Other Reasons"], is_affected: true });
             }
             
-            // Member assembly area
+            // Prepare member assembly area
+            let memberAssemblyData = null;
             if (member["Inside Assembly Area"] === 'Yes' || member["Outside Assembly Area"] === 'Yes') {
-                await supabaseClient.from('assembly_areas').insert([{
-                    person_id: memberPerson.id,
-                    household_id: household.id,
+                memberAssemblyData = {
                     inside_assembly: member["Inside Assembly Area"] === 'Yes',
                     outside_assembly: member["Outside Assembly Area"] === 'Yes',
                     pickup_location: member["Pick-Up Location"] || '',
@@ -5891,72 +6366,11 @@ async function submitHeadAndMembers() {
                     family_host_name: member["Family/Relative Host"] || '',
                     host_contact_number: member["Host_Contact"] || '',
                     transportation_type: member["Transportation"] || ''
-                }]);
+                };
             }
             
-            // Member government assistance
-            const memberGovAssistance = [];
-            const memberGovPrograms = [
-                { name: 'TUPAD', dateField: 'TUPAD_Date', isReceived: member["TUPAD"] === 'Yes' },
-                { name: 'Local 4Ps', dateField: 'Local 4Ps_Date', isReceived: member["Local 4Ps"] === 'Yes' },
-                { name: 'National 4Ps', dateField: 'National 4Ps_Date', isReceived: member["National 4Ps"] === 'Yes' },
-                { name: 'Local Social Pension', dateField: 'Local Social Pension_Date', isReceived: member["Local Social Pension"] === 'Yes' },
-                { name: 'National Social Pension', dateField: 'National Social Pension_Date', isReceived: member["National Social Pension"] === 'Yes' },
-                { name: 'Solo Parent Assistance', dateField: 'Solo Parent Assistance_Date', isReceived: member["Solo Parent Assistance"] === 'Yes' },
-                { name: 'Relief Goods', dateField: 'Relief Goods_Date', isReceived: member["Relief Goods"] === 'Yes' },
-                { name: 'Cash Subsidy', dateField: 'Cash Subsidy_Date', isReceived: member["Cash Subsidy"] === 'Yes' }
-            ];
-            
-            memberGovPrograms.forEach(prog => {
-                if (prog.isReceived) {
-                    const dateValue = member[prog.dateField];
-                    memberGovAssistance.push({
-                        person_id: memberPerson.id,
-                        household_id: household.id,
-                        assistance_type: prog.name,
-                        is_received: true,
-                        received_date: dateValue && dateValue !== "" ? dateValue : null
-                    });
-                }
-            });
-            
-            // FIXED: AICS for member - ensure it's saved with correct format
-            const memberAicsValue = member["AICS"];
-            const memberAicsDate = member["AICS_Date"];
-            
-            console.log('🔍 Saving member AICS:', memberAicsValue, 'Date:', memberAicsDate);
-            
-            if (memberAicsValue && memberAicsValue !== "" && memberAicsValue !== "None") {
-                // Format the assistance type with prefix if not already
-                let assistanceType = memberAicsValue;
-                if (!assistanceType.includes('AICS')) {
-                    assistanceType = 'AICS - ' + assistanceType;
-                }
-                
-                memberGovAssistance.push({
-                    person_id: memberPerson.id,
-                    household_id: household.id,
-                    assistance_type: assistanceType,
-                    is_received: true,
-                    received_date: memberAicsDate && memberAicsDate !== "" ? memberAicsDate : null
-                });
-                console.log('✅ AICS saved:', assistanceType, 'Date:', memberAicsDate);
-            } else {
-                console.log('⚠️ No AICS to save');
-            }
-            
-            // Debug log to verify
-            console.log('Total member gov assistance records:', memberGovAssistance.length);
-            
-            if (memberGovAssistance.length > 0) {
-                await supabaseClient.from('gov_assistance').insert(memberGovAssistance);
-                console.log('✅ Member gov assistance saved successfully');
-            }
-            
-            // Member calamity impacts (with person_id)
-            await supabaseClient.from('calamity_impacts').insert([{
-                person_id: memberPerson.id,
-                household_id: household.id,
+            // Prepare member calamity impacts
+            const memberCalamityImpactsData = {
                 structural_damage: member["Structural Damage"] || 'No',
                 structural_damage_details: member["Structural Damage Details"] || '',
                 household_injury: member["Household Injury"] || 'No',
@@ -5966,12 +6380,12 @@ async function submitHeadAndMembers() {
                 loss_of_livelihood: member["Loss of Livelihood"] || 'No',
                 livelihood_details: member["Livelihood Details"] || '',
                 additional_details: member["Additional Details"] || ''
-            }]);
+            };
             
-            // Member calamity documents
-            const memberCalamityDocs = [];
-            const docTypes = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
-            const docTypeNames = {
+            // Prepare member calamity documents
+            const memberCalamityDocsList = [];
+            const memberDocTypes = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
+            const memberDocTypeNames = {
                 damage: 'Structural Damage',
                 injury: 'Household Injury',
                 habitability: 'Habitability',
@@ -5979,69 +6393,121 @@ async function submitHeadAndMembers() {
                 additional: 'Additional Attachment'
             };
             
-            docTypes.forEach(type => {
-                if (memberUploadedUrls[type]) {
-                    memberCalamityDocs.push({
-                        person_id: memberPerson.id,
-                        household_id: household.id,
-                        document_type: docTypeNames[type],
-                        file_url: memberUploadedUrls[type],
-                        details: document.getElementById(`member_${type}_details`)?.value || '',
-                        calamity_response: type !== 'additional' ? (member[type === 'damage' ? 'Structural Damage' : 
+            if (memberUploadedFiles[i]) {
+                memberDocTypes.forEach(type => {
+                    if (memberUploadedFiles[i][type]) {
+                        memberCalamityDocsList.push({
+                            document_type: memberDocTypeNames[type],
+                            file_url: memberUploadedFiles[i][type],
+                            details: member[`${type}Details`] || '',
+                            calamity_response: type !== 'additional' ? member[type === 'damage' ? 'Structural Damage' : 
                                                                          type === 'injury' ? 'Household Injury' :
                                                                          type === 'habitability' ? 'Habitability' : 
-                                                                         'Loss of Livelihood'] || 'No') : null,
-                        uploaded_by: currentUserFullName,
-                        uploaded_at: currentTimestamp
-                    });
-                }
-            });
-            
-            if (memberCalamityDocs.length > 0) {
-                await supabaseClient.from('calamity_documents').insert(memberCalamityDocs);
+                                                                         'Loss of Livelihood'] || 'No' : null,
+                            uploaded_by: currentUserFullName,
+                            uploaded_at: currentTimestamp
+                        });
+                    }
+                });
             }
+            
+            memberRecords.push({
+                name: member["Name of Household Member/s"],
+                gender: member.Gender || '',
+                birthdate: memberBirthForSheet,
+                age: memberAgeInfo?.display || "",
+                age_category: memberAgeInfo?.stage || "",
+                contact_number: member["Contact no."] || "",
+                solo_parenting: member["Solo Parenting"] === 'Yes',
+                lactating: member.Lactating === 'Yes',
+                pregnant: member.Pregnant === 'Yes',
+                is_pwd: member["Persons with Disability (PWD)"] === 'Yes',
+                disability_type: member["Type of Disability"] || '',
+                fishr_registration: memberRegistrationValue,
+                status: memberStatusValue,
+                educational_attainment: member["Educational Attainment"] || '',
+                college_graduate_course: member["College Graduate Course"] || '',
+                employment_status: member.Employment || '',
+                job_title: member["Job Title"] || '',
+                is_ofw: member["Overseas Filipino Worker(OFW)"] === 'Yes',
+                ofw_country: member.Country || '',
+                gov_assistance: memberGovAssistanceList,
+                displacement_reasons: memberDisplacementList,
+                assembly_area: memberAssemblyData,
+                calamity_impacts: memberCalamityImpactsData,
+                calamity_documents: memberCalamityDocsList,
+                created_by: currentUserFullName,
+                created_at: currentTimestamp,
+                updated_by: currentUserFullName,
+                updated_at: currentTimestamp
+            });
         }
         
-        // Audit log
+        // ============================================
+        // CALL THE RPC - ONE TRANSACTION
+        // ============================================
+        
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Finalizing...';
+        }
+        
+        const { data: result, error: rpcError } = await supabaseClient.rpc('create_household_transaction', {
+            p_household_data: householdData,
+            p_head_person: headPersonData,
+            p_members: memberRecords,
+            p_livestock: livestockData,
+            p_gov_assistance: govAssistance,
+            p_displacement_reasons: displacementReasonsList,
+            p_assembly_area: assemblyAreaData,
+            p_calamity_impacts: calamityImpactsData,
+            p_calamity_documents: calamityDocs
+        });
+        
+        if (rpcError) {
+            console.error('RPC Error:', rpcError);
+            throw new Error(`Save failed: ${rpcError.message}`);
+        }
+        
+        if (!result || !result.success) {
+            throw new Error(result?.message || 'Save failed. Please try again.');
+        }
+        
+        const endTime = performance.now();
+        hideSavingModal();
+        showSuccess(`Record saved! (ID: ${result.data_id}) - ${Math.round(endTime - startTime)}ms`);
+        
+        // ============================================
+        // AUDIT LOG
+        // ============================================
+        
+        const householdHeadName = document.getElementById("householdHead").value.trim();
+        const barangaySelected = document.getElementById("barangay").value;
+        
         try {
             await supabaseClient.from('audit_logs').insert([{
-                action: 'Create Record',
+                action: 'CREATE',
                 actor: currentUserFullName,
                 target_table: 'households',
-                details: `Created household ID ${nextDataId} in ${document.getElementById("barangay").value}`,
+                details: `Created household "${householdHeadName}" in ${barangaySelected}`,
                 created_at: currentTimestamp
             }]);
+            console.log('✅ Audit log created by:', currentUserFullName);
         } catch (auditErr) {
             console.warn('Audit log warning:', auditErr.message);
         }
         
-        const endTime = performance.now();
-            showSuccess(`Record saved! (ID: ${nextDataId}) - ${Math.round(endTime - startTime)}ms`);
-            
-            // ========== AUDIT LOGGING - CREATE RECORD ==========
-            try {
-                // Get user's full name (from localStorage)
-                const staffName = localStorage.getItem('staffName');
-                const username = localStorage.getItem('username');
-                const currentUser = (staffName && staffName.trim() !== '') ? staffName : (username || 'Unknown User');
-                const userRole = localStorage.getItem('userRole') || 'Staff';
-                const barangaySelected = document.getElementById("barangay").value;
-                const sitioSelected = document.getElementById("sitio").value;
-                
-                await supabaseClient.from('audit_logs').insert({
-                    action: 'CREATE',
-                    actor: currentUser,           // Use actor column
-                    target_table: 'households',
-                    details: `Created household record in ${barangaySelected}, ${sitioSelected} | Head: ${document.getElementById("householdHead").value}`,
-                    user_name: currentUser,       // Also populate for compatibility
-                    user_role: userRole,
-                    entity_type: 'household',
-                    created_at: new Date().toISOString()
-                });
-                console.log('✅ Audit log created by:', currentUser);
-            } catch (auditErr) {
-                console.warn('Audit log warning:', auditErr.message);
-            }
+        // ============================================
+        // CLEAR MEMBER CALAMITY FILES FROM STORAGE
+        // ============================================
+        
+        // Clear memberCalamityFiles object
+        for (let i = 0; i < collectedMembers.length; i++) {
+            const member = collectedMembers[i];
+            const memberFileCategories = ['damage', 'injury', 'habitability', 'livelihood', 'additional'];
+            memberFileCategories.forEach(cat => {
+                delete member[`_file_${cat}`];
+            });
+        }
         
         // Process queue
         if (window.saveQueue.length > 0) {
@@ -6054,10 +6520,14 @@ async function submitHeadAndMembers() {
         // Redirect or stay
         const activeToggle = document.querySelector('#afterSaveToggle .toggle-btn.active');
         const stayOnPage = activeToggle?.getAttribute('data-action') === 'stay';
-        
+
+        hideSavingModal();  // ← ADD THIS BEFORE redirect
+
         if (!stayOnPage) {
+            hideSavingModal();  // ← ADD THIS LINE
             setTimeout(() => window.location.href = "records.html?fresh=true", 1500);
         } else {
+            hideSavingModal();  // ← ADD THIS LINE
             setTimeout(() => {
                 resetForm();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6065,6 +6535,7 @@ async function submitHeadAndMembers() {
         }
         
     } catch (err) {
+        hideSavingModal();
         console.error("SUBMIT ERROR:", err);
         showError("Save failed: " + (err.message || "Unknown error"));
         
@@ -6144,14 +6615,22 @@ function proceedToMemberPanel() {
     for (let i = 0; i < membersToCollect; i++) collectedMembers.push(createEmptyMember());
     updateMemberPreview();
     
+    // ============================================
+    // FIX: If member count is 0, save directly
+    // If member count > 0, force member entry
+    // ============================================
     if (membersToCollect === 0) {
+        // No members to collect, save directly
         showModal('saveConfirmationModal');
-        return;
+    } else {
+        // Force user to enter members
+        fillMemberPanel(0);
+        currentMemberIndex = 0;
+        openPanel();
+        
+        // Show info message
+        showInfo(`Please add ${membersToCollect} member(s). You cannot save until all members are added.`);
     }
-    
-    fillMemberPanel(0);
-    currentMemberIndex = 0;
-    openPanel();
 }
 
 // ============================================
@@ -7209,8 +7688,31 @@ document.addEventListener('DOMContentLoaded', function() {
             collectedMembers[currentMemberIndex] = collectMemberDataFromPanel();
             updateMemberPreview();
             currentMemberIndex++;
+            
             if (currentMemberIndex >= membersToCollect) {
                 updateMemberPreview();
+                
+                // ========== ADD THIS CHECK ==========
+                // Verify all members were properly filled
+                const allMembersFilled = collectedMembers.every(member => 
+                    member && member["Name of Household Member/s"] && member["Name of Household Member/s"].trim() !== ""
+                );
+                
+                if (!allMembersFilled) {
+                    showError("Please complete all member information before saving.");
+                    // Reopen panel at the first empty member
+                    const emptyIndex = collectedMembers.findIndex(member => 
+                        !member || !member["Name of Household Member/s"] || member["Name of Household Member/s"].trim() === ""
+                    );
+                    if (emptyIndex !== -1) {
+                        currentMemberIndex = emptyIndex;
+                        fillMemberPanel(currentMemberIndex);
+                        openPanel();
+                    }
+                    return;
+                }
+                // ====================================
+                
                 closePanel();
                 setTimeout(() => showModal('saveConfirmationModal'), 100);
                 return;
