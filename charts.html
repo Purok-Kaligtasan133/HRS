@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="css/charts-style.css">
 <script src="js/force-logout.js"></script>
 <script src="js/session-check.js"></script>
+<script src="js/security.js"></script>
 <style>
    :root{
     --bg:#f6f8f7;
@@ -1968,6 +1969,72 @@ li.admin-only.admin-visible {
     </div>
 </div>
 
+<!-- Take Over Warning Modal (Device B) - Matching style -->
+<div id="takeOverWarningModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10003; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Take Over Warning</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                Taking over will immediately log out the other device.
+            </p>
+            <p style="margin: 0; color: #dc2626; font-size: 0.75rem; font-weight: 500;">
+                Any unsaved work on the other device may be lost.
+            </p>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 4px 20px 20px 20px;">
+            <button id="cancelTakeOverBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #ef4444; background: transparent; color: #ef4444;">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button id="confirmTakeOverBtn" style="flex: 1; padding: 6px 10px; border-radius: 6px; font-weight: 500; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); letter-spacing: 0.3px; border: 1.5px solid #0f7a4a; background: transparent; color: #0f7a4a;">
+                <i class="fas fa-check"></i> Take Over
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Force Logout Modal -->
+<div id="adminForceLogoutModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10004; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-user-shield" style="font-size: 1.6rem; color: #ff7a00; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Account Logged Out by Admin</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                An administrator has logged you out from all devices.
+            </p>
+            <div style="margin-top: 12px; background: #fff8e1; padding: 8px; border-radius: 8px;">
+                <div style="font-size: 0.7rem; color: #ff7a00; font-weight: 500;">You will be redirected to login</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #ff7a00;" id="adminForceLogoutCountdown">5</div>
+                <div style="font-size: 0.7rem; color: var(--text-light);">seconds</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Session Taken Over Modal (Device A) - Matching style -->
+<div id="sessionTakenOverModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10003; padding: 16px;">
+    <div style="background: white; border-radius: 12px; max-width: 280px; width: 100%; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05); animation: modalSlideUp 0.2s ease; overflow: hidden;">
+        <div style="padding: 20px 20px 12px 20px; text-align: center;">
+            <div style="margin-bottom: 8px;">
+                <i class="fas fa-exchange-alt" style="font-size: 1.6rem; color: #dc2626; opacity: 0.7;"></i>
+            </div>
+            <h3 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1rem; font-weight: 600;">Session Taken Over!</h3>
+            <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.4;">
+                Another device has taken over this account.
+            </p>
+            <div style="margin-top: 12px; background: #fef2f2; padding: 8px; border-radius: 8px;">
+                <div style="font-size: 0.7rem; color: #dc2626; font-weight: 500;">You will be logged out in</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #dc2626;" id="takeOverCountdown">5</div>
+                <div style="font-size: 0.7rem; color: var(--text-light);">seconds</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- JavaScript Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -2865,8 +2932,6 @@ function setupUserDropdown() {
     }
 }
 
-// ============ UPDATED LOGOUT FUNCTIONS WITH SESSION CLEANUP ============
-
 async function performLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -2936,7 +3001,7 @@ function setupConfirmModal() {
     if (yesBtn) {
         yesBtn.onclick = async function() {
             confirmModal.style.display = 'none';
-            await performLogout();
+            await performLogout();  // ✅ Calls database cleanup + local storage
         };
     }
     
