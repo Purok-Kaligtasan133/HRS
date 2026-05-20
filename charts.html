@@ -2050,7 +2050,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_UwyTZU3BYj41z0D7beu9Hg_pIZcLeWN';
 
 let supabaseClient;
 
-// Wait for supabase to be available
+// Initialize Supabase client
 function initSupabase() {
     if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -2068,14 +2068,12 @@ function initSupabase() {
 
 // Try to initialize immediately, if not, wait for it
 if (!initSupabase()) {
-    // Wait for script to load
     const checkInterval = setInterval(() => {
         if (initSupabase()) {
             clearInterval(checkInterval);
         }
     }, 100);
     
-    // Timeout after 5 seconds
     setTimeout(() => {
         clearInterval(checkInterval);
         if (!supabaseClient) {
@@ -2089,7 +2087,7 @@ if (!initSupabase()) {
 const CH = {};
 
 /* ============ UTILITY FUNCTIONS ============ */
-function showLoading(yes){ 
+function showLoading(yes) { 
     const loading = document.getElementById("loading");
     if (loading) loading.style.display = yes ? "flex" : "none"; 
 }
@@ -2107,16 +2105,88 @@ function showError(message) {
     }
 }
 
+function showInfo(message) {
+    console.log("Info:", message);
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #0f7a4a, #34b78f);
+        color: white;
+        padding: 10px 18px;
+        border-radius: 10px;
+        z-index: 10000;
+        font-size: 0.8rem;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: slideInRight 0.3s ease;
+    `;
+    toast.innerHTML = `<i class="fas fa-info-circle" style="font-size: 0.9rem;"></i> ${message}`;
+    document.body.appendChild(toast);
+    
+    if (!document.querySelector('#toast-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'toast-animation-style';
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 function formatNumber(num) {
     return num.toLocaleString();
 }
 
-function calculatePercentage(part, total) {
-    if (total === 0) return 0;
-    return ((part / total) * 100).toFixed(1);
+/* ============ FETCH ALL DATA WITH PAGINATION ============ */
+async function fetchAllRows(tableName) {
+    let allData = [];
+    let page = 0;
+    const pageSize = 1000;
+    let hasMore = true;
+    
+    while (hasMore) {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
+        
+        const { data, error } = await supabaseClient
+            .from(tableName)
+            .select('*')
+            .range(from, to);
+        
+        if (error) {
+            console.error(`Error fetching ${tableName}:`, error);
+            break;
+        }
+        
+        if (data && data.length > 0) {
+            allData = [...allData, ...data];
+            page++;
+        }
+        
+        if (!data || data.length < pageSize) {
+            hasMore = false;
+        }
+    }
+    
+    return allData;
 }
 
-/* ============ FETCH DATA FROM SUPABASE ============ */
+/* ============ FETCH CHART DATA FROM SUPABASE ============ */
 async function fetchChartDataFromSupabase() {
     if (!supabaseClient) {
         console.error('Supabase client not initialized');
@@ -2124,23 +2194,28 @@ async function fetchChartDataFromSupabase() {
     }
     
     try {
-        console.log("📊 Fetching chart data from Supabase...");
+        console.log("📊 Fetching ALL chart data from Supabase with pagination...");
         
-        // Fetch households and persons data
-        const [householdsResult, personsResult] = await Promise.all([
-            supabaseClient.from('households').select('*'),
-            supabaseClient.from('persons').select('*')
+        // Fetch ALL required tables with pagination
+        const [
+            households,
+            persons,
+            govAssistance,
+            assemblyAreas,
+            livestock,
+            calamityImpacts
+        ] = await Promise.all([
+            fetchAllRows('households'),
+            fetchAllRows('persons'),
+            fetchAllRows('gov_assistance'),
+            fetchAllRows('assembly_areas'),
+            fetchAllRows('livestock'),
+            fetchAllRows('calamity_impacts')
         ]);
         
-        if (householdsResult.error) throw householdsResult.error;
-        if (personsResult.error) throw personsResult.error;
+        console.log(`✅ Loaded: ${households.length} households, ${persons.length} persons, ${govAssistance.length} gov assistance, ${assemblyAreas.length} assembly areas, ${livestock.length} livestock, ${calamityImpacts.length} calamity impacts`);
         
-        const households = householdsResult.data || [];
-        const persons = personsResult.data || [];
-        
-        console.log(`✅ Loaded ${households.length} households, ${persons.length} persons`);
-        
-        // Build lookup map for persons by household
+        // Build lookup maps
         const personsByHousehold = {};
         persons.forEach(p => {
             if (!personsByHousehold[p.household_id]) {
@@ -2149,7 +2224,49 @@ async function fetchChartDataFromSupabase() {
             personsByHousehold[p.household_id].push(p);
         });
         
-        // Process data for aggregation
+        const govByHousehold = {};
+        govAssistance.forEach(g => {
+            if (!govByHousehold[g.household_id]) {
+                govByHousehold[g.household_id] = [];
+            }
+            govByHousehold[g.household_id].push(g);
+        });
+        
+        const assemblyByHousehold = {};
+        assemblyAreas.forEach(a => {
+            if (!assemblyByHousehold[a.household_id]) {
+                assemblyByHousehold[a.household_id] = [];
+            }
+            assemblyByHousehold[a.household_id].push(a);
+        });
+        
+        const livestockByHousehold = {};
+        livestock.forEach(l => {
+            if (!livestockByHousehold[l.household_id]) {
+                livestockByHousehold[l.household_id] = [];
+            }
+            livestockByHousehold[l.household_id].push(l);
+        });
+        
+        const calamityByHousehold = {};
+        calamityImpacts.forEach(c => {
+            if (!calamityByHousehold[c.household_id]) {
+                calamityByHousehold[c.household_id] = {
+                    structural_damage: false,
+                    household_injury: false,
+                    habitability: false,
+                    loss_of_livelihood: false
+                };
+            }
+            
+            // Aggregate - set to true if ANY record has 'Yes'
+            if (c.structural_damage === 'Yes') calamityByHousehold[c.household_id].structural_damage = true;
+            if (c.household_injury === 'Yes') calamityByHousehold[c.household_id].household_injury = true;
+            if (c.habitability === 'Yes') calamityByHousehold[c.household_id].habitability = true;
+            if (c.loss_of_livelihood === 'Yes') calamityByHousehold[c.household_id].loss_of_livelihood = true;
+        });
+        
+        // Initialize aggregation objects
         let totalHeads = 0;
         let totalMembers = 0;
         const barangayData = {};
@@ -2158,15 +2275,19 @@ async function fetchChartDataFromSupabase() {
         const pwdData = { headsYes: 0, headsNo: 0, membersYes: 0, membersNo: 0 };
         const statusData = { heads: {}, members: {} };
         const registrationData = { heads: {}, members: {} };
-        const supportData = { heads: {}, members: {} };
-        const assemblyData = { heads: {}, members: {} };
-        const transportData = { heads: {}, members: {} };
+        const supportData = {};
+        const assemblyData = {};
+        const transportData = {};
         const disabilityTypeData = { heads: {}, members: {} };
         const additionalInfoData = { heads: {}, members: {} };
-        const structuralDamageData = {};
-        const householdInjuryData = {};
-        const habitabilityData = {};
-        const lossLivelihoodData = {};
+        const structuralDamageHeads = {};
+        const structuralDamageMembers = {};
+        const householdInjuryHeads = {};
+        const householdInjuryMembers = {};
+        const habitabilityHeads = {};
+        const habitabilityMembers = {};
+        const lossLivelihoodHeads = {};
+        const lossLivelihoodMembers = {};
         const livestockData = {};
         const ofwData = { heads: 0, members: 0 };
         const educationData = {};
@@ -2178,19 +2299,79 @@ async function fetchChartDataFromSupabase() {
             const householdPersons = personsByHousehold[household.id] || [];
             const headPerson = householdPersons.find(p => p.person_type === 'HEAD');
             const members = householdPersons.filter(p => p.person_type === 'MEMBER');
+            const householdGov = govByHousehold[household.id] || [];
+            const householdAssembly = assemblyByHousehold[household.id] || [];
+            const householdLivestock = livestockByHousehold[household.id] || [];
+            const householdCalamity = calamityByHousehold[household.id] || {
+                structural_damage: false,
+                household_injury: false,
+                habitability: false,
+                loss_of_livelihood: false
+            };
             
-            // Count heads and members
             totalHeads++;
             totalMembers += members.length;
             
-            // Initialize barangay data
             if (!barangayData[barangay]) {
                 barangayData[barangay] = { heads: 0, members: 0 };
             }
             barangayData[barangay].heads++;
             barangayData[barangay].members += members.length;
             
-            // Process all persons (head + members)
+            // Government Support
+            householdGov.forEach(gov => {
+                const assistanceType = gov.assistance_type || 'Unknown';
+                supportData[assistanceType] = (supportData[assistanceType] || 0) + 1;
+            });
+            
+            // Assembly Area & Transportation
+            householdAssembly.forEach(assembly => {
+                if (assembly.inside_assembly) {
+                    assemblyData['Inside Assembly Area'] = (assemblyData['Inside Assembly Area'] || 0) + 1;
+                }
+                if (assembly.outside_assembly) {
+                    assemblyData['Outside Assembly Area'] = (assemblyData['Outside Assembly Area'] || 0) + 1;
+                }
+                if (assembly.transportation_type && assembly.transportation_type !== '') {
+                    const transType = assembly.transportation_type;
+                    transportData[transType] = (transportData[transType] || 0) + 1;
+                }
+            });
+            
+            // Livestock
+            householdLivestock.forEach(animal => {
+                const animalType = animal.animal_type || 'Unknown';
+                const quantity = animal.quantity || 1;
+                livestockData[animalType] = (livestockData[animalType] || 0) + quantity;
+            });
+            
+            // Calamity Impacts - Count HEADS and MEMBERS separately
+            const hasStructuralDamage = householdCalamity.structural_damage || false;
+            const hasHouseholdInjury = householdCalamity.household_injury || false;
+            const hasHabitability = householdCalamity.habitability || false;
+            const hasLossLivelihood = householdCalamity.loss_of_livelihood || false;
+            
+            const headCount = 1;
+            const memberCount = members.length;
+            
+            if (hasStructuralDamage) {
+                structuralDamageHeads[barangay] = (structuralDamageHeads[barangay] || 0) + headCount;
+                structuralDamageMembers[barangay] = (structuralDamageMembers[barangay] || 0) + memberCount;
+            }
+            if (hasHouseholdInjury) {
+                householdInjuryHeads[barangay] = (householdInjuryHeads[barangay] || 0) + headCount;
+                householdInjuryMembers[barangay] = (householdInjuryMembers[barangay] || 0) + memberCount;
+            }
+            if (hasHabitability) {
+                habitabilityHeads[barangay] = (habitabilityHeads[barangay] || 0) + headCount;
+                habitabilityMembers[barangay] = (habitabilityMembers[barangay] || 0) + memberCount;
+            }
+            if (hasLossLivelihood) {
+                lossLivelihoodHeads[barangay] = (lossLivelihoodHeads[barangay] || 0) + headCount;
+                lossLivelihoodMembers[barangay] = (lossLivelihoodMembers[barangay] || 0) + memberCount;
+            }
+            
+            // Person-level data
             const allPersons = [headPerson, ...members].filter(p => p);
             
             for (const person of allPersons) {
@@ -2210,16 +2391,14 @@ async function fetchChartDataFromSupabase() {
                 else if (age >= 60) ageGroup = 'Elderly (60+)';
                 else ageGroup = 'Adult (18-59)';
                 
-                if (!ageData[category][ageGroup]) ageData[category][ageGroup] = 0;
-                ageData[category][ageGroup]++;
+                ageData[category][ageGroup] = (ageData[category][ageGroup] || 0) + 1;
                 
-                // Stage grouping (using age_category from database)
+                // Stage
                 let stage = person.age_category || 'Adult';
                 if (stage === 'Infant' || stage === 'Children') stage = 'Children';
-                if (!stageData[category][stage]) stageData[category][stage] = 0;
-                stageData[category][stage]++;
+                stageData[category][stage] = (stageData[category][stage] || 0) + 1;
                 
-                // PWD status
+                // PWD
                 const isPWD = person.is_pwd === true || person.is_pwd === 'Yes';
                 if (isHead) {
                     if (isPWD) pwdData.headsYes++;
@@ -2229,82 +2408,61 @@ async function fetchChartDataFromSupabase() {
                     else pwdData.membersNo++;
                 }
                 
-// Status - Treat empty/blank as 'No Status Reported'
-let status = person.status || '';
-if (status === '' || status === null || status === undefined) {
-    status = 'No Status Reported';
-}
-if (!statusData[category][status]) statusData[category][status] = 0;
-statusData[category][status]++;
+                // Status
+                let status = person.status || '';
+                if (status === '' || status === null || status === undefined) {
+                    status = 'No Status Reported';
+                }
+                statusData[category][status] = (statusData[category][status] || 0) + 1;
                 
-                // Registration (FishR & RSBSA)
+                // Registration
                 let registration = person.fishr_registration || 'Not Registered';
                 if (registration === '') registration = 'Not Registered';
-                if (!registrationData[category][registration]) registrationData[category][registration] = 0;
-                registrationData[category][registration]++;
-                
-                // Government Support (from gov_assistance table - would need separate fetch)
-                // For now, using placeholder
+                registrationData[category][registration] = (registrationData[category][registration] || 0) + 1;
                 
                 // Additional Info
                 const soloParent = person.solo_parenting === true || person.solo_parenting === 'Yes';
                 const lactating = person.lactating === true || person.lactating === 'Yes';
                 const pregnant = person.pregnant === true || person.pregnant === 'Yes';
                 
-                if (soloParent) {
-                    if (!additionalInfoData[category]['Solo Parenting']) additionalInfoData[category]['Solo Parenting'] = 0;
-                    additionalInfoData[category]['Solo Parenting']++;
-                }
-                if (lactating) {
-                    if (!additionalInfoData[category]['Lactating']) additionalInfoData[category]['Lactating'] = 0;
-                    additionalInfoData[category]['Lactating']++;
-                }
-                if (pregnant) {
-                    if (!additionalInfoData[category]['Pregnant']) additionalInfoData[category]['Pregnant'] = 0;
-                    additionalInfoData[category]['Pregnant']++;
-                }
+                if (soloParent) additionalInfoData[category]['Solo Parenting'] = (additionalInfoData[category]['Solo Parenting'] || 0) + 1;
+                if (lactating) additionalInfoData[category]['Lactating'] = (additionalInfoData[category]['Lactating'] || 0) + 1;
+                if (pregnant) additionalInfoData[category]['Pregnant'] = (additionalInfoData[category]['Pregnant'] || 0) + 1;
                 
                 // Disability Type
                 let disabilityType = person.disability_type || '';
                 if (disabilityType && disabilityType !== '') {
-                    if (!disabilityTypeData[category][disabilityType]) disabilityTypeData[category][disabilityType] = 0;
-                    disabilityTypeData[category][disabilityType]++;
+                    disabilityTypeData[category][disabilityType] = (disabilityTypeData[category][disabilityType] || 0) + 1;
                 }
                 
-                // OFW Status
+                // OFW
                 const isOFW = person.is_ofw === true || person.is_ofw === 'Yes';
                 if (isOFW) {
                     if (isHead) ofwData.heads++;
                     else ofwData.members++;
                 }
                 
-// Educational Attainment - Treat empty/blank as 'Not Specified'
-let education = person.educational_attainment || '';
-if (education === '' || education === null || education === undefined) {
-    education = 'Not Specified';
-}
-if (!educationData[education]) educationData[education] = 0;
-educationData[education]++;
+                // Education
+                let education = person.educational_attainment || '';
+                if (education === '' || education === null || education === undefined) {
+                    education = 'Not Specified';
+                }
+                educationData[education] = (educationData[education] || 0) + 1;
                 
-// Employment Status - Treat empty/blank as 'Unemployed'
-let employment = person.employment_status || '';
-if (employment === '' || employment === null || employment === undefined) {
-    employment = 'Unemployed';
-} else if (employment === 'Employed') {
-    employment = 'Employed';
-} else if (employment === 'Unemployed') {
-    employment = 'Unemployed';
-} else {
-    // Keep as is for any other values
-    employment = employment;
-}
-
-if (!employmentData[employment]) employmentData[employment] = 0;
-employmentData[employment]++;
+                // Employment
+                let employment = person.employment_status || '';
+                if (employment === '' || employment === null || employment === undefined) {
+                    employment = 'Unemployed';
+                } else if (employment === 'Employed') {
+                    employment = 'Employed';
+                } else if (employment === 'Unemployed') {
+                    employment = 'Unemployed';
+                }
+                employmentData[employment] = (employmentData[employment] || 0) + 1;
             }
         }
         
-        // Convert objects to arrays for chart rendering
+        // Build aggregated object
         const aggregated = {
             totals: { heads: totalHeads, members: totalMembers, total: totalHeads + totalMembers },
             barangay: {
@@ -2314,15 +2472,11 @@ employmentData[employment]++;
             },
             ageGroups: {
                 labels: [...new Set([...Object.keys(ageData.heads), ...Object.keys(ageData.members)])],
-                heads: [],
-                members: [],
-                values: []
+                heads: [], members: [], values: []
             },
             stage: {
                 labels: [...new Set([...Object.keys(stageData.heads), ...Object.keys(stageData.members)])],
-                heads: [],
-                members: [],
-                values: []
+                heads: [], members: [], values: []
             },
             pwd: pwdData,
             status: {
@@ -2331,63 +2485,62 @@ employmentData[employment]++;
             },
             registration: {
                 labels: [...new Set([...Object.keys(registrationData.heads), ...Object.keys(registrationData.members)])],
-                heads: [],
-                members: []
+                heads: [], members: []
             },
+            support: { labels: Object.keys(supportData), values: Object.values(supportData) },
+            assembly: { labels: Object.keys(assemblyData), values: Object.values(assemblyData) },
+            transport: { labels: Object.keys(transportData), values: Object.values(transportData) },
+            livestock: { labels: Object.keys(livestockData), values: Object.values(livestockData) },
+            structuralDamageHeads: { labels: Object.keys(structuralDamageHeads), values: Object.values(structuralDamageHeads) },
+            structuralDamageMembers: { labels: Object.keys(structuralDamageMembers), values: Object.values(structuralDamageMembers) },
+            householdInjuryHeads: { labels: Object.keys(householdInjuryHeads), values: Object.values(householdInjuryHeads) },
+            householdInjuryMembers: { labels: Object.keys(householdInjuryMembers), values: Object.values(householdInjuryMembers) },
+            habitabilityHeads: { labels: Object.keys(habitabilityHeads), values: Object.values(habitabilityHeads) },
+            habitabilityMembers: { labels: Object.keys(habitabilityMembers), values: Object.values(habitabilityMembers) },
+            lossLivelihoodHeads: { labels: Object.keys(lossLivelihoodHeads), values: Object.values(lossLivelihoodHeads) },
+            lossLivelihoodMembers: { labels: Object.keys(lossLivelihoodMembers), values: Object.values(lossLivelihoodMembers) },
             additional: {
                 labels: [...new Set([...Object.keys(additionalInfoData.heads), ...Object.keys(additionalInfoData.members)])],
-                heads: [],
-                members: []
+                heads: [], members: []
             },
             disabilityType: {
                 labels: [...new Set([...Object.keys(disabilityTypeData.heads), ...Object.keys(disabilityTypeData.members)])],
-                heads: [],
-                members: []
+                heads: [], members: []
             },
             ofw: ofwData,
-            education: {
-                labels: Object.keys(educationData),
-                values: Object.values(educationData)
-            },
-            employment: {
-                labels: Object.keys(employmentData),
-                values: Object.values(employmentData)
-            }
+            education: { labels: Object.keys(educationData), values: Object.values(educationData) },
+            employment: { labels: Object.keys(employmentData), values: Object.values(employmentData) }
         };
         
-        // Fill age data arrays
+        // Fill arrays
         aggregated.ageGroups.labels.forEach(label => {
             aggregated.ageGroups.heads.push(ageData.heads[label] || 0);
             aggregated.ageGroups.members.push(ageData.members[label] || 0);
             aggregated.ageGroups.values.push((ageData.heads[label] || 0) + (ageData.members[label] || 0));
         });
         
-        // Fill stage data arrays
         aggregated.stage.labels.forEach(label => {
             aggregated.stage.heads.push(stageData.heads[label] || 0);
             aggregated.stage.members.push(stageData.members[label] || 0);
             aggregated.stage.values.push((stageData.heads[label] || 0) + (stageData.members[label] || 0));
         });
         
-        // Fill registration data arrays
         aggregated.registration.labels.forEach(label => {
             aggregated.registration.heads.push(registrationData.heads[label] || 0);
             aggregated.registration.members.push(registrationData.members[label] || 0);
         });
         
-        // Fill additional info arrays
         aggregated.additional.labels.forEach(label => {
             aggregated.additional.heads.push(additionalInfoData.heads[label] || 0);
             aggregated.additional.members.push(additionalInfoData.members[label] || 0);
         });
         
-        // Fill disability type arrays
         aggregated.disabilityType.labels.forEach(label => {
             aggregated.disabilityType.heads.push(disabilityTypeData.heads[label] || 0);
             aggregated.disabilityType.members.push(disabilityTypeData.members[label] || 0);
         });
         
-        console.log("✅ Aggregated data prepared:", aggregated);
+        console.log("✅ Aggregated data prepared with ALL tables");
         return { success: true, aggregated, recordCount: totalHeads + totalMembers };
         
     } catch (err) {
@@ -2422,13 +2575,11 @@ function cleanupAllChartsFast() {
             CH[id] = null;
         }
     });
-    console.log("🧹 Cleaned all chart canvases");
 }
 
 /* ============ CHART CREATION FUNCTIONS ============ */
 function createBarChart(id, labels, values, title, color, isStacked = false, datasets = null) {
     quickCleanCanvas(id);
-    
     const ctx = document.getElementById(id).getContext('2d');
     
     if (datasets) {
@@ -2439,14 +2590,8 @@ function createBarChart(id, labels, values, title, color, isStacked = false, dat
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: { duration: 800, easing: 'easeOutQuart' },
-                plugins: {
-                    legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 15, usePointStyle: true } },
-                    tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', titleFont: { size: 12 }, bodyFont: { size: 12 }, padding: 10, cornerRadius: 6 }
-                },
-                scales: {
-                    x: { stacked: isStacked, grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
-                    y: { stacked: isStacked, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, precision: 0 } }
-                }
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 15, usePointStyle: true } }, tooltip: { backgroundColor: 'rgba(0,0,0,0.8)' } },
+                scales: { x: { stacked: isStacked, grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } }, y: { stacked: isStacked, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, precision: 0 } } }
             }
         });
     } else {
@@ -2505,13 +2650,28 @@ function createEmptyDoughnutChart(chartId, title, message) {
     });
 }
 
-function createComparisonChart(labels, datasets) {
+function createComparisonChart(aggregated) {
     quickCleanCanvas('chartComparison');
+    
+    // Get top 10 barangays by total population
+    const barangays = aggregated.barangay.labels;
+    const headsData = aggregated.barangay.heads;
+    const membersData = aggregated.barangay.members;
+    
+    if (barangays.length === 0) {
+        createEmptyBarChart('chartComparison', 'Barangay vs Status Comparison', 'No data');
+        return;
+    }
+    
     const ctx = document.getElementById('chartComparison').getContext('2d');
+    const datasets = [
+        { label: 'Household Heads', data: headsData, backgroundColor: 'rgba(52, 183, 143, 0.8)', borderColor: 'rgba(52, 183, 143, 1)', borderWidth: 1 },
+        { label: 'Household Members', data: membersData, backgroundColor: 'rgba(70, 140, 240, 0.8)', borderColor: 'rgba(70, 140, 240, 1)', borderWidth: 1 }
+    ];
     
     CH['chartComparison'] = new Chart(ctx, {
         type: 'bar',
-        data: { labels: labels, datasets: datasets },
+        data: { labels: barangays, datasets: datasets },
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -2519,6 +2679,201 @@ function createComparisonChart(labels, datasets) {
             scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } }, y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, precision: 0 } } }
         }
     });
+}
+
+function createSupportChart(aggregated) {
+    if (!aggregated.support || aggregated.support.labels.length === 0) {
+        createEmptyBarChart('chartSupport', 'Government Support', 'No government support data');
+        return;
+    }
+    
+    quickCleanCanvas('chartSupport');
+    const ctx = document.getElementById('chartSupport').getContext('2d');
+    
+    CH['chartSupport'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: aggregated.support.labels,
+            datasets: [{ label: 'Number of Support Recipients', data: aggregated.support.values, backgroundColor: 'rgba(156, 39, 176, 0.8)', borderColor: 'rgba(156, 39, 176, 1)', borderWidth: 1 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}` } } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { maxRotation: 45, minRotation: 45 } } }
+        }
+    });
+}
+
+function createAssemblyChart(aggregated) {
+    if (!aggregated.assembly || aggregated.assembly.labels.length === 0) {
+        createEmptyBarChart('chartAssembly', 'Assembly Area Distribution', 'No assembly area data');
+        return;
+    }
+    
+    quickCleanCanvas('chartAssembly');
+    const ctx = document.getElementById('chartAssembly').getContext('2d');
+    
+    CH['chartAssembly'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: aggregated.assembly.labels,
+            datasets: [{ label: 'Number of Households', data: aggregated.assembly.values, backgroundColor: 'rgba(33, 150, 243, 0.8)', borderColor: 'rgba(33, 150, 243, 1)', borderWidth: 1 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+}
+
+function createTransportChart(aggregated) {
+    if (!aggregated.transport || aggregated.transport.labels.length === 0) {
+        createEmptyBarChart('chartTransport', 'Transportation & Evacuation Details', 'No transportation data');
+        return;
+    }
+    
+    quickCleanCanvas('chartTransport');
+    const ctx = document.getElementById('chartTransport').getContext('2d');
+    
+    CH['chartTransport'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: aggregated.transport.labels,
+            datasets: [{ label: 'Number of Households', data: aggregated.transport.values, backgroundColor: 'rgba(255, 152, 0, 0.8)', borderColor: 'rgba(255, 152, 0, 1)', borderWidth: 1 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+}
+
+function createLivestockChart(aggregated) {
+    if (!aggregated.livestock || aggregated.livestock.labels.length === 0) {
+        createEmptyBarChart('chartLivestock', 'Domestic Livestock', 'No livestock data');
+        return;
+    }
+    
+    quickCleanCanvas('chartLivestock');
+    const ctx = document.getElementById('chartLivestock').getContext('2d');
+    
+    CH['chartLivestock'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: aggregated.livestock.labels,
+            datasets: [{ label: 'Total Count', data: aggregated.livestock.values, backgroundColor: 'rgba(76, 175, 80, 0.8)', borderColor: 'rgba(76, 175, 80, 1)', borderWidth: 1 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+}
+
+function createStackedCalamityChart(chartId, title, headsData, membersData, headsColor, membersColor) {
+    console.log(`🎨 Creating stacked ${title} chart...`);
+    
+    const canvas = document.getElementById(chartId);
+    if (!canvas) {
+        console.error(`❌ Canvas ${chartId} not found`);
+        return;
+    }
+    
+    if (canvas.chart) {
+        try { canvas.chart.destroy(); } catch(e) {}
+        canvas.chart = null;
+    }
+    if (window.CH && CH[chartId]) {
+        try { CH[chartId].destroy(); } catch(e) {}
+        CH[chartId] = null;
+    }
+    
+    // Get all unique barangays
+    const allLabels = [...new Set([...Object.keys(headsData), ...Object.keys(membersData)])].sort();
+    const headsValues = allLabels.map(l => headsData[l] || 0);
+    const membersValues = allLabels.map(l => membersData[l] || 0);
+    
+    const hasData = headsValues.some(v => v > 0) || membersValues.some(v => v > 0);
+    
+    const ctx = canvas.getContext('2d');
+    
+    if (!hasData) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = '14px Inter';
+        ctx.fillStyle = '#999';
+        ctx.textAlign = 'center';
+        ctx.fillText(`No ${title} reported yet`, canvas.width/2, canvas.height/2);
+        return;
+    }
+    
+    try {
+        const newChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: allLabels,
+                datasets: [
+                    {
+                        label: 'Heads Affected',
+                        data: headsValues,
+                        backgroundColor: headsColor,
+                        borderColor: headsColor.replace('0.8', '1'),
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        stack: 'stack'
+                    },
+                    {
+                        label: 'Members Affected',
+                        data: membersValues,
+                        backgroundColor: membersColor,
+                        borderColor: membersColor.replace('0.8', '1'),
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        stack: 'stack'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { 
+                        callbacks: { 
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.raw} person${context.raw !== 1 ? 's' : ''}`;
+                            }
+                        } 
+                    }
+                },
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { precision: 0 },
+                        title: { display: true, text: 'Number of Persons Affected', font: { size: 11 } },
+                        stacked: true
+                    },
+                    x: { 
+                        ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } },
+                        title: { display: true, text: 'Barangay', font: { size: 11 } },
+                        stacked: true
+                    }
+                }
+            }
+        });
+        
+        canvas.chart = newChart;
+        if (window.CH) CH[chartId] = newChart;
+        console.log(`✅ Stacked ${title} chart created`);
+    } catch(e) {
+        console.error(`❌ Failed to create ${title} chart:`, e);
+    }
 }
 
 /* ============ UPDATE STATS FUNCTIONS ============ */
@@ -2538,6 +2893,203 @@ function updateGlobalStats(aggregated) {
     if (globalLastUpdated) globalLastUpdated.textContent = new Date().toLocaleTimeString();
 }
 
+function updateAllStats(aggregated) {
+    if (!aggregated) return;
+    
+    updateGlobalStats(aggregated);
+    
+    // Barangay stats
+    const totalHeads = aggregated.barangay.heads.reduce((a,b) => a+b, 0);
+    const totalMembers = aggregated.barangay.members.reduce((a,b) => a+b, 0);
+    const barangayStats = document.getElementById('barangayStats');
+    if (barangayStats) {
+        const headsBadge = barangayStats.querySelector('.stat-badge.heads');
+        const membersBadge = barangayStats.querySelector('.stat-badge.members');
+        const totalBadge = barangayStats.querySelector('.stat-badge.total');
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${totalHeads}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${totalMembers}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${totalHeads + totalMembers}`;
+    }
+    
+    // Age stats
+    const ageTotal = aggregated.ageGroups.values.reduce((a,b) => a+b, 0);
+    const ageHeadsTotal = aggregated.ageGroups.heads.reduce((a,b) => a+b, 0);
+    const ageMembersTotal = aggregated.ageGroups.members.reduce((a,b) => a+b, 0);
+    const ageStats = document.getElementById('ageStats');
+    if (ageStats) {
+        const headsBadge = ageStats.querySelector('.stat-badge.heads');
+        const membersBadge = ageStats.querySelector('.stat-badge.members');
+        const totalBadge = ageStats.querySelector('.stat-badge.total');
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${ageHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${ageMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${ageTotal}`;
+    }
+    
+    // Stage stats
+    const stageTotal = aggregated.stage.values.reduce((a,b) => a+b, 0);
+    const stageHeadsTotal = aggregated.stage.heads.reduce((a,b) => a+b, 0);
+    const stageMembersTotal = aggregated.stage.members.reduce((a,b) => a+b, 0);
+    const stageStats = document.getElementById('stageStats');
+    if (stageStats) {
+        const headsBadge = stageStats.querySelector('.stat-badge.heads');
+        const membersBadge = stageStats.querySelector('.stat-badge.members');
+        const totalBadge = stageStats.querySelector('.stat-badge.total');
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${stageHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${stageMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${stageTotal}`;
+    }
+    
+    // PWD stats
+    const pwdTotal = aggregated.pwd.headsYes + aggregated.pwd.headsNo + aggregated.pwd.membersYes + aggregated.pwd.membersNo;
+    const pwdHeadsTotal = aggregated.pwd.headsYes + aggregated.pwd.headsNo;
+    const pwdMembersTotal = aggregated.pwd.membersYes + aggregated.pwd.membersNo;
+    const pwdStats = document.getElementById('pwdStats');
+    if (pwdStats) {
+        const headsBadge = pwdStats.querySelector('.stat-badge.heads');
+        const membersBadge = pwdStats.querySelector('.stat-badge.members');
+        const totalBadge = pwdStats.querySelector('.stat-badge.total');
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${pwdHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${pwdMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${pwdTotal}`;
+    }
+    
+    // Registration stats
+    const regHeadsTotal = aggregated.registration.heads.reduce((a,b) => a+b, 0);
+    const regMembersTotal = aggregated.registration.members.reduce((a,b) => a+b, 0);
+    const regTotal = regHeadsTotal + regMembersTotal;
+    const regStats = document.getElementById('registrationStats');
+    if (regStats) {
+        const headsBadge = regStats.querySelector('.stat-badge.heads');
+        const membersBadge = regStats.querySelector('.stat-badge.members');
+        const totalBadge = regStats.querySelector('.stat-badge.total');
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${regHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${regMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${regTotal}`;
+    }
+    
+    // Status stats
+    const statusHeadsTotal = aggregated.status.heads.values.reduce((a,b) => a+b, 0);
+    const statusMembersTotal = aggregated.status.members.values.reduce((a,b) => a+b, 0);
+    const statusTotal = statusHeadsTotal + statusMembersTotal;
+    const statusStats = document.getElementById('statusStats');
+    if (statusStats) {
+        const headsBadge = statusStats.querySelector('.stat-badge.heads');
+        const membersBadge = statusStats.querySelector('.stat-badge.members');
+        const totalBadge = statusStats.querySelector('.stat-badge.total');
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${statusHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${statusMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${statusTotal}`;
+    }
+    
+    // OFW stats
+    const ofwTotal = (aggregated.ofw?.heads || 0) + (aggregated.ofw?.members || 0);
+    const ofwStats = document.getElementById('ofwStats');
+    if (ofwStats) {
+        const totalBadge = ofwStats.querySelector('.stat-badge.total');
+        if (totalBadge) totalBadge.innerHTML = `OFWs: ${ofwTotal}`;
+    }
+    
+    // Education stats
+    const eduStats = document.getElementById('educationStats');
+    if (eduStats) {
+        const totalBadge = eduStats.querySelector('.stat-badge.total');
+        if (totalBadge) totalBadge.innerHTML = `Levels: ${aggregated.education.labels.length}`;
+    }
+    
+    // Employment stats
+    const empStats = document.getElementById('employmentStats');
+    if (empStats) {
+        const totalBadge = empStats.querySelector('.stat-badge.total');
+        if (totalBadge) totalBadge.innerHTML = `Statuses: ${aggregated.employment.labels.length}`;
+    }
+    
+    // Additional Info stats
+    const additionalHeadsTotal = aggregated.additional.heads.reduce((a,b) => a+b, 0);
+    const additionalMembersTotal = aggregated.additional.members.reduce((a,b) => a+b, 0);
+    const additionalTotal = additionalHeadsTotal + additionalMembersTotal;
+    const additionalStats = document.getElementById('additionalInfoStats');
+    if (additionalStats) {
+        const headsBadge = additionalStats.querySelector('.stat-badge.checkbox-heads');
+        const membersBadge = additionalStats.querySelector('.stat-badge.checkbox-members');
+        const totalBadge = additionalStats.querySelector('.stat-badge.checkbox-total');
+        if (headsBadge) headsBadge.innerHTML = `Checks (Heads): ${additionalHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Checks (Members): ${additionalMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total Checks: ${additionalTotal}`;
+    }
+    
+    // Disability Type stats
+    const disabilityHeadsTotal = aggregated.disabilityType.heads.reduce((a,b) => a+b, 0);
+    const disabilityMembersTotal = aggregated.disabilityType.members.reduce((a,b) => a+b, 0);
+    const disabilityTotal = disabilityHeadsTotal + disabilityMembersTotal;
+    const disabilityStats = document.getElementById('disabilityStats');
+    if (disabilityStats) {
+        const headsBadge = disabilityStats.querySelector('.stat-badge.heads');
+        const membersBadge = disabilityStats.querySelector('.stat-badge.members');
+        const totalBadge = disabilityStats.querySelector('.stat-badge.total');
+        if (headsBadge) headsBadge.innerHTML = `Heads: ${disabilityHeadsTotal}`;
+        if (membersBadge) membersBadge.innerHTML = `Members: ${disabilityMembersTotal}`;
+        if (totalBadge) totalBadge.innerHTML = `Total: ${disabilityTotal}`;
+    }
+    
+    console.log("✅ All stats updated");
+}
+
+function updateAllChartTitles(aggregated) {
+    if (!aggregated) return;
+    window.lastAggregatedData = aggregated;
+}
+
+/* ============ STATS VIEW MANAGER ============ */
+const StatsManager = {
+    currentView: 'badges',
+    init() {
+        const savedView = localStorage.getItem('statsViewPreference') || 'badges';
+        this.setView(savedView);
+        
+        const toggleBadges = document.getElementById('toggleBadges');
+        const toggleSummary = document.getElementById('toggleSummary');
+        const toggleCompact = document.getElementById('toggleCompact');
+        
+        if (toggleBadges) toggleBadges.addEventListener('click', () => this.setView('badges'));
+        if (toggleSummary) toggleSummary.addEventListener('click', () => this.setView('summary'));
+        if (toggleCompact) toggleCompact.addEventListener('click', () => this.setView('compact'));
+    },
+    setView(view) {
+        this.currentView = view;
+        localStorage.setItem('statsViewPreference', view);
+        
+        document.querySelectorAll('.stats-toggle-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.view === view) btn.classList.add('active');
+        });
+        
+        const globalStats = document.getElementById('globalStatsSummary');
+        const statsToggle = document.getElementById('statsViewToggle');
+        const chartStats = document.querySelectorAll('.chart-stats');
+        const chartTitles = document.querySelectorAll('.chart-title');
+        
+        if (view === 'badges') {
+            if (globalStats) globalStats.classList.remove('visible');
+            if (statsToggle) statsToggle.classList.add('visible');
+            chartStats.forEach(stats => stats.style.display = 'flex');
+            chartTitles.forEach(title => title.classList.remove('compact'));
+        } else if (view === 'summary') {
+            if (globalStats) globalStats.classList.add('visible');
+            if (statsToggle) statsToggle.classList.add('visible');
+            chartStats.forEach(stats => stats.style.display = 'none');
+            chartTitles.forEach(title => title.classList.remove('compact'));
+        } else if (view === 'compact') {
+            if (globalStats) globalStats.classList.remove('visible');
+            if (statsToggle) statsToggle.classList.add('visible');
+            chartStats.forEach(stats => {
+                stats.classList.add('hide-on-mobile');
+                stats.style.display = 'none';
+            });
+            chartTitles.forEach(title => title.classList.add('compact'));
+        }
+    }
+};
+
 /* ============ MAIN BUILD CHARTS FUNCTION ============ */
 async function buildCharts(forceRefresh = false) {
     showLoading(true);
@@ -2555,12 +3107,11 @@ async function buildCharts(forceRefresh = false) {
         // Update stats
         updateAllStats(aggregated);
         updateAllChartTitles(aggregated);
-
-        // Check if we have any data at all
+        
         const hasAnyData = aggregated.totals.total > 0;
         
         // 1. Barangay Chart
-        if (aggregated.barangay && aggregated.barangay.labels && aggregated.barangay.labels.length > 0) {
+        if (aggregated.barangay && aggregated.barangay.labels.length > 0) {
             const datasets = [
                 { label: 'Heads', data: aggregated.barangay.heads, backgroundColor: 'rgba(52, 183, 143, 0.8)', borderColor: 'rgba(52, 183, 143, 1)', borderWidth: 1 },
                 { label: 'Members', data: aggregated.barangay.members, backgroundColor: 'rgba(70, 140, 240, 0.8)', borderColor: 'rgba(70, 140, 240, 1)', borderWidth: 1 }
@@ -2570,25 +3121,25 @@ async function buildCharts(forceRefresh = false) {
             createEmptyBarChart('chartBarangay', 'Entry per Barangay', hasAnyData ? 'No barangay data' : 'No records found');
         }
         
-        // 2. Age Distribution Chart
-        if (aggregated.ageGroups && aggregated.ageGroups.labels && aggregated.ageGroups.labels.length > 0 && aggregated.ageGroups.values.some(v => v > 0)) {
+        // 2. Age Distribution
+        if (aggregated.ageGroups && aggregated.ageGroups.labels.length > 0 && aggregated.ageGroups.values.some(v => v > 0)) {
             const datasets = [
                 { label: 'Heads', data: aggregated.ageGroups.heads, backgroundColor: 'rgba(52, 183, 143, 0.8)', borderColor: 'rgba(52, 183, 143, 1)', borderWidth: 1 },
                 { label: 'Members', data: aggregated.ageGroups.members, backgroundColor: 'rgba(70, 140, 240, 0.8)', borderColor: 'rgba(70, 140, 240, 1)', borderWidth: 1 }
             ];
             createBarChart('chartAgeGroup', aggregated.ageGroups.labels, null, 'Age Distribution', null, true, datasets);
         } else {
-            createEmptyBarChart('chartAgeGroup', 'Age Distribution', hasAnyData ? 'No age data available' : 'No records found');
+            createEmptyBarChart('chartAgeGroup', 'Age Distribution', hasAnyData ? 'No age data' : 'No records found');
         }
         
-        // 3. Stage Distribution Chart
+        // 3. Stage Distribution
         if (aggregated.stage && aggregated.stage.values && aggregated.stage.values.some(v => v > 0)) {
             createDoughnutChart('chartStage', aggregated.stage.labels, aggregated.stage.values, 'Stage Distribution');
         } else {
             createEmptyDoughnutChart('chartStage', 'Stage Distribution', hasAnyData ? 'No stage data' : 'No records found');
         }
         
-        // 4. PWD Distribution Chart
+        // 4. PWD Distribution
         const hasPWDData = (aggregated.pwd.headsYes > 0 || aggregated.pwd.headsNo > 0 || aggregated.pwd.membersYes > 0 || aggregated.pwd.membersNo > 0);
         if (hasPWDData) {
             const pwdDatasets = [
@@ -2602,7 +3153,7 @@ async function buildCharts(forceRefresh = false) {
             createEmptyBarChart('chartPWD', 'PWD Distribution', hasAnyData ? 'No PWD data' : 'No records found');
         }
         
-        // 5. Status Distribution Chart
+        // 5. Status Distribution
         const hasStatusData = aggregated.status && aggregated.status.heads && aggregated.status.heads.values && aggregated.status.heads.values.some(v => v > 0);
         if (hasStatusData) {
             const allLabels = [...new Set([...(aggregated.status.heads.labels || []), ...(aggregated.status.members.labels || [])])].sort();
@@ -2627,7 +3178,7 @@ async function buildCharts(forceRefresh = false) {
             createEmptyBarChart('chartStatus', 'Status Distribution', hasAnyData ? 'No status data' : 'No records found');
         }
         
-        // 6. Registration Status Chart
+        // 6. Registration Status
         const hasRegistrationData = aggregated.registration && aggregated.registration.heads && aggregated.registration.heads.some(v => v > 0);
         if (hasRegistrationData) {
             const regDatasets = [
@@ -2639,7 +3190,19 @@ async function buildCharts(forceRefresh = false) {
             createEmptyBarChart('chartRegistration', 'Registration Status', hasAnyData ? 'No registration data' : 'No records found');
         }
         
-        // 7. OFW Chart
+        // 7. Government Support
+        createSupportChart(aggregated);
+        
+        // 8. Assembly Area
+        createAssemblyChart(aggregated);
+        
+        // 9. Transportation
+        createTransportChart(aggregated);
+        
+        // 10. Livestock
+        createLivestockChart(aggregated);
+        
+        // 11. OFW
         const ofwTotal = (aggregated.ofw?.heads || 0) + (aggregated.ofw?.members || 0);
         if (ofwTotal > 0) {
             createDoughnutChart('chartOFW', ['OFW', 'Non-OFW'], [ofwTotal, aggregated.totals.total - ofwTotal], 'Overseas Filipino Workers');
@@ -2647,25 +3210,22 @@ async function buildCharts(forceRefresh = false) {
             createEmptyDoughnutChart('chartOFW', 'Overseas Filipino Workers', hasAnyData ? 'No OFW records' : 'No records found');
         }
         
-        // 8. Education Chart
-        const hasEducationData = aggregated.education && aggregated.education.values && aggregated.education.values.some(v => v > 0);
-        if (hasEducationData) {
+        // 12. Education
+        if (aggregated.education && aggregated.education.values && aggregated.education.values.some(v => v > 0)) {
             createBarChart('chartEducation', aggregated.education.labels, aggregated.education.values, 'Count', 'rgba(123, 97, 255, 0.8)');
         } else {
             createEmptyBarChart('chartEducation', 'Educational Attainment', hasAnyData ? 'No education data' : 'No records found');
         }
         
-        // 9. Employment Chart
-        const hasEmploymentData = aggregated.employment && aggregated.employment.values && aggregated.employment.values.some(v => v > 0);
-        if (hasEmploymentData) {
+        // 13. Employment
+        if (aggregated.employment && aggregated.employment.values && aggregated.employment.values.some(v => v > 0)) {
             createDoughnutChart('chartEmployment', aggregated.employment.labels, aggregated.employment.values, 'Employment Status');
         } else {
             createEmptyDoughnutChart('chartEmployment', 'Employment Status', hasAnyData ? 'No employment data' : 'No records found');
         }
         
-        // 10. Additional Info Chart
-        const hasAdditionalData = aggregated.additional && aggregated.additional.labels && aggregated.additional.labels.length > 0 && aggregated.additional.heads.some(v => v > 0);
-        if (hasAdditionalData) {
+        // 14. Additional Info
+        if (aggregated.additional && aggregated.additional.labels.length > 0 && aggregated.additional.heads.some(v => v > 0)) {
             const additionalDatasets = [
                 { label: 'Heads', data: aggregated.additional.heads, backgroundColor: 'rgba(106, 90, 205, 0.8)', borderColor: 'rgba(106, 90, 205, 1)', borderWidth: 1 },
                 { label: 'Members', data: aggregated.additional.members, backgroundColor: 'rgba(60, 179, 113, 0.8)', borderColor: 'rgba(60, 179, 113, 1)', borderWidth: 1 }
@@ -2675,9 +3235,8 @@ async function buildCharts(forceRefresh = false) {
             createEmptyBarChart('chartAdditionalInfo', 'Additional Information', hasAnyData ? 'No additional info data' : 'No records found');
         }
         
-        // 11. Disability Type Chart
-        const hasDisabilityData = aggregated.disabilityType && aggregated.disabilityType.labels && aggregated.disabilityType.labels.length > 0 && aggregated.disabilityType.heads.some(v => v > 0);
-        if (hasDisabilityData) {
+        // 15. Disability Type
+        if (aggregated.disabilityType && aggregated.disabilityType.labels.length > 0 && aggregated.disabilityType.heads.some(v => v > 0)) {
             const disabilityDatasets = [
                 { label: 'Heads', data: aggregated.disabilityType.heads, backgroundColor: 'rgba(128, 0, 128, 0.8)', borderColor: 'rgba(128, 0, 128, 1)', borderWidth: 1 },
                 { label: 'Members', data: aggregated.disabilityType.members, backgroundColor: 'rgba(255, 20, 147, 0.8)', borderColor: 'rgba(255, 20, 147, 1)', borderWidth: 1 }
@@ -2687,33 +3246,78 @@ async function buildCharts(forceRefresh = false) {
             createEmptyBarChart('chartDisabilityType', 'Type of Disability', hasAnyData ? 'No disability data' : 'No records found');
         }
         
-        // 12. Livestock Chart (if you have livestock data - would need separate fetch)
-        createEmptyBarChart('chartLivestock', 'Domestic Livestock', 'No livestock data');
+        // 16. Comparison Chart
+        createComparisonChart(aggregated);
         
-        // 13. Assembly Area Chart (if you have assembly data)
-        createEmptyBarChart('chartAssembly', 'Assembly Area Distribution', 'No assembly data');
+        // 17-20. Calamity Charts - Stacked (Heads + Members)
+        const structuralHeadsData = {};
+        const structuralMembersData = {};
+        const injuryHeadsData = {};
+        const injuryMembersData = {};
+        const habitabilityHeadsData = {};
+        const habitabilityMembersData = {};
+        const lossHeadsData = {};
+        const lossMembersData = {};
         
-        // 14. Transportation Chart
-        createEmptyBarChart('chartTransport', 'Transportation & Evacuation', 'No transportation data');
+        if (aggregated.structuralDamageHeads && aggregated.structuralDamageHeads.labels) {
+            aggregated.structuralDamageHeads.labels.forEach((label, idx) => {
+                const value = aggregated.structuralDamageHeads.values[idx];
+                if (value > 0) structuralHeadsData[label] = value;
+            });
+        }
+        if (aggregated.structuralDamageMembers && aggregated.structuralDamageMembers.labels) {
+            aggregated.structuralDamageMembers.labels.forEach((label, idx) => {
+                const value = aggregated.structuralDamageMembers.values[idx];
+                if (value > 0) structuralMembersData[label] = value;
+            });
+        }
         
-        // 15. Comparison Chart
-        createComparisonChart(['No Data'], [{ label: 'No Data', data: [0], backgroundColor: '#ccc' }]);
+        if (aggregated.householdInjuryHeads && aggregated.householdInjuryHeads.labels) {
+            aggregated.householdInjuryHeads.labels.forEach((label, idx) => {
+                const value = aggregated.householdInjuryHeads.values[idx];
+                if (value > 0) injuryHeadsData[label] = value;
+            });
+        }
+        if (aggregated.householdInjuryMembers && aggregated.householdInjuryMembers.labels) {
+            aggregated.householdInjuryMembers.labels.forEach((label, idx) => {
+                const value = aggregated.householdInjuryMembers.values[idx];
+                if (value > 0) injuryMembersData[label] = value;
+            });
+        }
         
-        // 16. Structural Damage Chart
-        createEmptyBarChart('chartStructuralDamage', 'Structural/Property Damage', 'No damage data');
+        if (aggregated.habitabilityHeads && aggregated.habitabilityHeads.labels) {
+            aggregated.habitabilityHeads.labels.forEach((label, idx) => {
+                const value = aggregated.habitabilityHeads.values[idx];
+                if (value > 0) habitabilityHeadsData[label] = value;
+            });
+        }
+        if (aggregated.habitabilityMembers && aggregated.habitabilityMembers.labels) {
+            aggregated.habitabilityMembers.labels.forEach((label, idx) => {
+                const value = aggregated.habitabilityMembers.values[idx];
+                if (value > 0) habitabilityMembersData[label] = value;
+            });
+        }
         
-        // 17. Household Injury Chart
-        createEmptyBarChart('chartHouseholdInjury', 'Household Injury', 'No injury data');
+        if (aggregated.lossLivelihoodHeads && aggregated.lossLivelihoodHeads.labels) {
+            aggregated.lossLivelihoodHeads.labels.forEach((label, idx) => {
+                const value = aggregated.lossLivelihoodHeads.values[idx];
+                if (value > 0) lossHeadsData[label] = value;
+            });
+        }
+        if (aggregated.lossLivelihoodMembers && aggregated.lossLivelihoodMembers.labels) {
+            aggregated.lossLivelihoodMembers.labels.forEach((label, idx) => {
+                const value = aggregated.lossLivelihoodMembers.values[idx];
+                if (value > 0) lossMembersData[label] = value;
+            });
+        }
         
-        // 18. Habitability Chart
-        createEmptyBarChart('chartHabitability', 'Habitability of House', 'No habitability data');
-        
-        // 19. Loss of Livelihood Chart
-        createEmptyBarChart('chartLossLivelihood', 'Loss of Livelihood/Assets', 'No livelihood data');
+        createStackedCalamityChart('chartStructuralDamage', 'Structural/Property Damage', structuralHeadsData, structuralMembersData, 'rgba(220, 38, 38, 0.8)', 'rgba(220, 38, 38, 0.4)');
+        createStackedCalamityChart('chartHouseholdInjury', 'Household Injury', injuryHeadsData, injuryMembersData, 'rgba(249, 115, 22, 0.8)', 'rgba(249, 115, 22, 0.4)');
+        createStackedCalamityChart('chartHabitability', 'Habitability of House', habitabilityHeadsData, habitabilityMembersData, 'rgba(234, 179, 8, 0.8)', 'rgba(234, 179, 8, 0.4)');
+        createStackedCalamityChart('chartLossLivelihood', 'Loss of Livelihood/Assets', lossHeadsData, lossMembersData, 'rgba(139, 69, 19, 0.8)', 'rgba(139, 69, 19, 0.4)');
         
         console.log("✅ All charts created successfully");
         
-        // Show a message if no data
         if (!hasAnyData) {
             showInfo("No data available in the database. Please add household records first.");
         }
@@ -2749,7 +3353,6 @@ async function exportCSV_AllRows() {
             throw new Error("No data to export");
         }
         
-        // Create CSV from aggregated data
         const barangayData = result.aggregated.barangay;
         let csv = "Barangay,Heads,Members,Total\n";
         for (let i = 0; i < barangayData.labels.length; i++) {
@@ -2772,59 +3375,6 @@ async function exportCSV_AllRows() {
         console.error("CSV export failed:", err);
         showError("CSV export failed: " + err.message);
     }
-}
-
-function showInfo(message) {
-    console.log("Info:", message);
-    
-    // Create a professional toast notification
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #0f7a4a, #34b78f);
-        color: white;
-        padding: 10px 18px;
-        border-radius: 10px;
-        z-index: 10000;
-        font-size: 0.8rem;
-        font-weight: 500;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        backdrop-filter: blur(8px);
-        animation: slideInRight 0.3s ease;
-    `;
-    toast.innerHTML = `<i class="fas fa-info-circle" style="font-size: 0.9rem;"></i> ${message}`;
-    document.body.appendChild(toast);
-    
-    // Add animation keyframes if not exists
-    if (!document.querySelector('#toast-animation-style')) {
-        const style = document.createElement('style');
-        style.id = 'toast-animation-style';
-        style.textContent = `
-            @keyframes slideInRight {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        toast.style.transition = 'all 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
 }
 
 /* ============ SIDEBAR TOGGLE ============ */
@@ -2939,7 +3489,6 @@ async function performLogout() {
         logoutBtn.disabled = true;
     }
     
-    // ✅ CRITICAL FIX: Deactivate session in Supabase
     const sessionId = localStorage.getItem('sessionId');
     
     if (sessionId && supabaseClient) {
@@ -2962,16 +3511,13 @@ async function performLogout() {
         }
     }
     
-    // Clear all local storage
     localStorage.clear();
     sessionStorage.clear();
     
-    // Clear cookies
     document.cookie.split(";").forEach(function(c) { 
         document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
     });
     
-    // Redirect to login with cache-busting
     window.location.replace('index.html?logout=' + Date.now());
 }
 
@@ -3001,7 +3547,7 @@ function setupConfirmModal() {
     if (yesBtn) {
         yesBtn.onclick = async function() {
             confirmModal.style.display = 'none';
-            await performLogout();  // ✅ Calls database cleanup + local storage
+            await performLogout();
         };
     }
     
@@ -3010,280 +3556,6 @@ function setupConfirmModal() {
             confirmModal.style.display = 'none';
         };
     }
-}
-
-/* ============ STATS VIEW MANAGER ============ */
-const StatsManager = {
-    currentView: 'badges',
-    init() {
-        const savedView = localStorage.getItem('statsViewPreference') || 'badges';
-        this.setView(savedView);
-        
-        const toggleBadges = document.getElementById('toggleBadges');
-        const toggleSummary = document.getElementById('toggleSummary');
-        const toggleCompact = document.getElementById('toggleCompact');
-        
-        if (toggleBadges) toggleBadges.addEventListener('click', () => this.setView('badges'));
-        if (toggleSummary) toggleSummary.addEventListener('click', () => this.setView('summary'));
-        if (toggleCompact) toggleCompact.addEventListener('click', () => this.setView('compact'));
-    },
-setView(view) {
-    this.currentView = view;
-    localStorage.setItem('statsViewPreference', view);
-    
-    document.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.view === view) btn.classList.add('active');
-    });
-    
-    const globalStats = document.getElementById('globalStatsSummary');
-    const statsToggle = document.getElementById('statsViewToggle');
-    const chartStats = document.querySelectorAll('.chart-stats');
-    const chartTitles = document.querySelectorAll('.chart-title');
-    
-    if (view === 'badges') {
-        if (globalStats) globalStats.classList.remove('visible');
-        if (statsToggle) statsToggle.classList.add('visible');
-        chartStats.forEach(stats => stats.style.display = 'flex');
-        chartTitles.forEach(title => title.classList.remove('compact'));
-    } else if (view === 'summary') {
-        if (globalStats) globalStats.classList.add('visible');
-        if (statsToggle) statsToggle.classList.add('visible');
-        chartStats.forEach(stats => stats.style.display = 'none');
-        chartTitles.forEach(title => title.classList.remove('compact'));
-    } else if (view === 'compact') {
-        if (globalStats) globalStats.classList.remove('visible');
-        if (statsToggle) statsToggle.classList.add('visible');
-        chartStats.forEach(stats => {
-            stats.classList.add('hide-on-mobile');
-            stats.style.display = 'none';
-        });
-        chartTitles.forEach(title => title.classList.add('compact'));
-    }
-    
-    // Re-update all chart titles with current counts when view changes
-    if (window.lastAggregatedData) {
-        updateAllChartTitles(window.lastAggregatedData);
-    }
-}
-};
-
-/* ============ UPDATE CHART TITLES WITH COUNTS ============ */
-function updateAllChartTitles(aggregated) {
-    if (!aggregated) return;
-    
-    // Store for later use
-    window.lastAggregatedData = aggregated;
-    
-    const totalAll = aggregated.totals.total || 0;
-    const isCompact = StatsManager.currentView === 'compact';
-    
-    if (!isCompact) return;
-    
-    // Update chart titles with counts
-    const chartMap = {
-        'chartBarangay': `Entry per Barangay (${totalAll} persons)`,
-        'chartAgeGroup': `Age Distribution (${totalAll} persons)`,
-        'chartStage': `Stage Distribution (${totalAll} persons)`,
-        'chartPWD': `PWD Distribution (${totalAll} persons)`,
-        'chartStatus': `Status Distribution (${totalAll} persons)`,
-        'chartRegistration': `Registration Status (${totalAll} persons)`,
-        'chartOFW': `Overseas Filipino Workers (${(aggregated.ofw?.heads || 0) + (aggregated.ofw?.members || 0)} OFWs)`,
-        'chartEducation': `Educational Attainment (${totalAll} persons)`,
-        'chartEmployment': `Employment Status (${totalAll} persons)`,
-        'chartAdditionalInfo': `Additional Information`,
-        'chartDisabilityType': `Type of Disability`
-    };
-    
-    for (const [chartId, newTitle] of Object.entries(chartMap)) {
-        const chartCard = document.getElementById(chartId)?.closest('.chart-card');
-        if (chartCard) {
-            const titleElement = chartCard.querySelector('.chart-title');
-            if (titleElement && StatsManager.currentView === 'compact') {
-                const icon = titleElement.querySelector('i')?.outerHTML || '<i class="fas fa-chart-bar"></i>';
-                titleElement.innerHTML = `${icon} ${newTitle}`;
-            }
-        }
-    }
-}
-
-function updateGlobalStats(aggregated) {
-    const totalHeads = aggregated.totals.heads || 0;
-    const totalMembers = aggregated.totals.members || 0;
-    const totalAll = aggregated.totals.total || 0;
-    
-    console.log("Updating global stats - Heads:", totalHeads, "Members:", totalMembers, "Total:", totalAll);
-    
-    const globalHeads = document.getElementById('globalHeads');
-    const globalMembers = document.getElementById('globalMembers');
-    const globalTotal = document.getElementById('globalTotal');
-    const globalLastUpdated = document.getElementById('globalLastUpdated');
-    
-    if (globalHeads) globalHeads.textContent = formatNumber(totalHeads);
-    if (globalMembers) globalMembers.textContent = formatNumber(totalMembers);
-    if (globalTotal) globalTotal.textContent = formatNumber(totalAll);
-    if (globalLastUpdated) globalLastUpdated.textContent = new Date().toLocaleTimeString();
-}
-
-function updateAllStats(aggregated) {
-    if (!aggregated) return;
-    
-    // Update global stats
-    updateGlobalStats(aggregated);
-    
-    // Update barangay chart stats
-    const totalHeads = aggregated.barangay.heads.reduce((a,b) => a+b, 0);
-    const totalMembers = aggregated.barangay.members.reduce((a,b) => a+b, 0);
-    const totalAll = totalHeads + totalMembers;
-    
-    const barangayStats = document.getElementById('barangayStats');
-    if (barangayStats) {
-        const headsBadge = barangayStats.querySelector('.stat-badge.heads');
-        const membersBadge = barangayStats.querySelector('.stat-badge.members');
-        const totalBadge = barangayStats.querySelector('.stat-badge.total');
-        
-        if (headsBadge) headsBadge.innerHTML = `Heads: ${totalHeads}`;
-        if (membersBadge) membersBadge.innerHTML = `Members: ${totalMembers}`;
-        if (totalBadge) totalBadge.innerHTML = `Total: ${totalAll}`;
-    }
-    
-    // Update age chart stats
-    const ageTotal = aggregated.ageGroups.values.reduce((a,b) => a+b, 0);
-    const ageHeadsTotal = aggregated.ageGroups.heads.reduce((a,b) => a+b, 0);
-    const ageMembersTotal = aggregated.ageGroups.members.reduce((a,b) => a+b, 0);
-    
-    const ageStats = document.getElementById('ageStats');
-    if (ageStats) {
-        const headsBadge = ageStats.querySelector('.stat-badge.heads');
-        const membersBadge = ageStats.querySelector('.stat-badge.members');
-        const totalBadge = ageStats.querySelector('.stat-badge.total');
-        
-        if (headsBadge) headsBadge.innerHTML = `Heads: ${ageHeadsTotal}`;
-        if (membersBadge) membersBadge.innerHTML = `Members: ${ageMembersTotal}`;
-        if (totalBadge) totalBadge.innerHTML = `Total: ${ageTotal}`;
-    }
-    
-    // Update stage chart stats
-    const stageTotal = aggregated.stage.values.reduce((a,b) => a+b, 0);
-    const stageHeadsTotal = aggregated.stage.heads.reduce((a,b) => a+b, 0);
-    const stageMembersTotal = aggregated.stage.members.reduce((a,b) => a+b, 0);
-    
-    const stageStats = document.getElementById('stageStats');
-    if (stageStats) {
-        const headsBadge = stageStats.querySelector('.stat-badge.heads');
-        const membersBadge = stageStats.querySelector('.stat-badge.members');
-        const totalBadge = stageStats.querySelector('.stat-badge.total');
-        
-        if (headsBadge) headsBadge.innerHTML = `Heads: ${stageHeadsTotal}`;
-        if (membersBadge) membersBadge.innerHTML = `Members: ${stageMembersTotal}`;
-        if (totalBadge) totalBadge.innerHTML = `Total: ${stageTotal}`;
-    }
-    
-    // Update PWD stats
-    const pwdTotal = aggregated.pwd.headsYes + aggregated.pwd.headsNo + aggregated.pwd.membersYes + aggregated.pwd.membersNo;
-    const pwdHeadsTotal = aggregated.pwd.headsYes + aggregated.pwd.headsNo;
-    const pwdMembersTotal = aggregated.pwd.membersYes + aggregated.pwd.membersNo;
-    
-    const pwdStats = document.getElementById('pwdStats');
-    if (pwdStats) {
-        const headsBadge = pwdStats.querySelector('.stat-badge.heads');
-        const membersBadge = pwdStats.querySelector('.stat-badge.members');
-        const totalBadge = pwdStats.querySelector('.stat-badge.total');
-        
-        if (headsBadge) headsBadge.innerHTML = `Heads: ${pwdHeadsTotal}`;
-        if (membersBadge) membersBadge.innerHTML = `Members: ${pwdMembersTotal}`;
-        if (totalBadge) totalBadge.innerHTML = `Total: ${pwdTotal}`;
-    }
-    
-    // Update Registration stats
-    const regHeadsTotal = aggregated.registration.heads.reduce((a,b) => a+b, 0);
-    const regMembersTotal = aggregated.registration.members.reduce((a,b) => a+b, 0);
-    const regTotal = regHeadsTotal + regMembersTotal;
-    
-    const regStats = document.getElementById('registrationStats');
-    if (regStats) {
-        const headsBadge = regStats.querySelector('.stat-badge.heads');
-        const membersBadge = regStats.querySelector('.stat-badge.members');
-        const totalBadge = regStats.querySelector('.stat-badge.total');
-        
-        if (headsBadge) headsBadge.innerHTML = `Heads: ${regHeadsTotal}`;
-        if (membersBadge) membersBadge.innerHTML = `Members: ${regMembersTotal}`;
-        if (totalBadge) totalBadge.innerHTML = `Total: ${regTotal}`;
-    }
-    
-    // Update Status stats
-    const statusHeadsTotal = aggregated.status.heads.values.reduce((a,b) => a+b, 0);
-    const statusMembersTotal = aggregated.status.members.values.reduce((a,b) => a+b, 0);
-    const statusTotal = statusHeadsTotal + statusMembersTotal;
-    
-    const statusStats = document.getElementById('statusStats');
-    if (statusStats) {
-        const headsBadge = statusStats.querySelector('.stat-badge.heads');
-        const membersBadge = statusStats.querySelector('.stat-badge.members');
-        const totalBadge = statusStats.querySelector('.stat-badge.total');
-        
-        if (headsBadge) headsBadge.innerHTML = `Heads: ${statusHeadsTotal}`;
-        if (membersBadge) membersBadge.innerHTML = `Members: ${statusMembersTotal}`;
-        if (totalBadge) totalBadge.innerHTML = `Total: ${statusTotal}`;
-    }
-    
-    // Update OFW stats
-    const ofwTotal = (aggregated.ofw?.heads || 0) + (aggregated.ofw?.members || 0);
-    const ofwStats = document.getElementById('ofwStats');
-    if (ofwStats) {
-        const totalBadge = ofwStats.querySelector('.stat-badge.total');
-        if (totalBadge) totalBadge.innerHTML = `OFWs: ${ofwTotal}`;
-    }
-    
-    // Update Education stats
-    const eduTotal = aggregated.education.values.reduce((a,b) => a+b, 0);
-    const eduStats = document.getElementById('educationStats');
-    if (eduStats) {
-        const totalBadge = eduStats.querySelector('.stat-badge.total');
-        if (totalBadge) totalBadge.innerHTML = `Levels: ${aggregated.education.labels.length}`;
-    }
-    
-    // Update Employment stats
-    const empTotal = aggregated.employment.values.reduce((a,b) => a+b, 0);
-    const empStats = document.getElementById('employmentStats');
-    if (empStats) {
-        const totalBadge = empStats.querySelector('.stat-badge.total');
-        if (totalBadge) totalBadge.innerHTML = `Statuses: ${aggregated.employment.labels.length}`;
-    }
-    
-    // Update Additional Info stats
-    const additionalHeadsTotal = aggregated.additional.heads.reduce((a,b) => a+b, 0);
-    const additionalMembersTotal = aggregated.additional.members.reduce((a,b) => a+b, 0);
-    const additionalTotal = additionalHeadsTotal + additionalMembersTotal;
-    
-    const additionalStats = document.getElementById('additionalInfoStats');
-    if (additionalStats) {
-        const headsBadge = additionalStats.querySelector('.stat-badge.checkbox-heads');
-        const membersBadge = additionalStats.querySelector('.stat-badge.checkbox-members');
-        const totalBadge = additionalStats.querySelector('.stat-badge.checkbox-total');
-        
-        if (headsBadge) headsBadge.innerHTML = `Checks (Heads): ${additionalHeadsTotal}`;
-        if (membersBadge) membersBadge.innerHTML = `Checks (Members): ${additionalMembersTotal}`;
-        if (totalBadge) totalBadge.innerHTML = `Total Checks: ${additionalTotal}`;
-    }
-    
-    // Update Disability Type stats
-    const disabilityHeadsTotal = aggregated.disabilityType.heads.reduce((a,b) => a+b, 0);
-    const disabilityMembersTotal = aggregated.disabilityType.members.reduce((a,b) => a+b, 0);
-    const disabilityTotal = disabilityHeadsTotal + disabilityMembersTotal;
-    
-    const disabilityStats = document.getElementById('disabilityStats');
-    if (disabilityStats) {
-        const headsBadge = disabilityStats.querySelector('.stat-badge.heads');
-        const membersBadge = disabilityStats.querySelector('.stat-badge.members');
-        const totalBadge = disabilityStats.querySelector('.stat-badge.total');
-        
-        if (headsBadge) headsBadge.innerHTML = `Heads: ${disabilityHeadsTotal}`;
-        if (membersBadge) membersBadge.innerHTML = `Members: ${disabilityMembersTotal}`;
-        if (totalBadge) totalBadge.innerHTML = `Total: ${disabilityTotal}`;
-    }
-    
-    console.log("✅ Stats updated - Total persons:", totalAll);
 }
 
 /* ============ INITIALIZATION ============ */
