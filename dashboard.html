@@ -1417,6 +1417,32 @@ body.guest-user .mobile-nav-item[href="dashboard.html"] {
     <div class="breakdown-section">
       <h3><i class="fas fa-table"></i> Barangay Data Overview</h3>
 
+          <!-- NEW: Barangay Population Section -->
+      <div class="breakdown-table-container" style="margin-bottom: 20px;">
+        <h4><i class="fas fa-users"></i> Barangay Population</h4>
+        <table class="breakdown-table" id="tblBarangayPopulation">
+          <thead>
+            <tr>
+              <th>Barangay</th>
+              <th>Households</th>
+              <th>Population</th>
+              <th>% Share</th>
+            </tr>
+          </thead>
+          <tbody id="barangayPopulationBody">
+            <tr><td colspan="4" style="text-align: center;">Loading population data...</td></tr>
+          </tbody>
+          <tfoot id="populationFoot" style="display: none;">
+            <tr style="background: var(--light-green); font-weight: 700;">
+              <td><strong>TOTAL</strong></td>
+              <td id="totalHouseholdsFoot">0</td>
+              <td id="totalPopulationFoot">0</td>
+              <td>100%</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
       <!-- 1. Demographics & Location Availability (NO PWD column) -->
       <div class="breakdown-table-container">
         <h4><i class="fas fa-chart-bar"></i> Demographics & Location Availability</h4>
@@ -2041,6 +2067,74 @@ async function updateRecentActivities() {
     container.innerHTML = activities.map(log => formatActivityMessage(log)).join('');
 }
 
+// ============================================
+// BARANGAY POPULATION TABLE POPULATION
+// ============================================
+function populateBarangayPopulationTable(barangayMap) {
+    const tbody = document.getElementById('barangayPopulationBody');
+    const foot = document.getElementById('populationFoot');
+    if (!tbody) return;
+    
+    const labels = Object.keys(barangayMap).sort();
+    
+    if (labels.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No population data available</td></tr>';
+        if (foot) foot.style.display = 'none';
+        return;
+    }
+    
+    // Calculate total households and total population
+    let totalHouseholds = 0;
+    let totalPopulation = 0;
+    const barangayData = [];
+    
+    labels.forEach(l => {
+        const s = barangayMap[l];
+        if (s) {
+            const households = s.heads || 0;
+            const population = (s.heads || 0) + (s.members || 0);
+            totalHouseholds += households;
+            totalPopulation += population;
+            barangayData.push({
+                name: l,
+                households: households,
+                population: population,
+                data: s
+            });
+        }
+    });
+    
+    // Sort by population descending
+    barangayData.sort((a, b) => b.population - a.population);
+    
+    // Populate table rows
+    tbody.innerHTML = '';
+    barangayData.forEach(item => {
+        const percentage = totalPopulation > 0 ? ((item.population / totalPopulation) * 100).toFixed(1) : '0.0';
+        const row = document.createElement('tr');
+        row.style.borderBottom = '1px solid var(--border)';
+        row.innerHTML = `
+            <td style="text-align: left; padding: 8px; font-weight: 600; color: var(--accent1);">${escapeHtml(item.name)}</td>
+            <td style="text-align: right; padding: 8px;">${item.households.toLocaleString()}</td>
+            <td style="text-align: right; padding: 8px; font-weight: 700;">${item.population.toLocaleString()}</td>
+            <td style="text-align: right; padding: 8px;">
+                <div style="display: inline-block; width: 60px; background: #e1e8e5; border-radius: 10px; overflow: hidden;">
+                    <div style="width: ${percentage}%; background: linear-gradient(90deg, var(--accent1), var(--accent2)); height: 6px;"></div>
+                </div>
+                <span style="margin-left: 8px; font-size: 0.75rem;">${percentage}%</span>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    // Update footer
+    if (foot) {
+        document.getElementById('totalHouseholdsFoot').innerText = totalHouseholds.toLocaleString();
+        document.getElementById('totalPopulationFoot').innerText = totalPopulation.toLocaleString();
+        foot.style.display = 'table-footer-group';
+    }
+}    
+    
 async function processDashboardData(data) {
     const { households, persons, livestock, govAssistance, calamityImpacts } = data;
     
@@ -2760,6 +2854,7 @@ if (currentYearSpan) {
                 <td>${s.calamityImpacts.lossOfLivelihood || 0}</td>
             </tr>`;
     });
+    populateBarangayPopulationTable(barangayMap);
     console.log("✅ Dashboard rendering complete!");
 
 }
