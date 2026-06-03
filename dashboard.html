@@ -1417,31 +1417,31 @@ body.guest-user .mobile-nav-item[href="dashboard.html"] {
     <div class="breakdown-section">
       <h3><i class="fas fa-table"></i> Barangay Data Overview</h3>
 
-          <!-- NEW: Barangay Population Section -->
-      <div class="breakdown-table-container" style="margin-bottom: 20px;">
-        <h4><i class="fas fa-users"></i> Barangay Population</h4>
-        <table class="breakdown-table" id="tblBarangayPopulation">
-          <thead>
-            <tr>
-              <th>Barangay</th>
-              <th>Households</th>
-              <th>Population</th>
-              <th>% Share</th>
-            </tr>
-          </thead>
-          <tbody id="barangayPopulationBody">
-            <tr><td colspan="4" style="text-align: center;">Loading population data...</td></tr>
-          </tbody>
-          <tfoot id="populationFoot" style="display: none;">
-            <tr style="background: var(--light-green); font-weight: 700;">
-              <td><strong>TOTAL</strong></td>
-              <td id="totalHouseholdsFoot">0</td>
-              <td id="totalPopulationFoot">0</td>
-              <td>100%</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+<!-- NEW: Barangay Population Section -->
+<div class="breakdown-table-container" style="margin-bottom: 20px;">
+  <h4><i class="fas fa-users"></i> Barangay Population</h4>
+  <table class="breakdown-table" id="tblBarangayPopulation">
+    <thead>
+      <tr>
+        <th style="text-align: left;">Barangay</th>
+        <th style="text-align: center;">Households</th>
+        <th style="text-align: center;">Population</th>
+        <th style="text-align: center;">% Share</th>
+      </tr>
+    </thead>
+    <tbody id="barangayPopulationBody">
+      <tr><td colspan="4" style="text-align: center;">Loading population data...</td></tr>
+    </tbody>
+    <tfoot id="populationFoot" style="display: none;">
+      <tr style="background: var(--light-green); font-weight: 700;">
+        <td style="text-align: left;"><strong>TOTAL</strong></td>
+        <td id="totalHouseholdsFoot" style="text-align: center;">0</td>
+        <td id="totalPopulationFoot" style="text-align: center;">0</td>
+        <td style="text-align: center;">100%</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
 
       <!-- 1. Demographics & Location Availability (NO PWD column) -->
       <div class="breakdown-table-container">
@@ -2075,7 +2075,7 @@ function populateBarangayPopulationTable(barangayMap) {
     const foot = document.getElementById('populationFoot');
     if (!tbody) return;
     
-    const labels = Object.keys(barangayMap).sort();
+    const labels = Object.keys(barangayMap).sort(); // ← SORT ALPHABETICALLY
     
     if (labels.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No population data available</td></tr>';
@@ -2104,8 +2104,8 @@ function populateBarangayPopulationTable(barangayMap) {
         }
     });
     
-    // Sort by population descending
-    barangayData.sort((a, b) => b.population - a.population);
+    // Sort alphabetically by barangay name
+    barangayData.sort((a, b) => a.name.localeCompare(b.name));
     
     // Populate table rows
     tbody.innerHTML = '';
@@ -2115,25 +2115,38 @@ function populateBarangayPopulationTable(barangayMap) {
         row.style.borderBottom = '1px solid var(--border)';
         row.innerHTML = `
             <td style="text-align: left; padding: 8px; font-weight: 600; color: var(--accent1);">${escapeHtml(item.name)}</td>
-            <td style="text-align: right; padding: 8px;">${item.households.toLocaleString()}</td>
-            <td style="text-align: right; padding: 8px; font-weight: 700;">${item.population.toLocaleString()}</td>
-            <td style="text-align: right; padding: 8px;">
-                <div style="display: inline-block; width: 60px; background: #e1e8e5; border-radius: 10px; overflow: hidden;">
-                    <div style="width: ${percentage}%; background: linear-gradient(90deg, var(--accent1), var(--accent2)); height: 6px;"></div>
+            <td style="text-align: center; padding: 8px;">${item.households.toLocaleString()}</td>
+            <td style="text-align: center; padding: 8px; font-weight: 700;">${item.population.toLocaleString()}</td>
+            <td style="text-align: center; padding: 8px;">
+                <div style="display: inline-flex; align-items: center; gap: 8px;">
+                    <div style="width: 80px; background: #e1e8e5; border-radius: 10px; overflow: hidden;">
+                        <div style="width: ${percentage}%; background: linear-gradient(90deg, var(--accent1), var(--accent2)); height: 8px;"></div>
+                    </div>
+                    <span style="font-size: 0.75rem; min-width: 45px;">${percentage}%</span>
                 </div>
-                <span style="margin-left: 8px; font-size: 0.75rem;">${percentage}%</span>
             </td>
         `;
         tbody.appendChild(row);
     });
     
-    // Update footer
+    // Update footer with centered text
     if (foot) {
         document.getElementById('totalHouseholdsFoot').innerText = totalHouseholds.toLocaleString();
         document.getElementById('totalPopulationFoot').innerText = totalPopulation.toLocaleString();
         foot.style.display = 'table-footer-group';
+        
+        // Center footer text
+        const footRows = foot.querySelectorAll('tr');
+        footRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            cells.forEach(cell => {
+                if (cell.getAttribute('colspan') !== '4') {
+                    cell.style.textAlign = 'center';
+                }
+            });
+        });
     }
-}    
+}
     
 async function processDashboardData(data) {
     const { households, persons, livestock, govAssistance, calamityImpacts } = data;
