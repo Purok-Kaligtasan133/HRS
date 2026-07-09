@@ -1551,6 +1551,30 @@ body.guest-user .mobile-nav-item[href="dashboard.html"] {
         </table>
       </div>
 
+      <!-- Barangay Displacement Profile -->
+    <div class="breakdown-table-container">
+    <h4><i class="fas fa-people-arrows"></i> Barangay Displacement Profile</h4>
+    <table class="breakdown-table" id="tblDisplacement">
+        <thead>
+        <tr>
+            <th>Barangay</th>
+            <th>Taal Volcano</th>
+            <th>Typhoon</th>
+            <th>Flood</th>
+            <th>Landslide</th>
+            <th>Earthquake</th>
+            <th>Fire</th>
+            <th>Total Displaced</th>
+        </tr>
+        </thead>
+        <tbody id="displacementBody">
+        <tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--muted);">
+            <i class="fas fa-spinner fa-spin"></i> Loading displacement data...
+        </td></tr>
+        </tbody>
+    </table>
+    </div>
+
       <!-- 2. Government Support -->
       <div class="breakdown-table-container">
         <h4><i class="fas fa-handshake"></i> Government Assistance Programs</h4>
@@ -2239,12 +2263,13 @@ calamityImpacts.forEach(c => {
                 fishr: { fishrRegistered: 0, rbisRegistered: 0, bothRegistered: 0, notRegistered: 0 },
                 ofw: { saudiArabia: 0, uae: 0, qatar: 0, kuwait: 0, bahrain: 0, oman: 0, hongKong: 0, singapore: 0, japan: 0, taiwan: 0, malaysia: 0, australia: 0, newZealand: 0, italy: 0, uk: 0, germany: 0, cyprus: 0, canada: 0, usa: 0, libya: 0 },
                 livestock: { dog: 0, cat: 0, pig: 0, cow: 0, carabao: 0, chicken: 0 },
-                calamityImpacts: { structuralDamage: 0, householdInjury: 0, habitability: 0, lossOfLivelihood: 0 }
+                calamityImpacts: { structuralDamage: 0, householdInjury: 0, habitability: 0, lossOfLivelihood: 0 },
+                displacement: { taalVolcano: 0, typhoon: 0, flood: 0, landslide: 0, earthquake: 0, fire: 0, total: 0 }
             };
         }
         
         const b = barangayMap[barangay];
-        
+
         // Count heads and members
         totalHeads++;
         b.heads++;
@@ -2517,6 +2542,69 @@ calamityImpacts.forEach(c => {
             b.sitio[sitioKey] = (b.sitio[sitioKey] || 0) + totalPersons;
         }
     }
+
+    // ============ PROCESS DISPLACEMENT REASONS (ONCE, AFTER ALL HOUSEHOLDS) ============
+    const displacementReasons = data.displacementReasons || [];
+    console.log("📊 Processing displacement records (once):", displacementReasons.length);
+    
+    displacementReasons.forEach(record => {
+        // Get the household_id from the displacement record
+        const householdId = record.household_id;
+        
+        // Find the household to get its barangay
+        const household = households.find(h => h.id === householdId);
+        if (!household) {
+            console.warn("⚠️ Household not found for displacement record:", record);
+            return;
+        }
+        
+        const barangayName = household.barangay || 'Unknown';
+        
+        // If barangay doesn't exist in map, create a minimal entry
+        if (!barangayMap[barangayName]) {
+            barangayMap[barangayName] = {
+                heads: 0, members: 0, male: 0, female: 0, lgbt: 0,
+                personsWithCoords: 0, personsWithoutCoords: 0, pwds: 0, soloParenting: 0,
+                commonSickness: 0, severeIllness: 0, pregnant: 0, lactating: 0,
+                disabilityTypes: { physical: 0, visual: 0, hearing: 0, speech: 0, intellectual: 0, psychosocial: 0, learning: 0, multiple: 0 },
+                ageBuckets: { '0-5': 0, '6-17': 0, '18-59': 0, '60+': 0 },
+                sitio: { I: 0, II: 0, III: 0, IV: 0, V: 0, VI: 0, VII: 0 },
+                support: { "TUPAD": 0, "Local 4Ps": 0, "National 4Ps": 0, "Local Social Pension": 0, "National Social Pension": 0, "Solo Parent Assistance": 0, "Relief Goods": 0, "Cash Subsidy": 0 },
+                education: { noFormalEducation: 0, elementaryLevel: 0, elementaryGraduate: 0, juniorHighSchoolLevel: 0, juniorHighSchoolGraduate: 0, seniorHighSchoolLevel: 0, seniorHighSchoolGraduate: 0, alsGraduate: 0, spedGraduate: 0, vocationalGraduate: 0, collegeLevel: 0, collegeGraduate: 0 },
+                employment: { employed: 0, unemployed: 0 },
+                fishr: { fishrRegistered: 0, rbisRegistered: 0, bothRegistered: 0, notRegistered: 0 },
+                ofw: { saudiArabia: 0, uae: 0, qatar: 0, kuwait: 0, bahrain: 0, oman: 0, hongKong: 0, singapore: 0, japan: 0, taiwan: 0, malaysia: 0, australia: 0, newZealand: 0, italy: 0, uk: 0, germany: 0, cyprus: 0, canada: 0, usa: 0, libya: 0 },
+                livestock: { dog: 0, cat: 0, pig: 0, cow: 0, carabao: 0, chicken: 0 },
+                calamityImpacts: { structuralDamage: 0, householdInjury: 0, habitability: 0, lossOfLivelihood: 0 },
+                displacement: { taalVolcano: 0, typhoon: 0, flood: 0, landslide: 0, earthquake: 0, fire: 0, total: 0 }
+            };
+        }
+        
+        const reason = (record.reason_type || '').toLowerCase().trim();
+        const bData = barangayMap[barangayName];
+        
+        // Categorize the displacement reason based on exact database values
+        if (reason.includes('taal volcano') || reason.includes('taal') || reason.includes('volcano')) {
+            bData.displacement.taalVolcano++;
+        } else if (reason.includes('typhoon')) {
+            bData.displacement.typhoon++;
+        } else if (reason.includes('flood')) {
+            bData.displacement.flood++;
+        } else if (reason.includes('landslide')) {
+            bData.displacement.landslide++;
+        } else if (reason.includes('earthquake')) {
+            bData.displacement.earthquake++;
+        } else if (reason.includes('fire')) {
+            bData.displacement.fire++;
+        }
+        
+        // Update total
+        bData.displacement.total = bData.displacement.taalVolcano + bData.displacement.typhoon + 
+                                   bData.displacement.flood + bData.displacement.landslide + 
+                                   bData.displacement.earthquake + bData.displacement.fire;
+    });
+    
+    console.log("✅ Displacement processing complete!");
 
             // Post-Calamity Impacts - Count ALL records, not just unique households
 calamityImpacts.forEach(impact => {
@@ -2835,6 +2923,31 @@ if (currentYearSpan) {
     const animals = ['dog', 'cat', 'pig', 'cow', 'carabao', 'chicken'];
     populateTable('#tblLivestock tbody', (l, s) => `<tr><td style="text-align:left">${l}</td>${animals.map(a => `<td>${s.livestock[a]||0}</td>`).join('')}</tr>`);
     
+        // Barangay Displacement Profile Table
+    populateTable('#tblDisplacement tbody', (l, s) => {
+        const d = s.displacement || { 
+            taalVolcano: 0, typhoon: 0, flood: 0, landslide: 0, 
+            earthquake: 0, fire: 0, total: 0 
+        };
+        const total = d.total || (d.taalVolcano + d.typhoon + d.flood + d.landslide + d.earthquake + d.fire);
+        
+        // Highlight rows with high displacement
+        let rowStyle = '';
+        if (total > 10) rowStyle = 'style="background: #fef2f2;"';
+        else if (total > 5) rowStyle = 'style="background: #fffbeb;"';
+        
+        return `<tr ${rowStyle}>
+            <td style="text-align:left; font-weight: 600;">${l}</td>
+            <td>${d.taalVolcano || 0}</td>
+            <td>${d.typhoon || 0}</td>
+            <td>${d.flood || 0}</td>
+            <td>${d.landslide || 0}</td>
+            <td>${d.earthquake || 0}</td>
+            <td>${d.fire || 0}</td>
+            <td style="font-weight: 700; color: ${total > 0 ? '#dc2626' : 'var(--muted)'};">${total}</td>
+        </tr>`;
+    });
+
     // 10. Educational Attainment by Barangay
     populateTable('#tblBarangayEducation tbody', (l, s) => {
         const cells = [
